@@ -1,0 +1,39 @@
+From 181f7c5dd3832763bdf2756b6d2d8a49bdf12791 Mon Sep 17 00:00:00 2001
+From: Johannes Berg <johannes@sipsolutions.net>
+Date: Mon, 6 Jul 2009 11:53:03 +0200
+Subject: [PATCH] kmemcheck: add missing braces to do-while in
+ kmemcheck_annotate_bitfield
+
+Whether or not the sparse warning
+
+	warning: do-while statement is not a compound statement
+
+is justified or not in this case, it is annoying and trivial to fix.
+
+[vegard.nossum@gmail.com: title and cleanup]
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+---
+ include/linux/kmemcheck.h |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/include/linux/kmemcheck.h b/include/linux/kmemcheck.h
+index 47b39b7..06c6c55 100644
+--- a/include/linux/kmemcheck.h
++++ b/include/linux/kmemcheck.h
+@@ -137,7 +137,10 @@ static inline void kmemcheck_mark_initialized_pages(struct page *p,
+ 	int name##_end[0];
+ 
+ #define kmemcheck_annotate_bitfield(ptr, name)				\
+-	do if (ptr) {							\
++	do {								\
++		if (!ptr)						\
++			break;						\
++									\
+ 		int _n = (long) &((ptr)->name##_end)			\
+ 			- (long) &((ptr)->name##_begin);		\
+ 		BUILD_BUG_ON(_n < 0);					\
+-- 
+1.7.10
+
