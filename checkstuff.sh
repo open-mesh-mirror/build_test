@@ -68,10 +68,9 @@ test_checkpatch()
 	for i in *; do
 		if [ "$i" != "compat.c" -a "$i" != "compat.h" -a "$i" != "gen-compat-autoconf.sh" ]; then
 			rm -f log logfull
-			("${CHECKPATCH}" --ignore COMPLEX_MACRO --strict --file "$i" 3>&2 2>&1 1>&3 |tee log) &> logfull
-			count=$(grep -c 'has style problems, please review.' logfull)
+			("${CHECKPATCH}" -q --ignore COMPLEX_MACRO --strict --file "$i" 3>&2 2>&1 1>&3 |tee log) &> logfull
 
-			if [ "$count" != "0" ]; then
+			if [ -s "log" ]; then
 				"${MAIL_AGGREGATOR}" "${DB}" add "checkpatch $branch $i" logfull logfull
 			fi
 		fi
