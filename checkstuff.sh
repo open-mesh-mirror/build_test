@@ -21,6 +21,7 @@ MAKE="/usr/bin/make"
 TO="linux-merge@lists.open-mesh.org"
 #TO="sven@narfation.org"
 FROM="postmaster@open-mesh.org"
+REMOTE="/srv/git/batman-adv.git"
 extra_flags='-D__CHECK_ENDIAN__'
 
 test_cppcheck()
@@ -145,7 +146,7 @@ testbranch()
 	branch="$1"
 	(
 		rm -rf tmp
-		git archive --remote="/srv/git/batman-adv.git" --format=tar --prefix="tmp/" "$branch" | tar x
+		git archive --remote="${REMOTE}" --format=tar --prefix="tmp/" "$branch" | tar x
 		cd tmp
 
 		test_cppcheck "${branch}"
