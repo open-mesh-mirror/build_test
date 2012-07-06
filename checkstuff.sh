@@ -69,9 +69,9 @@ test_checkpatch()
 	for i in *; do
 		if [ "$i" != "compat.c" -a "$i" != "compat.h" -a "$i" != "gen-compat-autoconf.sh" ]; then
 			rm -f log logfull
-			("${CHECKPATCH}" -q --ignore COMPLEX_MACRO --strict --file "$i" 3>&2 2>&1 1>&3 |tee log) &> logfull
+			"${CHECKPATCH}" -q --ignore COMPLEX_MACRO --strict --file "$i" &> logfull
 
-			if [ -s "log" ]; then
+			if [ -s "logfull" ]; then
 				"${MAIL_AGGREGATOR}" "${DB}" add "checkpatch $branch $i" logfull logfull
 			fi
 		fi
@@ -84,7 +84,7 @@ test_brackets()
 
 	for i in *.c *.h; do
 		rm -f log logfull
-		("${BRACKET}" "$i" 3>&2 2>&1 1>&3 |tee log) &> logfull
+		"${BRACKET}" "$i" &> logfull
 
 		if [ -s logfull ]; then
 			"${MAIL_AGGREGATOR}" "${DB}" add "bracket_align $branch $i" logfull logfull
