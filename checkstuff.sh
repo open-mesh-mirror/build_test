@@ -66,6 +66,7 @@ test_checkpatch()
 {
 	branch="$1"
 
+	rm -f log logfull
 	for i in *; do
 		if [ "$i" != "compat.c" -a "$i" != "compat.h" -a "$i" != "gen-compat-autoconf.sh" ]; then
 			rm -f log logfull
