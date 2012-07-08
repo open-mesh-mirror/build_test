@@ -23,6 +23,7 @@ TO="linux-merge@lists.open-mesh.org"
 FROM="postmaster@open-mesh.org"
 REMOTE="/srv/git/batman-adv.git"
 extra_flags='-D__CHECK_ENDIAN__'
+export LANG=C
 
 test_cppcheck()
 {
