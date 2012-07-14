@@ -49,7 +49,7 @@ test_comments()
 
 	grep -nE "/\*\*..*$" *.c *.h &> log
 	if [ -s "log" ]; then
-		"${MAIL_AGGREGATOR}" "${DB}" add "Comment starting with two asterisk line $branch" log log
+		"${MAIL_AGGREGATOR}" "${DB}" add "Comment starting with two asterisk non-empty line $branch" log log
 	fi
 
 	grep -nE "[^ ]\*/$" *.c *.h &> log
@@ -57,7 +57,7 @@ test_comments()
 		"${MAIL_AGGREGATOR}" "${DB}" add "Comment ending without space $branch" log log
 	fi
 
-	grep -nE "/\*\**$" *.c *.h &> log
+	grep -nE "/\*$" *.c *.h &> log
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "Multiline comment starting with empty line $branch" log log
 	fi
