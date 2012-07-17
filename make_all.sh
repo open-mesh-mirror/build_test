@@ -11,6 +11,7 @@ prepare_source()
 	grep -v 'CONFIG_ENABLE_MUST_CHECK is not set' .config > .config.tmp; mv .config.tmp .config
 	grep -v 'CONFIG_ENABLE_WARN_DEPRECATED is not set' .config > .config.tmp; mv .config.tmp .config
 	grep -v 'CONFIG_CRC16 is not set' .config > .config.tmp; mv .config.tmp .config
+	grep -v 'CONFIG_DEBUG_FS is not set' .config > .config.tmp; mv .config.tmp .config
 	if [ "$1" != "smp" ]; then
 		grep -v 'CONFIG_SMP is not set' .config > .config.tmp; mv .config.tmp .config
 		grep -v 'CONFIG_MODULE_UNLOAD is not set' .config > .config.tmp; mv .config.tmp .config
@@ -24,6 +25,7 @@ prepare_source()
 	echo 'CONFIG_ENABLE_MUST_CHECK=y' >> .config
 	echo 'CONFIG_ENABLE_WARN_DEPRECATED=y' >> .config
 	echo 'CONFIG_CRC16=y' >> .config
+	echo 'CONFIG_DEBUG_FS=y' >> .config
 	echo 'xy'|make menuconfig
 	make prepare
 	make modules
