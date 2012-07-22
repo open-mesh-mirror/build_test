@@ -12,7 +12,7 @@ prepare_source()
 	grep -v 'CONFIG_ENABLE_WARN_DEPRECATED is not set' .config > .config.tmp; mv .config.tmp .config
 	grep -v 'CONFIG_CRC16 is not set' .config > .config.tmp; mv .config.tmp .config
 	grep -v 'CONFIG_DEBUG_FS is not set' .config > .config.tmp; mv .config.tmp .config
-	if [ "$1" != "smp" ]; then
+	if [ "$3" != "smp" ]; then
 		grep -v 'CONFIG_SMP is not set' .config > .config.tmp; mv .config.tmp .config
 		grep -v 'CONFIG_MODULE_UNLOAD is not set' .config > .config.tmp; mv .config.tmp .config
 		echo 'CONFIG_SMP=y' >> .config
@@ -26,7 +26,11 @@ prepare_source()
 	echo 'CONFIG_ENABLE_WARN_DEPRECATED=y' >> .config
 	echo 'CONFIG_CRC16=y' >> .config
 	echo 'CONFIG_DEBUG_FS=y' >> .config
-	echo 'xy'|make menuconfig
+	if [ "$1" = "2.6" -a \( "$2" = "29" -o "$2" = "30" -o "$2" = "31" -o "$2" = "32" -o "$2" = "33" -o "$2" = "34" -o "$2" = "35" \) ]; then
+		echo 'xy'|make menuconfig
+	else
+		make oldnoconfig
+	fi
 	make prepare
 	make modules
 }
@@ -46,7 +50,7 @@ for i in `seq 29 39`; do
 		else
 			SMP=nosmp
 		fi
-		prepare_source "$SMP"
+		prepare_source "2.6" "${i}" "$SMP"
 		if [ -d "../patches/v2.6.${i}" ]; then
 			for p in "../patches/v2.6.${i}/"*.patch; do
 				patch -p1 -i "${p}"
@@ -56,12 +60,12 @@ for i in `seq 29 39`; do
 	./clean_sources.sh
 done
 
-for i in `seq 0 4`; do
+for i in `seq 0 5`; do
 	git --git-dir=/srv/git/linux-merge.git/ archive --format tar --prefix=linux-3.${i}/ v3.${i}|tar x
 	(
 		cd "linux-3.${i}"
 		SMP=smp
-		prepare_source "$SMP"
+		prepare_source "3" "${i}" "$SMP"
 		if [ -d "../patches/v3.${i}" ]; then
 			for p in "../patches/v3.${i}/"*.patch; do
 				patch -p1 -i "${p}"
