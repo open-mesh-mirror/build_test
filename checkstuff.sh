@@ -21,7 +21,7 @@ MAKE="/usr/bin/make"
 TO="linux-merge@lists.open-mesh.org"
 #TO="sven@narfation.org"
 FROM="postmaster@open-mesh.org"
-REMOTE="/srv/git/batman-adv.git"
+REMOTE="git+ssh://git@git.open-mesh.org/batman-adv.git"
 extra_flags='-D__CHECK_ENDIAN__'
 export LANG=C
 
