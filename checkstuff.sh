@@ -85,11 +85,13 @@ test_brackets()
 	branch="$1"
 
 	for i in *.c *.h; do
-		rm -f log logfull
-		"${BRACKET}" "$i" &> logfull
+		if [ "$i" != "compat.c" -a "$i" != "compat.h" ]; then
+			rm -f log logfull
+			"${BRACKET}" "$i" &> logfull
 
-		if [ -s logfull ]; then
-			"${MAIL_AGGREGATOR}" "${DB}" add "bracket_align $branch $i" logfull logfull
+			if [ -s logfull ]; then
+				"${MAIL_AGGREGATOR}" "${DB}" add "bracket_align $branch $i" logfull logfull
+			fi
 		fi
 	done
 }
