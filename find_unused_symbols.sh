@@ -4,7 +4,7 @@ set -e
 defined="`nm -g --defined-only *.o|awk '{ print $3}'|sort|uniq`"
 used="`nm -g --undefined-only *.o|awk '{ print $2}'|sort|uniq`"
 ret=0
-blacklist="cleanup_module batadv_hash_set_lock_class batadv_unicast_4addr_prepare_skb "
+blacklist="cleanup_module batadv_hash_set_lock_class batadv_unicast_4addr_prepare_skb batadv_skb_crc32"
 
 for i in $defined; do
 	found=0
