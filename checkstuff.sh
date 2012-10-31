@@ -31,7 +31,7 @@ test_cppcheck()
 
 	touch compat-autoconf.h
 	rm -f log logfull
-	("${CPPCHECK}" --error-exitcode=42 --enable=all --suppress=variableScope . 3>&2 2>&1 1>&3 |tee log) &> logfull
+	("${CPPCHECK}" --error-exitcode=42 -I../minilinux/ --enable=all --suppress=variableScope . 3>&2 2>&1 1>&3 |tee log) &> logfull
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "cppcheck $branch" log logfull
 	fi
