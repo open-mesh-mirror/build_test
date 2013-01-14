@@ -71,7 +71,7 @@ test_checkpatch()
 	for i in *; do
 		if [ "$i" != "compat.c" -a "$i" != "compat.h" -a "$i" != "gen-compat-autoconf.sh" ]; then
 			rm -f log logfull
-			"${CHECKPATCH}" -q --ignore COMPLEX_MACRO --strict --file "$i" &> logfull
+			"${CHECKPATCH}" -q --ignore CAMELCASE --ignore COMPLEX_MACRO --strict --file "$i" &> logfull
 
 			if [ -s "logfull" ]; then
 				"${MAIL_AGGREGATOR}" "${DB}" add "checkpatch $branch $i" logfull logfull
