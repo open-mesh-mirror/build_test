@@ -60,7 +60,7 @@ for i in `seq 29 39`; do
 	./clean_sources.sh
 done
 
-for i in `seq 0 6`; do
+for i in `seq 0 7`; do
 	git archive --remote=git+ssh://git@git.open-mesh.org/linux-merge.git --format tar --prefix=linux-3.${i}/ v3.${i}|tar x
 	(
 		cd "linux-3.${i}"
