@@ -31,7 +31,18 @@ test_cppcheck()
 
 	touch compat-autoconf.h
 	rm -f log logfull
-	("${CPPCHECK}" --error-exitcode=42 -I../minilinux/ --enable=all --suppress=variableScope . 3>&2 2>&1 1>&3 |tee log) &> logfull
+	("${CPPCHECK}" --error-exitcode=42 -I../minilinux/ --enable=all --suppress=variableScope . 3>&2 2>&1 1>&3 \
+				| grep -v "gateway_client.c.*max_gw_factor.* is assigned a value that is never used" \
+				| grep -v "gateway_client.c.*max_tq.* is assigned a value that is never used" \
+				| grep -v "translation-table.c.*best_tq.* is assigned a value that is never used" \
+				| grep -v "main.c.*tvlv_value.* is assigned a value that is never used" \
+				| grep -v "bridge_loop_avoidance.c.* The function 'batadv_bla_backbone_table_seq_print_text' is never used" \
+				| grep -v "bridge_loop_avoidance.c.* The function 'batadv_bla_claim_table_seq_print_text' is never used" \
+				| grep -v "distributed-arp-table.c.* The function 'batadv_dat_cache_seq_print_text' is never used" \
+				| grep -v "distributed-arp-table.c.* The function 'batadv_dat_status_update' is never used" \
+				| grep -v "[network-coding.c.* The function 'batadv_nc_nodes_seq_print_text' is never used" \
+				| grep -v "[network-coding.c.* The function 'batadv_nc_status_update' is never used" \
+				|tee log) &> logfull
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "cppcheck $branch" log logfull
 	fi
@@ -102,7 +113,10 @@ test_sparse()
 	linux_name="$2"
 	config="$3"
 
-	(EXTRA_CFLAGS="-Werror $extra_flags" "${MAKE}" CHECK="${SPARSE} -Wsparse-all -Wno-ptr-subtraction-blows" $config CC="${CGCC}" KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" 3>&2 2>&1 1>&3 |tee log) &> logfull
+	(EXTRA_CFLAGS="-Werror $extra_flags" "${MAKE}" CHECK="${SPARSE} -Wsparse-all -Wno-ptr-subtraction-blows -D__CHECK_ENDIAN__" $config CC="${CGCC}" KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" 3>&2 2>&1 1>&3 \
+			|grep -v "skbuff.h.*restricted\ __be16" \
+			|grep -v "hard-interface.c.*subtraction of functions? Share your drugs" \
+			|tee log) &> logfull
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "sparse $branch ${linux_name} ${config}" log logfull
 	fi
@@ -156,7 +170,7 @@ testbranch()
 		test_cppcheck "${branch}"
 		test_comments "${branch}"
 
-		for c in `"${GENERATE_CONFIG}" BLA DAT DEBUG`; do
+		for c in `"${GENERATE_CONFIG}" BLA DAT DEBUG NC`; do
 			config="`echo $c|sed 's/\+/ /g'`"
 			# 2.6.x
 			for i in `seq 29 32` `seq 34 39`; do
@@ -172,7 +186,7 @@ testbranch()
 			done
 
 			# 3.x
-			for i in `seq 0 7`; do 
+			for i in `seq 0 8`; do 
 				linux_name="linux-3.$i"
 
 				rm -f log logfull
