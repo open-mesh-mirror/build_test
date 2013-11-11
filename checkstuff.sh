@@ -175,7 +175,7 @@ testbranch()
 		test_cppcheck "${branch}"
 		test_comments "${branch}"
 
-		for c in `"${GENERATE_CONFIG}" BLA DAT DEBUG NC`; do
+		for c in `"${GENERATE_CONFIG}" BLA DAT DEBUG NC MCAST`; do
 			config="`echo $c|sed 's/\+/ /g'`"
 			# 2.6.x
 			for i in `seq 29 32` `seq 34 39`; do
