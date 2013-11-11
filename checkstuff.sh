@@ -158,7 +158,14 @@ test_smatch()
 	config="$3"
 
 	EXTRA_CFLAGS="-Werror $extra_flags" "${MAKE}" CHECK="${SMATCH} -p=kernel --two-passes --file-output" $config CC="${CGCC}" KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" &> /dev/null
-	cat *.smatch > log
+	# installed filters:
+	#
+	# disabled for now: filter batadv_mcast_get_bridge - Linus says this was intentional to support compat code
+	#	| grep -v batadv_mcast_get_bridge.*unreachable \
+	# ether_addr_equal_64bits - we don't care about upstream "problems"
+	cat *.smatch \
+		| grep -v ether_addr_equal_64bits.*unreachable \
+		> log
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "smatch $branch ${linux_name} $config" log log
 	fi
