@@ -86,6 +86,7 @@ test_checkpatch()
 				--ignore CAMELCASE \
 				--ignore COMPLEX_MACRO \
 				--ignore PREFER_SEQ_PUTS \
+				--ignore FSF_MAILING_ADDRESS \
 				--strict --file "$i" &> logfull
 
 			if [ -s "logfull" ]; then
