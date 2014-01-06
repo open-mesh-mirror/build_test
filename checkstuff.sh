@@ -199,7 +199,7 @@ testbranch()
 			done
 
 			# 3.x
-			for i in `seq 0 11`; do 
+			for i in `seq 0 12`; do 
 				linux_name="linux-3.$i"
 
 				rm -f log logfull
