@@ -164,8 +164,10 @@ test_smatch()
 	# disabled for now: filter batadv_mcast_get_bridge - Linus says this was intentional to support compat code
 	#	| grep -v batadv_mcast_get_bridge.*unreachable \
 	# ether_addr_equal_64bits - we don't care about upstream "problems"
+	# atomic_dec_and_test - yet another upstream regression
 	cat *.smatch \
 		| grep -v ether_addr_equal_64bits.*unreachable \
+		| grep -v atomic_dec_and_test.*info:\ ignoring\ unreachable\ code. \
 		> log
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "smatch $branch ${linux_name} $config" log log
