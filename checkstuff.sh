@@ -134,7 +134,10 @@ test_unused_symbols()
 	linux_name="$2"
 	config="$3"
 
-	"${UNUSED_SYMBOLS}" &> log
+	"${UNUSED_SYMBOLS}" \
+		| grep -v batadv_send_skb_unicast \
+		| grep -v batadv_tt_global_hash_count \
+	&> log
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "unused_symbols ${branch} ${linux_name} ${config}" log log
 	fi
