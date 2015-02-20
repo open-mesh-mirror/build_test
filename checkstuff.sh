@@ -118,10 +118,20 @@ test_sparse()
 	linux_name="$2"
 	config="$3"
 
+	# There seems to be a sparse regression in __rcu pointers in 3.15. I couldn't really find
+	# the cause, so instead of fixing that with a patch, just filter out the errors for that
+	# specific kernel.
+	if [ "${linux_name}" == "linux-3.15" ]; then
+		EXTRA_FILTER="egrep -v '(Variable length array is used|cannot size expression)'"
+	else
+		EXTRA_FILTER="cat"
+	fi
+
 	(EXTRA_CFLAGS="-Werror $extra_flags" "${MAKE}" CHECK="${SPARSE} -Wsparse-all -Wno-ptr-subtraction-blows -D__CHECK_ENDIAN__" $config CC="${CGCC}" KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" 3>&2 2>&1 1>&3 \
 			|grep -v "skbuff.h.*restricted\ __be16" \
 			|grep -v "hard-interface.c.*subtraction of functions? Share your drugs" \
 			|grep -v "No such file: c" \
+			|${EXTRA_FILTER} \
 			|tee log) &> logfull
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "sparse $branch ${linux_name} ${config}" log logfull
