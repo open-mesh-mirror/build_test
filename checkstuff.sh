@@ -119,7 +119,6 @@ test_sparse()
 	config="$3"
 
 	(EXTRA_CFLAGS="-Werror $extra_flags" "${MAKE}" CHECK="${SPARSE} -Wsparse-all -Wno-ptr-subtraction-blows -D__CHECK_ENDIAN__" $config CC="${CGCC}" KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" 3>&2 2>&1 1>&3 \
-			|grep -v "skbuff.h.*restricted\ __be16" \
 			|grep -v "hard-interface.c.*subtraction of functions? Share your drugs" \
 			|grep -v "No such file: c" \
 			|tee log) &> logfull
