@@ -192,7 +192,7 @@ testbranch()
 		for c in `"${GENERATE_CONFIG}" BLA DAT DEBUG NC MCAST`; do
 			config="`echo $c|sed 's/\+/ /g'`"
 			# 2.6.x
-			for i in `seq 29 32` `seq 34 39`; do
+			for i in `seq 29 39`; do
 				linux_name="linux-2.6.$i"
 
 				test_sparse "${branch}" "${linux_name}" "${config}"
