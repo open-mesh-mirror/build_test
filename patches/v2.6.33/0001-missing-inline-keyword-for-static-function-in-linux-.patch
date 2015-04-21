@@ -1,0 +1,31 @@
+From a1f09ed3ad6444409a4aeacee8a2f1c99e6b5241 Mon Sep 17 00:00:00 2001
+From: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
+Date: Sat, 14 Aug 2010 15:02:44 +0200
+Subject: [PATCH 1/7] missing inline keyword for static function in
+ linux/dmaengine.h
+
+Add a missing inline keyword for static function in linux/dmaengine.h to
+avoid duplicate symbol definitions.
+
+Signed-off-by: Mathieu Lacage <mathieu.lacage@sophia.inria.fr>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+---
+ include/linux/dmaengine.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/linux/dmaengine.h b/include/linux/dmaengine.h
+index 7878498..ee0b0dc 100644
+--- a/include/linux/dmaengine.h
++++ b/include/linux/dmaengine.h
+@@ -380,7 +380,7 @@ static inline bool dma_dev_has_pq_continue(struct dma_device *dma)
+ 	return (dma->max_pq & DMA_HAS_PQ_CONTINUE) == DMA_HAS_PQ_CONTINUE;
+ }
+ 
+-static unsigned short dma_dev_to_maxpq(struct dma_device *dma)
++static inline unsigned short dma_dev_to_maxpq(struct dma_device *dma)
+ {
+ 	return dma->max_pq & ~DMA_HAS_PQ_CONTINUE;
+ }
+-- 
+2.1.4
+
