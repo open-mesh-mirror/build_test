@@ -49,26 +49,36 @@ test_cppcheck()
 	rm -f compat-autoconf.h
 }
 
+source_path()
+{
+	if [ -d "net/batman-adv" ]; then
+		echo "./net/batman-adv/"
+	else
+		echo "./"
+	fi
+}
+
 test_comments()
 {
 	branch="$1"
+	path="$(source_path)"
 
-	grep -nE "^\s*\*.+\*/" *.c *.h &> log
+	grep -nE "^\s*\*.+\*/" "${path}"/*.c "${path}"/*.h &> log
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "Multiline comment ending at a non-empty line $branch" log log
 	fi
 
-	grep -nE "/\*\*..*$" *.c *.h &> log
+	grep -nE "/\*\*..*$" "${path}"/*.c "${path}"/*.h &> log
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "Comment starting with two asterisk non-empty line $branch" log log
 	fi
 
-	grep -nE "[^ ]\*/$" *.c *.h &> log
+	grep -nE "[^ ]\*/$" "${path}"/*.c "${path}"/*.h &> log
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "Comment ending without space $branch" log log
 	fi
 
-	grep -nE "/\*$" *.c *.h &> log
+	grep -nE "/\*$" "${path}"/*.c "${path}"/*.h &> log
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "Multiline comment starting with empty line $branch" log log
 	fi
@@ -77,14 +87,16 @@ test_comments()
 test_checkpatch()
 {
 	branch="$1"
+	path="$(source_path)"
 
 	rm -f log logfull
-	for i in *; do
+	for i in "${path}"/*; do
 		if [ ! -f "$i" ]; then
 			continue
 		fi
 
-		if [ "$i" != "compat.c" -a "$i" != "compat.h" -a "$i" != "gen-compat-autoconf.sh" ]; then
+		fname=$(basename "$i")
+		if [ "$fname" != "compat.c" -a "$fname" != "compat.h" -a "$fname" != "gen-compat-autoconf.sh" ]; then
 			rm -f log logfull
 			"${CHECKPATCH}" -q \
 				--ignore CAMELCASE \
@@ -103,9 +115,11 @@ test_checkpatch()
 test_brackets()
 {
 	branch="$1"
+	path="$(source_path)"
 
-	for i in *.c *.h; do
-		if [ "$i" != "compat.c" -a "$i" != "compat.h" ]; then
+	for i in "${path}"/*.c "${path}"/*.h; do
+		fname=$(basename "$i")
+		if [ "$fname" != "compat.c" -a "$fname" != "compat.h" ]; then
 			rm -f log logfull
 			"${BRACKET}" "$i" &> logfull
 
@@ -163,6 +177,7 @@ test_smatch()
 	branch="$1"
 	linux_name="$2"
 	config="$3"
+	path="$(source_path)"
 
 	EXTRA_CFLAGS="-Werror $extra_flags" "${MAKE}" CHECK="${SMATCH} -p=kernel --two-passes --file-output" $config CC="${CGCC}" KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" &> /dev/null
 	# installed filters:
@@ -172,7 +187,7 @@ test_smatch()
 	# ether_addr_equal_64bits - we don't care about upstream "problems"
 	# atomic_dec_and_test - yet another upstream regression
 	# batadv_mcast_has_bridge - yet another upstream regression
-	cat *.smatch \
+	cat "${path}"/*.smatch \
 		| grep -v ether_addr_equal_64bits.*unreachable \
 		| grep -v atomic_dec_and_test.*info:\ ignoring\ unreachable\ code. \
 		| grep -v batadv_mcast_has_bridge.*info:\ ignoring\ unreachable\ code. \

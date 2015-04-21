@@ -1,7 +1,17 @@
 #! /bin/sh
 set -e
 
-defined="`nm -g --defined-only *.o|awk '{ print $3}'|sort|uniq`"
+source_path()
+{
+	if [ -d "net/batman-adv" ]; then
+		echo "./net/batman-adv/"
+	else
+		echo "./"
+	fi
+}
+
+path="$(source_path)"
+defined="`nm -g --defined-only "${path}"/*.o|awk '{ print $3}'|sort|uniq`"
 ret=0
 blacklist="cleanup_module init_module __this_module"
 

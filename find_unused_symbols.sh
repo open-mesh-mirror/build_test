@@ -1,8 +1,18 @@
 #! /bin/sh
 set -e
 
-defined="`nm -g --defined-only *.o|awk '{ print $3}'|sort|uniq`"
-used="`nm -g --undefined-only *.o|awk '{ print $2}'|sort|uniq`"
+source_path()
+{
+	if [ -d "net/batman-adv" ]; then
+		echo "./net/batman-adv/"
+	else
+		echo "./"
+	fi
+}
+
+path="$(source_path)"
+defined="`nm -g --defined-only "${path}"/*.o|awk '{ print $3}'|sort|uniq`"
+used="`nm -g --undefined-only "${path}"/*.o|awk '{ print $2}'|sort|uniq`"
 ret=0
 blacklist="cleanup_module batadv_hash_set_lock_class batadv_send_skb_prepare_unicast_4addr batadv_unicast_4addr_prepare_skb batadv_skb_crc32"
 
