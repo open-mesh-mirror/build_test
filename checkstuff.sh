@@ -219,6 +219,21 @@ testbranch()
 				test_smatch "${branch}" "${linux_name}" "${config}"
 				"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" clean
 			done
+
+			# 4.x
+			for i in `seq 0 0`; do
+				linux_name="linux-4.$i"
+
+				rm -f log logfull
+
+				test_sparse "${branch}" "${linux_name}" "${config}"
+				test_unused_symbols "${branch}" "${linux_name}" "${config}"
+				test_wrong_namespace "${branch}" "${linux_name}" "${config}"
+				"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}"/linux-4.$i clean
+
+				test_smatch "${branch}" "${linux_name}" "${config}"
+				"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" clean
+			done
 		done
 
 

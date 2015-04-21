@@ -75,9 +75,25 @@ for i in `seq 0 19`; do
 	./clean_sources.sh
 done
 
+for i in `seq 0 0`; do
+	git archive --remote=git+ssh://git@git.open-mesh.org/linux-merge.git --format tar --prefix=linux-4.${i}/ v4.${i}|tar x
+	(
+		cd "linux-4.${i}"
+		SMP=smp
+		prepare_source "4" "${i}" "$SMP"
+		if [ -d "../patches/v4.${i}" ]; then
+			for p in "../patches/v4.${i}/"*.patch; do
+				patch -p1 -i "${p}"
+			done
+		fi
+	)
+	./clean_sources.sh
+done
+
 
 find linux-2.6.* -type f -exec sha1sum '{}' \; > checksums
 find linux-3.* -type f -exec sha1sum '{}' \; >> checksums
+find linux-4.* -type f -exec sha1sum '{}' \; >> checksums
 ./create_links.py; rm -f checksums
 ./generate_squashfs.sh
 

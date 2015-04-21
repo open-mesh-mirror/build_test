@@ -9,7 +9,7 @@
 
 set -e
 
-for i in linux-2.6* linux-3.*; do
+for i in linux-2.6* linux-3.* linux-4.*; do
 (
 	test -d "$i" && cd "$i"  && (
 	find . -iname "*.S" -print0 | xargs --null rm -f
