@@ -80,6 +80,10 @@ test_checkpatch()
 
 	rm -f log logfull
 	for i in *; do
+		if [ ! -f "$i" ]; then
+			continue
+		fi
+
 		if [ "$i" != "compat.c" -a "$i" != "compat.h" -a "$i" != "gen-compat-autoconf.sh" ]; then
 			rm -f log logfull
 			"${CHECKPATCH}" -q \
