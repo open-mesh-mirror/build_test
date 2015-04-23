@@ -14,7 +14,12 @@ checkout_packet_h()
 	remote="${1}"
 	branch="${2}"
 
-	git --git-dir="${remote}" cat-file -p "${branch}":packet.h
+	git --git-dir="${remote}" cat-file -p "${branch}":net/batman-adv/packet.h 2> /dev/null
+	if [ "$?" = "0" ]; then
+		return
+	fi
+
+	git --git-dir="${remote}" cat-file -p "${branch}":packet.h 2> /dev/null
 }
 
 checkout_packet_h "${REMOTE}" master > batman-adv_master.packet.h
