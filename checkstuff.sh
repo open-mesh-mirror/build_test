@@ -40,8 +40,8 @@ test_cppcheck()
 				| grep -v "bridge_loop_avoidance.c.* The function 'batadv_bla_claim_table_seq_print_text' is never used" \
 				| grep -v "distributed-arp-table.c.* The function 'batadv_dat_cache_seq_print_text' is never used" \
 				| grep -v "distributed-arp-table.c.* The function 'batadv_dat_status_update' is never used" \
-				| grep -v "[network-coding.c.* The function 'batadv_nc_nodes_seq_print_text' is never used" \
-				| grep -v "[network-coding.c.* The function 'batadv_nc_status_update' is never used" \
+				| grep -v "network-coding.c.* The function 'batadv_nc_nodes_seq_print_text' is never used" \
+				| grep -v "network-coding.c.* The function 'batadv_nc_status_update' is never used" \
 				|tee log) &> logfull
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "cppcheck $branch" log logfull
