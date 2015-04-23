@@ -9,13 +9,21 @@ cd /home/batman/build_test/packet.h_check
 rm -f batctl_maint.packet.h batctl_next.packet.h  batctl_master.packet.h  batman-adv_maint.packet.h  batman-adv_next.packet.h batman-adv_master.packet.h
 rm -f maint.diff next.diff  master.diff
 
-git --git-dir="${REMOTE}" cat-file -p master:packet.h > batman-adv_master.packet.h
-git --git-dir="${REMOTE}" cat-file -p next:packet.h > batman-adv_next.packet.h
-git --git-dir="${REMOTE}" cat-file -p maint:packet.h > batman-adv_maint.packet.h
+checkout_packet_h()
+{
+	remote="${1}"
+	branch="${2}"
 
-git --git-dir="${REMOTE_BATCTL}" cat-file -p master:packet.h > batctl_master.packet.h
-git --git-dir="${REMOTE_BATCTL}" cat-file -p next:packet.h > batctl_next.packet.h
-git --git-dir="${REMOTE_BATCTL}" cat-file -p maint:packet.h > batctl_maint.packet.h
+	git --git-dir="${remote}" cat-file -p "${branch}":packet.h
+}
+
+checkout_packet_h "${REMOTE}" master > batman-adv_master.packet.h
+checkout_packet_h "${REMOTE}" next > batman-adv_next.packet.h
+checkout_packet_h "${REMOTE}" maint > batman-adv_maint.packet.h
+
+checkout_packet_h "${REMOTE_BATCTL}" master > batctl_master.packet.h
+checkout_packet_h "${REMOTE_BATCTL}" next > batctl_next.packet.h
+checkout_packet_h "${REMOTE_BATCTL}" maint > batctl_maint.packet.h
 
 diff -ruN batman-adv_master.packet.h batctl_master.packet.h > master.diff
 diff -ruN batman-adv_next.packet.h batctl_next.packet.h > next.diff
