@@ -42,6 +42,10 @@ test_cppcheck()
 				| grep -v "distributed-arp-table.c.* The function 'batadv_dat_status_update' is never used" \
 				| grep -v "network-coding.c.* The function 'batadv_nc_nodes_seq_print_text' is never used" \
 				| grep -v "network-coding.c.* The function 'batadv_nc_status_update' is never used" \
+				| grep -v "bat_iv_ogm.c.* Possible null pointer dereference: router - otherwise it is redundant to check it against null" \
+				| grep -v "gateway_client.c.* Possible null pointer dereference: next_gw - otherwise it is redundant to check it against null" \
+				| grep -v "main.c.* Possible null pointer dereference: tvlv_value - otherwise it is redundant to check it against null" \
+				| grep -v "Cppcheck cannot find all the include files" \
 				|tee log) &> logfull
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "cppcheck $branch" log logfull
