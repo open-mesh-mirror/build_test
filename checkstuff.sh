@@ -62,6 +62,14 @@ source_path()
 	fi
 }
 
+simplify_config_string()
+{
+	config="$@"
+	config_simple="$(echo "${config}"|sed 's/CONFIG_BATMAN_ADV_//g')"
+
+	echo "cfg: ${config_simple}"
+}
+
 test_comments()
 {
 	branch="$1"
@@ -143,7 +151,7 @@ test_sparse()
 			|grep -v "No such file: c" \
 			|tee log) &> logfull
 	if [ -s "log" ]; then
-		"${MAIL_AGGREGATOR}" "${DB}" add "sparse $branch ${linux_name} ${config}" log logfull
+		"${MAIL_AGGREGATOR}" "${DB}" add "sparse $branch ${linux_name} $(simplify_config_string "${config}")" log logfull
 	fi
 }
 
@@ -158,7 +166,7 @@ test_unused_symbols()
 		| grep -v batadv_tt_global_hash_count \
 	&> log
 	if [ -s "log" ]; then
-		"${MAIL_AGGREGATOR}" "${DB}" add "unused_symbols ${branch} ${linux_name} ${config}" log log
+		"${MAIL_AGGREGATOR}" "${DB}" add "unused_symbols ${branch} ${linux_name} $(simplify_config_string "${config}")" log log
 	fi
 }
 
@@ -170,7 +178,7 @@ test_wrong_namespace()
 
 	"${WRONG_NAMESPACE}" &> log
 	if [ -s "log" ]; then
-		"${MAIL_AGGREGATOR}" "${DB}" add "wrong namespace symbols ${branch} ${linux_name} ${config}" log log
+		"${MAIL_AGGREGATOR}" "${DB}" add "wrong namespace symbols ${branch} ${linux_name} $(simplify_config_string "${config}")" log log
 	fi
 }
 
