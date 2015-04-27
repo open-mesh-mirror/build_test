@@ -56,9 +56,9 @@ test_cppcheck()
 source_path()
 {
 	if [ -d "net/batman-adv" ]; then
-		echo "./net/batman-adv/"
+		echo "./net/batman-adv"
 	else
-		echo "./"
+		echo "."
 	fi
 }
 
