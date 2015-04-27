@@ -65,7 +65,13 @@ def send():
 
 	log_list = []
 	for x in logs:
-		log_list.append(":\n>>>>>>>>\n".join(x))
+		namelen = len(x[0])
+		if namelen > 75:
+			namelen = 75
+
+		underline = '-' * namelen
+
+		log_list.append("%s\n%s\n\n%s" % (x[0], underline, x[1]))
 
 	mail = []
 	mail.append("Name of failed tests\n")
