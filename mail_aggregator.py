@@ -61,7 +61,7 @@ def send():
 
 	name_list = []
 	for x in names:
-		name_list.append(x[0])
+		name_list.append(" * " + x[0])
 
 	log_list = []
 	for x in logs:
