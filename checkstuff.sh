@@ -104,6 +104,7 @@ test_checkpatch()
 			rm -f log logfull
 			"${CHECKPATCH}" -q \
 				--ignore COMPLEX_MACRO \
+				--min-conf-desc-length=3 \
 				--strict --file "$i" &> logfull
 
 			if [ -s "logfull" ]; then
