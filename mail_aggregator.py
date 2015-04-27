@@ -2,6 +2,7 @@
 # -*- coding: UTF-8 -*-
 
 import sqlite3
+import re
 import sys
 import os
 import smtplib
@@ -71,7 +72,10 @@ def send():
 
 		underline = '-' * namelen
 
-		log_list.append("%s\n%s\n\n%s" % (x[0], underline, x[1]))
+		full_log = re.sub('^', '    ', x[1], count = 0, flags = re.MULTILINE)
+		full_log = re.sub('\s*$', '', full_log, count = 0)
+
+		log_list.append("%s\n%s\n\n%s" % (x[0], underline, full_log))
 
 	mail = []
 	mail.append("Name of failed tests\n")
