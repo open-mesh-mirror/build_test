@@ -76,7 +76,7 @@ def send():
 	mail.append("Output of different failed tests\n")
 	mail.append("================================\n")
 	mail.append("\n")
-	mail.append("%s\n" % ("\n".join(log_list)))
+	mail.append("%s\n" % ("\n\n\n".join(log_list)))
 
 	msg = MIMEText("".join(mail))
 	msg['Subject'] = mail_subject
