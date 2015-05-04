@@ -219,10 +219,30 @@ test_copyright()
 	fi
 }
 
+test_compare_net_next()
+{
+	branch="$1"
+
+	rm -rf tmp
+	mkdir tmp
+
+	git archive --remote="${REMOTE}" --format=tar --prefix="tmp/batadv" "$branch" -- net/batman-adv | tar x
+	git archive --remote="linux-next/.git/" --format=tar --prefix="tmp/netnext" net-next/master -- net/batman-adv | tar x
+
+	diff -ruN tmp/batadvnet tmp/netnextnet|diffstat -q > tmp/log
+	if [ -s "tmp/log" ]; then
+		"${MAIL_AGGREGATOR}" "${DB}" add "difference between net-next and batadv ${branch}" tmp/log tmp/log
+	fi
+}
+
 testbranch()
 {
 	branch="$1"
 	(
+		if [ "$branch" == "next" ]; then
+			test_compare_net_next "${branch}"
+		fi
+
 		rm -rf tmp
 		git archive --remote="${REMOTE}" --format=tar --prefix="tmp/" "$branch" | tar x
 		cd tmp
@@ -283,7 +303,10 @@ testbranch()
 	)
 }
 
-# update linux next for checkpatch
+# update linux next for checkpatch/net-next
+# setup:
+#     git clone git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git linux-next.git
+#     git --git-dir=linux-next/.git/
 git --git-dir=linux-next/.git/ --work-tree=linux-next remote update --prune
 git --git-dir=linux-next/.git/ --work-tree=linux-next reset --hard origin/master
 
