@@ -9,6 +9,7 @@ SMATCH="$(pwd)/smatch/smatch"
 BRACKET="$(pwd)/bracket_align.py"
 CHECKPATCH="$(pwd)/linux-next/scripts/checkpatch.pl"
 UNUSED_SYMBOLS="$(pwd)/find_unused_symbols.sh"
+CHECK_COPYRIGHT="$(pwd)/check_copyright.sh"
 WRONG_NAMESPACE="$(pwd)/find_wrong_namespace.sh"
 
 MAIL_AGGREGATOR="$(pwd)/mail_aggregator.py"
@@ -207,6 +208,17 @@ test_smatch()
 	fi
 }
 
+test_copyright()
+{
+	branch="$1"
+
+	"${CHECK_COPYRIGHT}" \
+	&> log
+	if [ -s "log" ]; then
+		"${MAIL_AGGREGATOR}" "${DB}" add "copyright ${branch}" log log
+	fi
+}
+
 testbranch()
 {
 	branch="$1"
@@ -217,6 +229,7 @@ testbranch()
 
 		test_cppcheck "${branch}"
 		test_comments "${branch}"
+		test_copyright "${branch}"
 
 		for c in `"${GENERATE_CONFIG}" BLA DAT DEBUG NC MCAST`; do
 			config="`echo $c|sed 's/\+/ /g'`"
