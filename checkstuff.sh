@@ -229,7 +229,7 @@ test_compare_net_next()
 	git archive --remote="${REMOTE}" --format=tar --prefix="tmp/batadv/" "$branch" -- net/batman-adv/ Documentation/networking/batman-adv.txt Documentation/ABI/testing/sysfs-class-net-batman-adv Documentation/ABI/testing/sysfs-class-net-mesh | tar x
 	git archive --remote="linux-next/.git/" --format=tar --prefix="tmp/netnext/" net-next/master -- net/batman-adv/ Documentation/networking/batman-adv.txt Documentation/ABI/testing/sysfs-class-net-batman-adv Documentation/ABI/testing/sysfs-class-net-mesh | tar x
 
-	diff -ruN tmp/batadv tmp/netnext|diffstat -q > tmp/log
+	diff -ruN tmp/batadv tmp/netnext|diffstat -w 71 -q > tmp/log
 	if [ -s "tmp/log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "difference between net-next and batadv ${branch}" tmp/log tmp/log
 	fi
