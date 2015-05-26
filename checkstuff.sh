@@ -111,8 +111,11 @@ test_checkpatch()
 		fname=$(basename "$i")
 		if [ "$fname" != "compat.c" -a "$fname" != "compat.h" -a "$fname" != "gen-compat-autoconf.sh" ]; then
 			rm -f log logfull
+
+			# TODO: remove PREFER_KERNEL_TYPES after next contains patch "Replace C99 int types with kernel type"
 			"${CHECKPATCH}" -q \
 				--ignore COMPLEX_MACRO \
+				--ignore PREFER_KERNEL_TYPES \
 				--min-conf-desc-length=3 \
 				--strict --file "$i" &> logfull
 
