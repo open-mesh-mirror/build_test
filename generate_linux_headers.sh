@@ -104,11 +104,6 @@ for i in `seq 0 0`; do
 	./clean_sources.sh
 done
 
-
-find linux-2.6.* -type f -exec sha1sum '{}' \; > checksums
-find linux-3.* -type f -exec sha1sum '{}' \; >> checksums
-find linux-4.* -type f -exec sha1sum '{}' \; >> checksums
-./create_links.py; rm -f checksums
 generate_squashfs
 
 echo "done"
