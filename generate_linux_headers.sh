@@ -3,6 +3,11 @@ set -e
 
 LINUX_REPOSITORY=${LINUX_REPOSITORY:="git+ssh://git@git.open-mesh.org/linux-merge.git"}
 
+if [ -e "linux-build.img" -o -d "linux-build" ]; then
+	echo "Please unmount + delete linux-build.img and linux-build before running this script"
+	exit 1
+fi
+
 prepare_source()
 {
 	make allnoconfig
