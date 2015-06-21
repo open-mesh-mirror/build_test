@@ -1,6 +1,6 @@
 #! /bin/bash
 
-cd /home/batman/build_test/
+cd "$(dirname "$0")"
 
 CGCC="$(pwd)/sparse/cgcc"
 SPARSE="$(pwd)/sparse/sparse"
