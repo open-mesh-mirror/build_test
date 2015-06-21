@@ -37,6 +37,22 @@ prepare_source()
 	make modules
 }
 
+clean_source()
+{
+	find . -iname "*.S" -print0 | xargs --null rm -f
+	find . -iname "*.c" -print0 | xargs --null rm -f
+	find . -iname "*.o" -print0 | xargs --null rm -f
+	find . -iname "*.cmd" -not -iname "auto.conf.cmd" -print0 | xargs --null rm -f
+	find . -iname "modules.order" -print0 | xargs --null rm -f
+	find . -iname "vmlinu*" -not -iname "*.h" -print0 | xargs --null rm -f
+	find arch -maxdepth 1 -type d -not -iname i386 -not -iname x86_64 -not -iname x86 -not -iname arch -print0 | xargs --null rm -rf
+	find include -maxdepth 1 -type d -iname "asm-*" -not -iname asm-i386 -not -iname asm-x86_64 -not -iname asm-x86 -not -iname asm-generic  -not -iname include -print0 | xargs --null rm -rf
+	rm -rf Documentation
+	rm -f linux
+	find |grep -v '/include/'|grep -v '/arch/'|grep "\.h$"|xargs -d '\n' rm -f
+	rm -f .config.old
+}
+
 generate_squashfs()
 {
 	set -e
@@ -57,7 +73,7 @@ for i in `seq 29 39`; do
 	#rm "linux-2.6.${i}.tar.gz"
 	git archive --remote="${LINUX_REPOSITORY}" --format tar --prefix=linux-2.6.${i}/ v2.6.${i}|tar x
 	(
-		cd "linux-2.6.${i}"
+		cd "linux-2.6.${i}" || exit
 		if [ "$i" = 29 -o "$i" = 30 -o "$i" = 31 -o "$i" = 32 -o "$i" = 33 -o "$i" = 34 -o "$i" = 35 -o "$i" = 36 ]; then
 			sed -i 's/^\(KBUILD_CFLAGS[[:space:]]*:=\)[[:space:]]*\(-Wall\)/\1 -Wno-unused-but-set-variable \2/' Makefile
 		fi
@@ -72,14 +88,15 @@ for i in `seq 29 39`; do
 				patch -p1 -i "${p}"
 			done
 		fi
+
+		clean_source
 	)
-	./clean_sources.sh
 done
 
 for i in `seq 0 19`; do
 	git archive --remote="${LINUX_REPOSITORY}" --format tar --prefix=linux-3.${i}/ v3.${i}|tar x
 	(
-		cd "linux-3.${i}"
+		cd "linux-3.${i}" || exit
 		SMP=smp
 		prepare_source "3" "${i}" "$SMP"
 		if [ -d "../patches/v3.${i}" ]; then
@@ -87,14 +104,15 @@ for i in `seq 0 19`; do
 				patch -p1 -i "${p}"
 			done
 		fi
+
+		clean_source
 	)
-	./clean_sources.sh
 done
 
 for i in `seq 0 0`; do
 	git archive --remote="${LINUX_REPOSITORY}" --format tar --prefix=linux-4.${i}/ v4.${i}|tar x
 	(
-		cd "linux-4.${i}"
+		cd "linux-4.${i}" || exit
 		SMP=smp
 		prepare_source "4" "${i}" "$SMP"
 		if [ -d "../patches/v4.${i}" ]; then
@@ -102,8 +120,9 @@ for i in `seq 0 0`; do
 				patch -p1 -i "${p}"
 			done
 		fi
+
+		clean_source
 	)
-	./clean_sources.sh
 done
 
 generate_squashfs
