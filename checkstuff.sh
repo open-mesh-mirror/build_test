@@ -7,6 +7,7 @@ FROM=${FROM:="postmaster@open-mesh.org"}
 REMOTE=${REMOTE:="git+ssh://git@git.open-mesh.org/batman-adv.git"}
 
 LINUX_VERSIONS=$(echo linux-2.6.{29..39} linux-3.{0..19} linux-4.{0..0})
+LINUX_DEFAULT_VERSION=linux-4.0
 
 CGCC="$(pwd)/sparse/cgcc"
 SPARSE="$(pwd)/sparse/sparse"
@@ -17,6 +18,7 @@ CHECKPATCH="$(pwd)/linux-next/scripts/checkpatch.pl"
 UNUSED_SYMBOLS="$(pwd)/testhelpers/find_unused_symbols.sh"
 CHECK_COPYRIGHT="$(pwd)/testhelpers/check_copyright.sh"
 WRONG_NAMESPACE="$(pwd)/testhelpers/find_wrong_namespace.sh"
+IWYU_KERNEL_MAPPINGS="$(pwd)/testhelpers/kernel_mappings.iwyu"
 
 MAIL_AGGREGATOR="$(pwd)/testhelpers/mail_aggregator.py"
 DB="$(pwd)/error.db"
@@ -58,7 +60,7 @@ check_external()
 		exit 1
 	fi
 
-	for linux_name in ${LINUX_VERSIONS}; do
+	for linux_name in ${LINUX_VERSIONS} ${LINUX_DEFAULT_VERSION}; do
 		if [ ! -d "${LINUX_HEADERS}/${linux_name}" ]; then
 			echo "Required linux header for ${linux_name} missing:"
 			echo "    ./generate_linux_headers.sh"
@@ -281,10 +283,50 @@ test_compare_net_next()
 	fi
 }
 
+test_headers()
+{
+	branch="$1"
+
+	rm -rf tmp
+	git clone -b "$branch" "${REMOTE}" tmp
+	(
+		cd tmp || exit
+
+		MAKE_CONFIG="CONFIG_BATMAN_ADV_NC=y CONFIG_BATMAN_ADV_DEBUG=y KBUILD_SRC=${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}"
+
+		# don't touch main.h, bat_algo.h and files which are required by linux/wait.h, packet.h
+		sed -i 's/#include "main.h"/#include "main.h" \/\/ IWYU pragma: keep/' net/batman-adv/*c net/batman-adv/*.h
+		sed -i 's/#include "bat_algo.h"/#include "bat_algo.h" \/\/ IWYU pragma: keep/' net/batman-adv/*c net/batman-adv/*.h
+		sed -i 's/\/\* for linux\/wait.h \*\//\/\* for linux\/wait.h \*\/ \/\/ IWYU pragma: keep/' net/batman-adv/*c net/batman-adv/*.h
+		sed -i 's/\/\* for packet.h \*\//\/\* for packet.h \*\/ \/\/ IWYU pragma: keep/' net/batman-adv/*c net/batman-adv/*.h
+
+		make KERNELPATH="${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}" $MAKE_CONFIG clean
+		make KERNELPATH="${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}" -j1 -k CC="iwyu -Xiwyu --prefix_header_includes=keep -Xiwyu --no_default_mappings -Xiwyu --transitive_includes_only -Xiwyu --verbose=1 -Xiwyu --mapping_file=$IWYU_KERNEL_MAPPINGS" $MAKE_CONFIG 2> test
+
+		fix_include --nosafe_headers --noblank_lines --separate_project_includes="$(pwd)/net/batman-adv" < test
+
+		# remove extra noise
+		sed -i 's/ \/\/ IWYU pragma: keep//' net/batman-adv/*c net/batman-adv/*.h
+		sed -i '/struct batadv_algo_ops;/d' net/batman-adv/main.h
+		sed -i '/struct batadv_hard_iface;/d' net/batman-adv/main.h
+		sed -i '/struct batadv_orig_node;/d' net/batman-adv/main.h
+		sed -i '/struct batadv_priv;/d' net/batman-adv/main.h
+		git diff > log
+
+	)
+
+	if [ -s "tmp/log" ]; then
+		"${MAIL_AGGREGATOR}" "${DB}" add "headers ${branch}" tmp/log tmp/log
+	fi
+	rm -rf tmp
+}
+
 testbranch()
 {
 	branch="$1"
 	(
+		test_headers "$branch"
+
 		if [ "$branch" == "next" ]; then
 			test_compare_net_next "${branch}"
 		fi
