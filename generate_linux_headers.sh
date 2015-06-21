@@ -133,3 +133,6 @@ done
 generate_squashfs
 
 echo "done"
+echo "Please mount the image:"
+echo "    mkdir -p linux-build"
+echo "    mount -o loop linux-build.img linux-build"
