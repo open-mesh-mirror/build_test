@@ -308,8 +308,8 @@ testbranch()
 
 # update linux next for checkpatch/net-next
 # setup:
-#     git clone git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git linux-next.git
-#     git --git-dir=linux-next/.git/
+#     git clone git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git linux-next
+#     git --git-dir=linux-next/.git/ remote add net-next git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git
 git --git-dir=linux-next/.git/ --work-tree=linux-next remote update --prune
 git --git-dir=linux-next/.git/ --work-tree=linux-next reset --hard origin/master
 
