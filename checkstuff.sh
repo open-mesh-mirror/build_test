@@ -2,6 +2,10 @@
 
 cd "$(dirname "$0")"
 
+TO=${TO:="linux-merge@lists.open-mesh.org"}
+FROM=${FROM:="postmaster@open-mesh.org"}
+REMOTE=${REMOTE:="git+ssh://git@git.open-mesh.org/batman-adv.git"}
+
 CGCC="$(pwd)/sparse/cgcc"
 SPARSE="$(pwd)/sparse/sparse"
 CPPCHECK="$(pwd)/cppcheck/cppcheck"
@@ -18,11 +22,6 @@ LINUX_HEADERS="$(pwd)/linux-build/"
 GENERATE_CONFIG="$(pwd)/generate_config_params.py"
 
 MAKE="/usr/bin/make"
-
-TO="linux-merge@lists.open-mesh.org"
-#TO="sven@narfation.org"
-FROM="postmaster@open-mesh.org"
-REMOTE="git+ssh://git@git.open-mesh.org/batman-adv.git"
 extra_flags='-D__CHECK_ENDIAN__'
 export LANG=C
 
