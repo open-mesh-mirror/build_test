@@ -35,6 +35,20 @@ prepare_source()
 	make modules
 }
 
+generate_squashfs()
+{
+	set -e
+	rm -f linux-build.img
+	rm -rf linux-build
+	mkdir -p linux-build
+	mv linux-2.6.* linux-build
+	mv linux-3* linux-build
+	mv linux-4* linux-build
+	mksquashfs linux-build linux-build.img
+	rm -rf linux-build
+	echo ok
+}
+
 for i in `seq 29 39`; do
 	#wget "http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.${i}.tar.gz"
 	#tar xfz "linux-2.6.${i}.tar.gz"
@@ -95,6 +109,6 @@ find linux-2.6.* -type f -exec sha1sum '{}' \; > checksums
 find linux-3.* -type f -exec sha1sum '{}' \; >> checksums
 find linux-4.* -type f -exec sha1sum '{}' \; >> checksums
 ./create_links.py; rm -f checksums
-./generate_squashfs.sh
+generate_squashfs
 
 echo "done"
