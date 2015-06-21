@@ -2,6 +2,7 @@
 set -e
 
 LINUX_REPOSITORY=${LINUX_REPOSITORY:="git+ssh://git@git.open-mesh.org/linux-merge.git"}
+MAKE_AMD64=${MAKE_AMD64:=0}
 
 if [ -e "linux-build.img" -o -d "linux-build" ]; then
 	echo "Please unmount + delete linux-build.img and linux-build before running this script"
@@ -12,6 +13,10 @@ prepare_source()
 {
 	make allnoconfig
 	grep -v 'CONFIG_MODULES is not set' .config > .config.tmp; mv .config.tmp .config
+	if [ "${MAKE_AMD64}" != "0" ]; then
+		grep -v 'CONFIG_64BIT is not set' .config > .config.tmp; mv .config.tmp .config
+		grep -v 'CONFIG_X86_32=y' .config > .config.tmp; mv .config.tmp .config
+	fi
 	grep -v 'CONFIG_NET is not set' .config > .config.tmp; mv .config.tmp .config
 	grep -v 'CONFIG_DEBUG_STRICT_USER_COPY_CHECKS is not set' .config > .config.tmp; mv .config.tmp .config
 	grep -v 'CONFIG_SPARSE_RCU_POINTER is not set' .config > .config.tmp; mv .config.tmp .config
@@ -26,6 +31,10 @@ prepare_source()
 		echo 'CONFIG_MODULE_UNLOAD=y' >> .config
 	fi
 	echo 'CONFIG_MODULES=y' >> .config
+	if [ "${MAKE_AMD64}" != "0" ]; then
+		echo 'CONFIG_64BIT=y' >> .config
+		echo 'CONFIG_X86_64=y' >> .config
+	fi
 	echo 'CONFIG_NET=y' >> .config
 	echo 'CONFIG_DEBUG_STRICT_USER_COPY_CHECKS=y' >> .config
 	echo 'CONFIG_SPARSE_RCU_POINTER=y' >> .config
