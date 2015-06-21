@@ -6,6 +6,8 @@ TO=${TO:="linux-merge@lists.open-mesh.org"}
 FROM=${FROM:="postmaster@open-mesh.org"}
 REMOTE=${REMOTE:="git+ssh://git@git.open-mesh.org/batman-adv.git"}
 
+LINUX_VERSIONS=$(echo linux-2.6.{29..39} linux-3.{0..19} linux-4.{0..0})
+
 CGCC="$(pwd)/sparse/cgcc"
 SPARSE="$(pwd)/sparse/sparse"
 CPPCHECK="$(pwd)/cppcheck/cppcheck"
@@ -255,47 +257,20 @@ testbranch()
 
 		for c in `"${GENERATE_CONFIG}" BLA DAT DEBUG NC MCAST`; do
 			config="`echo $c|sed 's/\+/ /g'`"
-			# 2.6.x
-			for i in `seq 29 39`; do
-				linux_name="linux-2.6.$i"
 
-				test_sparse "${branch}" "${linux_name}" "${config}"
-				test_unused_symbols "${branch}" "${linux_name}" "${config}"
-				test_wrong_namespace "${branch}" "${linux_name}" "${config}"
-				"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" clean
-
-				#test_smatch "${branch}" "${linux_name}" "${config}"
-				#"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" clean
-			done
-
-			# 3.x
-			for i in `seq 0 19`; do 
-				linux_name="linux-3.$i"
-
+			for linux_name in ${LINUX_VERSIONS}; do
 				rm -f log logfull
 
 				test_sparse "${branch}" "${linux_name}" "${config}"
 				test_unused_symbols "${branch}" "${linux_name}" "${config}"
 				test_wrong_namespace "${branch}" "${linux_name}" "${config}"
-				"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}"/linux-3.$i clean
-
-				test_smatch "${branch}" "${linux_name}" "${config}"
 				"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" clean
-			done
 
-			# 4.x
-			for i in `seq 0 0`; do
-				linux_name="linux-4.$i"
-
-				rm -f log logfull
-
-				test_sparse "${branch}" "${linux_name}" "${config}"
-				test_unused_symbols "${branch}" "${linux_name}" "${config}"
-				test_wrong_namespace "${branch}" "${linux_name}" "${config}"
-				"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}"/linux-4.$i clean
-
-				test_smatch "${branch}" "${linux_name}" "${config}"
-				"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" clean
+				if [[ "$linux_name" != "linux-2.6."* ]]; then
+				echo "-"${linux_name}
+					test_smatch "${branch}" "${linux_name}" "${config}"
+					"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" clean
+				fi
 			done
 		done
 
