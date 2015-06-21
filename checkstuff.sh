@@ -27,6 +27,48 @@ MAKE="/usr/bin/make"
 extra_flags='-D__CHECK_ENDIAN__'
 export LANG=C
 
+check_external()
+{
+	if [ ! -x "${CGCC}" -o ! -x "${SPARSE}" ]; then
+		echo "Required tool sparse missing:"
+		echo "    git clone git://git.kernel.org/pub/scm/devel/sparse/sparse.git sparse"
+		echo "    make -C sparse"
+		exit 1
+	fi
+
+	if [ ! -x "${CPPCHECK}" ]; then
+		echo "Required tool cppcheck missing:"
+		echo "    git clone git://github.com/danmar/cppcheck.git cppcheck"
+		echo "    make -C cppcheck"
+		exit 1
+	fi
+
+	if [ ! -x "${SMATCH}" ]; then
+		echo "Required tool smatch missing:"
+		echo "    git clone http://repo.or.cz/smatch.git smatch"
+		echo "    git -C smatch am ../patches/smatch/9999-smatch-Workaround-to-allow-the-check-of-batadv_iv_og.patch"
+		echo "    make -C smatch"
+		exit 1
+	fi
+
+	if [ ! -x "${CHECKPATCH}" ]; then
+		echo "Required tool checkpatch missing:"
+		echo "    git clone git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git linux-next"
+		echo "    git --git-dir=linux-next/.git/ remote add net-next git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git"
+		exit 1
+	fi
+
+	for linux_name in ${LINUX_VERSIONS}; do
+		if [ ! -d "${LINUX_HEADERS}/${linux_name}" ]; then
+			echo "Required linux header for ${linux_name} missing:"
+			echo "    ./generate_linux_headers.sh"
+			echo "    mkdir -p linux-build"
+			echo "    mount -o loop linux-build.img linux-build"
+			exit 1
+		fi
+	done
+}
+
 test_cppcheck()
 {
 	branch="$1"
@@ -280,10 +322,9 @@ testbranch()
 	)
 }
 
+check_external
+
 # update linux next for checkpatch/net-next
-# setup:
-#     git clone git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git linux-next
-#     git --git-dir=linux-next/.git/ remote add net-next git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git
 git --git-dir=linux-next/.git/ --work-tree=linux-next remote update --prune
 git --git-dir=linux-next/.git/ --work-tree=linux-next reset --hard origin/master
 
