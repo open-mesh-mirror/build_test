@@ -2,7 +2,7 @@
 set -e
 
 LINUX_REPOSITORY=${LINUX_REPOSITORY:="git+ssh://git@git.open-mesh.org/linux-merge.git"}
-MAKE_AMD64=${MAKE_AMD64:=0}
+MAKE_AMD64=${MAKE_AMD64:=1}
 
 if [ -e "linux-build.img" -o -d "linux-build" ]; then
 	echo "Please unmount + delete linux-build.img and linux-build before running this script"
