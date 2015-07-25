@@ -1,4 +1,4 @@
-From 00f39978a69b3fc8b51b3aa9cc5661e73e893df1 Mon Sep 17 00:00:00 2001
+From 801fd9ca3836c5e08dde058061d46c61f99358a9 Mon Sep 17 00:00:00 2001
 From: Sven Eckelmann <sven@narfation.org>
 Date: Tue, 21 Apr 2015 19:31:46 +0200
 Subject: [PATCH] smatch: Workaround to allow the check of
@@ -10,7 +10,7 @@ Subject: [PATCH] smatch: Workaround to allow the check of
  2 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/smatch_implied.c b/smatch_implied.c
-index 3e6afad..728b75c 100644
+index bb9d65d..cd729a0 100644
 --- a/smatch_implied.c
 +++ b/smatch_implied.c
 @@ -226,7 +226,7 @@ static void separate_pools(struct sm_state *sm_state, int comparison, struct ran
@@ -19,18 +19,18 @@ index 3e6afad..728b75c 100644
  	*/
 -	if (sm_state->nr_children > 4000) {
 +	if (sm_state->nr_children > 40000) {
- 		static char buf[1028];
- 		snprintf(buf, sizeof(buf), "debug: separate_pools: nr_children over 4000 (%d). (%s %s)",
- 			 sm_state->nr_children, sm_state->name, show_state(sm_state->state));
-@@ -263,7 +263,7 @@ struct sm_state *filter_pools(struct sm_state *sm,
+ 		if (option_debug || option_debug_implied) {
+ 			static char buf[1028];
+ 			snprintf(buf, sizeof(buf), "debug: separate_pools: nr_children over 4000 (%d). (%s %s)",
+@@ -265,7 +265,7 @@ struct sm_state *filter_pools(struct sm_state *sm,
  	if (!sm)
  		return NULL;
  
 -	if (sm->nr_children > 4000) {
 +	if (sm->nr_children > 40000) {
- 		static char buf[1028];
- 		snprintf(buf, sizeof(buf), "debug: %s: nr_children over 4000 (%d). (%s %s)",
- 			 __func__, sm->nr_children, sm->name, show_state(sm->state));
+ 		if (option_debug || option_debug_implied) {
+ 			static char buf[1028];
+ 			snprintf(buf, sizeof(buf), "debug: %s: nr_children over 4000 (%d). (%s %s)",
 diff --git a/smatch_slist.c b/smatch_slist.c
 index 55becc9..d2d8946 100644
 --- a/smatch_slist.c
