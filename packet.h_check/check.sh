@@ -4,7 +4,7 @@ TO="linux-merge@lists.open-mesh.org"
 REMOTE="/srv/git/repositories/batman-adv.git/"
 REMOTE_BATCTL="/srv/git/repositories/batctl.git/"
 
-cd /home/batman/build_test/packet.h_check
+cd "$(dirname "$0")"
 
 rm -f batctl_maint.packet.h batctl_next.packet.h  batctl_master.packet.h  batman-adv_maint.packet.h  batman-adv_next.packet.h batman-adv_master.packet.h
 rm -f maint.diff next.diff  master.diff
