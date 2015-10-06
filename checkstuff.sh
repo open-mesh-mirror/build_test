@@ -15,6 +15,7 @@ CPPCHECK="$(pwd)/cppcheck/cppcheck"
 SMATCH="$(pwd)/smatch/smatch"
 BRACKET="$(pwd)/testhelpers/bracket_align.py"
 CHECKPATCH="$(pwd)/linux-next/scripts/checkpatch.pl"
+KERNELDOC="$(pwd)/linux-next/scripts/kernel-doc"
 UNUSED_SYMBOLS="$(pwd)/testhelpers/find_unused_symbols.sh"
 CHECK_COPYRIGHT="$(pwd)/testhelpers/check_copyright.sh"
 WRONG_NAMESPACE="$(pwd)/testhelpers/find_wrong_namespace.sh"
@@ -53,8 +54,8 @@ check_external()
 		exit 1
 	fi
 
-	if [ ! -x "${CHECKPATCH}" ]; then
-		echo "Required tool checkpatch missing:"
+	if [ ! -x "${CHECKPATCH}" -o ! -x "${KERNELDOC}" ]; then
+		echo "Required tool checkpatch and kernel-doc missing:"
 		echo "    git clone git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git linux-next"
 		echo "    git --git-dir=linux-next/.git/ remote add net-next git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git"
 		exit 1
@@ -164,6 +165,36 @@ test_checkpatch()
 
 			if [ -s "logfull" ]; then
 				"${MAIL_AGGREGATOR}" "${DB}" add "checkpatch $branch $i" logfull logfull
+			fi
+		fi
+	done
+}
+
+test_kerneldoc()
+{
+	branch="$1"
+	path="$(source_path)"
+
+	rm -f log logfull
+	for i in "${path}"/*; do
+		if [ ! -f "$i" ]; then
+			continue
+		fi
+
+		fname=$(basename "$i")
+		if [ "$fname" != "compat.c" -a "$fname" != "compat.h" -a "$fname" != "gen-compat-autoconf.sh" ]; then
+			rm -f log logfull
+
+			("${KERNELDOC}" -v -list "$i" 2>&1 > /dev/null)| \
+				grep -v Scanning|grep -v -e BATADV_TQ_LOCAL_WINDOW_SIZE \
+				-e "Excess struct/union/enum/typedef member 'bcast_bits' description in 'batadv_orig_node'" \
+				-e "Excess struct/union/enum/typedef member 'real_bits' description in 'batadv_neigh_ifinfo_bat_iv'" \
+				-e '#ifdef' -e "#define" -e '#endif' \
+				-e "[0-9]* warnings" \
+				-e 'no structured comments found' &> logfull
+
+			if [ -s "logfull" ]; then
+				"${MAIL_AGGREGATOR}" "${DB}" add "kerneldoc $branch $i" logfull logfull
 			fi
 		fi
 	done
@@ -358,6 +389,9 @@ testbranch()
 
 
 		test_checkpatch "${branch}"
+		if [ "$branch" == "master" -o "$branch" == "marek/batman_v" ]; then
+			test_kerneldoc "${branch}"
+		fi
 		test_brackets "${branch}"
 	)
 }
