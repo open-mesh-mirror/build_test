@@ -371,4 +371,5 @@ git --git-dir=linux-next/.git/ --work-tree=linux-next reset --hard origin/master
 "${MAIL_AGGREGATOR}" "${DB}" create
 testbranch "master"
 testbranch "next"
+testbranch "marek/batman_v"
 "${MAIL_AGGREGATOR}" "${DB}" send "${FROM}" "${TO}" "Build check errors found: `date '+%Y-%m-%d'`"
