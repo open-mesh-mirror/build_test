@@ -321,7 +321,7 @@ test_headers()
 	(
 		cd tmp || exit
 
-		MAKE_CONFIG="CONFIG_BATMAN_ADV_DEBUG=y CONFIG_BATMAN_ADV_BLA=y CONFIG_BATMAN_ADV_DAT=y CONFIG_BATMAN_ADV_MCAST=y CONFIG_BATMAN_ADV_NC=y CONFIG_BATMAN_ADV_BATMAN_V=y KBUILD_SRC=${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}"
+		MAKE_CONFIG="CONFIG_BATMAN_ADV_DEBUG=y CONFIG_BATMAN_ADV_BLA=y CONFIG_BATMAN_ADV_DAT=y CONFIG_BATMAN_ADV_MCAST=y CONFIG_BATMAN_ADV_NC=y KBUILD_SRC=${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}"
 
 		# don't touch main.h, bat_algo.h and files which are required by linux/wait.h, packet.h
 		sed -i 's/#include "main.h"/#include "main.h" \/\/ IWYU pragma: keep/' net/batman-adv/*c net/batman-adv/*.h
@@ -368,7 +368,7 @@ testbranch()
 		test_comments "${branch}"
 		test_copyright "${branch}"
 
-		for c in `"${GENERATE_CONFIG}" BLA DAT DEBUG NC MCAST BATMAN_V`; do
+		for c in `"${GENERATE_CONFIG}" BLA DAT DEBUG NC MCAST`; do
 			config="`echo $c|sed 's/\+/ /g'`"
 
 			for linux_name in ${LINUX_VERSIONS}; do
@@ -389,7 +389,7 @@ testbranch()
 
 
 		test_checkpatch "${branch}"
-		if [ "$branch" == "master" -o "$branch" == "marek/batman_v" ]; then
+		if [ "$branch" == "master" ]; then
 			test_kerneldoc "${branch}"
 		fi
 		test_brackets "${branch}"
@@ -405,5 +405,4 @@ git --git-dir=linux-next/.git/ --work-tree=linux-next reset --hard origin/master
 "${MAIL_AGGREGATOR}" "${DB}" create
 testbranch "master"
 testbranch "next"
-testbranch "marek/batman_v"
 "${MAIL_AGGREGATOR}" "${DB}" send "${FROM}" "${TO}" "Build check errors found: `date '+%Y-%m-%d'`"
