@@ -366,7 +366,6 @@ testbranch()
 
 		test_cppcheck "${branch}"
 		test_comments "${branch}"
-		test_copyright "${branch}"
 
 		for c in `"${GENERATE_CONFIG}" BLA DAT DEBUG NC MCAST`; do
 			config="`echo $c|sed 's/\+/ /g'`"
@@ -398,6 +397,7 @@ testbranch()
 		test_checkpatch "${branch}"
 		if [ "$branch" == "master" ]; then
 			test_kerneldoc "${branch}"
+			test_copyright "${branch}"
 		fi
 		test_brackets "${branch}"
 	)
