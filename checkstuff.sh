@@ -6,8 +6,8 @@ TO=${TO:="linux-merge@lists.open-mesh.org"}
 FROM=${FROM:="postmaster@open-mesh.org"}
 REMOTE=${REMOTE:="git+ssh://git@git.open-mesh.org/batman-adv.git"}
 
-LINUX_VERSIONS=$(echo linux-2.6.{29..39} linux-3.{0..19} linux-4.{0..2})
-LINUX_DEFAULT_VERSION=linux-4.2
+LINUX_VERSIONS=$(echo linux-2.6.{29..39} linux-3.{0..19} linux-4.{0..3})
+LINUX_DEFAULT_VERSION=linux-4.3
 
 CGCC="$(pwd)/sparse/cgcc"
 SPARSE="$(pwd)/sparse/sparse"
