@@ -13,6 +13,7 @@ CGCC="$(pwd)/sparse/cgcc"
 SPARSE="$(pwd)/sparse/sparse"
 CPPCHECK="$(pwd)/cppcheck/cppcheck"
 SMATCH="$(pwd)/smatch/smatch"
+SMATCH_CGCC="$(pwd)/smatch/smatch"
 BRACKET="$(pwd)/testhelpers/bracket_align.py"
 CHECKPATCH="$(pwd)/linux-next/scripts/checkpatch.pl"
 KERNELDOC="$(pwd)/linux-next/scripts/kernel-doc"
@@ -46,7 +47,7 @@ check_external()
 		exit 1
 	fi
 
-	if [ ! -x "${SMATCH}" ]; then
+	if [ ! -x "${SMATCH_CGCC}" -o ! -x "${SMATCH}" ]; then
 		echo "Required tool smatch missing:"
 		echo "    git clone http://repo.or.cz/smatch.git smatch"
 		echo "    git -C smatch am ../patches/smatch/9999-smatch-Workaround-to-allow-the-check-of-batadv_iv_og.patch"
@@ -263,7 +264,7 @@ test_smatch()
 	config="$3"
 	path="$(source_path)"
 
-	EXTRA_CFLAGS="-Werror $extra_flags" "${MAKE}" CHECK="${SMATCH} -p=kernel --two-passes --file-output" $config CC="${CGCC}" KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" &> /dev/null
+	EXTRA_CFLAGS="-Werror $extra_flags" "${MAKE}" CHECK="${SMATCH} -p=kernel --two-passes --file-output" $config CC="${SMATCH_CGCC}" KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" &> /dev/null
 	# installed filters:
 	#
 	# disabled for now: filter batadv_mcast_get_bridge - Linus says this was intentional to support compat code
