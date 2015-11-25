@@ -183,10 +183,7 @@ test_kerneldoc()
 			rm -f log logfull
 
 			("${KERNELDOC}" -v -list "$i" 2>&1 > /dev/null)| \
-				grep -v Scanning|grep -v -e BATADV_TQ_LOCAL_WINDOW_SIZE \
-				-e "Excess struct/union/enum/typedef member 'bcast_bits' description in 'batadv_orig_node'" \
-				-e "Excess struct/union/enum/typedef member 'real_bits' description in 'batadv_neigh_ifinfo_bat_iv'" \
-				-e '#ifdef' -e "#define" -e '#endif' \
+				grep -v Scanning|grep -v \
 				-e "[0-9]* warnings" \
 				-e 'no structured comments found' &> logfull
 
