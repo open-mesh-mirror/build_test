@@ -45,6 +45,7 @@
 { include: ["\"linux/kernel.h\"", "private", "<linux/kernel.h>", "public"] },
 { include: ["\"linux/kern_levels.h\"", "private", "<linux/printk.h>", "public"] },
 { include: ["\"linux/kobject.h\"", "private", "<linux/printk.h>", "public"] },
+{ include: ["\"linux/kref.h\"", "private", "<linux/kref.h>", "public"] },
 { include: ["\"linux/list.h\"", "private", "<linux/list.h>", "public"] },
 { include: ["\"linux/lockdep.h\"", "private", "<linux/lockdep.h>", "public"] },
 { include: ["\"linux/module.h\"", "private", "<linux/module.h>", "public"] },
