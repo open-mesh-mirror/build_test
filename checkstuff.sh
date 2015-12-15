@@ -5,6 +5,7 @@ cd "$(dirname "$0")"
 TO=${TO:="linux-merge@lists.open-mesh.org"}
 FROM=${FROM:="postmaster@open-mesh.org"}
 REMOTE=${REMOTE:="git+ssh://git@git.open-mesh.org/batman-adv.git"}
+JOBS=${JOBS:=1}
 
 LINUX_VERSIONS=$(echo linux-2.6.{29..39} linux-3.{0..19} linux-4.{0..3})
 LINUX_DEFAULT_VERSION=linux-4.3
@@ -261,7 +262,7 @@ test_smatch()
 	config="$3"
 	path="$(source_path)"
 
-	EXTRA_CFLAGS="-Werror $extra_flags" "${MAKE}" CHECK="${SMATCH} -p=kernel --two-passes --file-output" $config CC="${SMATCH_CGCC}" KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" &> /dev/null
+	EXTRA_CFLAGS="-Werror $extra_flags" "${MAKE}" CHECK="${SMATCH} -p=kernel --two-passes --file-output" $config CC="${SMATCH_CGCC}" KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" -j"${JOBS}" &> /dev/null
 	# installed filters:
 	#
 	# disabled for now: filter batadv_mcast_get_bridge - Linus says this was intentional to support compat code
@@ -377,12 +378,12 @@ testbranch()
 				test_sparse "${branch}" "${linux_name}" "${config}"
 				test_unused_symbols "${branch}" "${linux_name}" "${config}"
 				test_wrong_namespace "${branch}" "${linux_name}" "${config}"
-				"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" clean
+				"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" -j"${JOBS}" clean
 
 				if [[ "$linux_name" != "linux-2.6."* ]]; then
 				echo "-"${linux_name}
 					test_smatch "${branch}" "${linux_name}" "${config}"
-					"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" clean
+					"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" -j"${JOBS}" clean
 				fi
 			done
 		done
