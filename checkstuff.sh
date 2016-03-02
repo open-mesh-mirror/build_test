@@ -7,7 +7,7 @@ FROM=${FROM:="postmaster@open-mesh.org"}
 REMOTE=${REMOTE:="git+ssh://git@git.open-mesh.org/batman-adv.git"}
 JOBS=${JOBS:=1}
 
-LINUX_VERSIONS=$(echo linux-2.6.{29..39} linux-3.{0..19} linux-4.{0..4})
+LINUX_VERSIONS=$(echo linux-3.{2..19} linux-4.{0..4})
 LINUX_DEFAULT_VERSION=linux-4.4
 
 CGCC="$(pwd)/sparse/cgcc"
@@ -381,11 +381,8 @@ testbranch()
 				test_wrong_namespace "${branch}" "${linux_name}" "${config}"
 				"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" -j"${JOBS}" clean
 
-				if [[ "$linux_name" != "linux-2.6."* ]]; then
-				echo "-"${linux_name}
-					test_smatch "${branch}" "${linux_name}" "${config}"
-					"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" -j"${JOBS}" clean
-				fi
+				test_smatch "${branch}" "${linux_name}" "${config}"
+				"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" -j"${JOBS}" clean
 			done
 		done
 
