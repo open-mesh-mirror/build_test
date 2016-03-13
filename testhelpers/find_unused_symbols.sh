@@ -1,16 +1,18 @@
 #! /bin/sh
 set -e
 
-source_path()
+build_path()
 {
-	if [ -d "net/batman-adv" ]; then
+	if [ -d "build/net/batman-adv" ]; then
+		echo "./build/net/batman-adv"
+	elif [ -d "net/batman-adv" ]; then
 		echo "./net/batman-adv"
 	else
 		echo "."
 	fi
 }
 
-path="$(source_path)"
+path="$(build_path)"
 defined="`nm -g --defined-only "${path}"/*.o|awk '{ print $3}'|sort|uniq`"
 used="`nm -g --undefined-only "${path}"/*.o|awk '{ print $2}'|sort|uniq`"
 ret=0

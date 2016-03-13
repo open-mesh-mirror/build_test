@@ -108,6 +108,17 @@ source_path()
 	fi
 }
 
+build_path()
+{
+	if [ -d "build/net/batman-adv" ]; then
+		echo "./build/net/batman-adv"
+	elif [ -d "net/batman-adv" ]; then
+		echo "./net/batman-adv"
+	else
+		echo "."
+	fi
+}
+
 simplify_config_string()
 {
 	config="$@"
@@ -261,7 +272,6 @@ test_smatch()
 	branch="$1"
 	linux_name="$2"
 	config="$3"
-	path="$(source_path)"
 
 	EXTRA_CFLAGS="-Werror $extra_flags" "${MAKE}" CHECK="${SMATCH} -p=kernel --two-passes --file-output" $config CC="${SMATCH_CGCC}" KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" -j"${JOBS}" &> /dev/null
 	# installed filters:
@@ -271,6 +281,7 @@ test_smatch()
 	# ether_addr_equal_64bits - we don't care about upstream "problems"
 	# atomic_dec_and_test - yet another upstream regression
 	# batadv_mcast_has_bridge - yet another upstream regression
+	path="$(build_path)"
 	cat "${path}"/*.smatch \
 		| grep -v ether_addr_equal_64bits.*unreachable \
 		| grep -v atomic_dec_and_test.*info:\ ignoring\ unreachable\ code. \
@@ -316,30 +327,32 @@ test_headers()
 	git clone -b "$branch" "${REMOTE}" tmp
 	(
 		cd tmp || exit
+		spath="$(source_path)"
 
 		MAKE_CONFIG="CONFIG_BATMAN_ADV_DEBUG=y CONFIG_BATMAN_ADV_BLA=y CONFIG_BATMAN_ADV_DAT=y CONFIG_BATMAN_ADV_MCAST=y CONFIG_BATMAN_ADV_NC=y CONFIG_BATMAN_ADV_BATMAN_V=y KBUILD_SRC=${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}"
 
 		# don't touch main.h, bat_algo.h and files which are required by linux/wait.h, packet.h
-		sed -i 's/#include "main.h"/#include "main.h" \/\/ IWYU pragma: keep/' net/batman-adv/*c net/batman-adv/*.h
-		sed -i 's/#include "bat_algo.h"/#include "bat_algo.h" \/\/ IWYU pragma: keep/' net/batman-adv/*c net/batman-adv/*.h
-		sed -i 's/\/\* for linux\/wait.h \*\//\/\* for linux\/wait.h \*\/ \/\/ IWYU pragma: keep/' net/batman-adv/*c net/batman-adv/*.h
-		sed -i 's/\/\* for packet.h \*\//\/\* for packet.h \*\/ \/\/ IWYU pragma: keep/' net/batman-adv/*c net/batman-adv/*.h
+		sed -i 's/#include "main.h"/#include "main.h" \/\/ IWYU pragma: keep/' "${spath}"/*c "${spath}"/*.h
+		sed -i 's/#include "bat_algo.h"/#include "bat_algo.h" \/\/ IWYU pragma: keep/' "${spath}"/*c "${spath}"/*.h
+		sed -i 's/\/\* for linux\/wait.h \*\//\/\* for linux\/wait.h \*\/ \/\/ IWYU pragma: keep/' "${spath}"/*c "${spath}"/*.h
+		sed -i 's/\/\* for packet.h \*\//\/\* for packet.h \*\/ \/\/ IWYU pragma: keep/' "${spath}"/*c "${spath}"/*.h
 
 		make KERNELPATH="${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}" $MAKE_CONFIG clean
 		make KERNELPATH="${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}" -j1 -k CC="iwyu -Xiwyu --prefix_header_includes=keep -Xiwyu --no_default_mappings -Xiwyu --transitive_includes_only -Xiwyu --verbose=1 -Xiwyu --mapping_file=$IWYU_KERNEL_MAPPINGS" $MAKE_CONFIG 2> test
 
-		fix_include --nosafe_headers --noblank_lines --separate_project_includes="$(pwd)/net/batman-adv" < test
+		bpath="$(build_path)"
+
+		git add -f "${bpath}" "${spath}"
+		fix_include --nosafe_headers --noblank_lines --separate_project_includes="$(pwd)/${bpath}" < test
 
 		# remove extra noise
-		sed -i 's/ \/\/ IWYU pragma: keep//' net/batman-adv/*c net/batman-adv/*.h
-		sed -i '/struct batadv_algo_ops;/d' net/batman-adv/main.h
-		sed -i '/struct batadv_hard_iface;/d' net/batman-adv/main.h
-		sed -i '/struct batadv_orig_node;/d' net/batman-adv/main.h
-		sed -i '/struct batadv_priv;/d' net/batman-adv/main.h
+		sed -i '/struct batadv_algo_ops;/d' "${bpath}"/main.h
+		sed -i '/struct batadv_hard_iface;/d' "${bpath}"/main.h
+		sed -i '/struct batadv_orig_node;/d' "${bpath}"/main.h
+		sed -i '/struct batadv_priv;/d' "${bpath}"/main.h
 		git diff > log
 
 	)
-
 	if [ -s "tmp/log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "headers ${branch}" tmp/log tmp/log
 	fi
