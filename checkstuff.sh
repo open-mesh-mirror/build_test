@@ -7,8 +7,8 @@ FROM=${FROM:="postmaster@open-mesh.org"}
 REMOTE=${REMOTE:="git+ssh://git@git.open-mesh.org/batman-adv.git"}
 JOBS=${JOBS:=1}
 
-LINUX_VERSIONS=$(echo linux-3.{2..19} linux-4.{0..4})
-LINUX_DEFAULT_VERSION=linux-4.4
+LINUX_VERSIONS=$(echo linux-3.{2..19} linux-4.{0..5})
+LINUX_DEFAULT_VERSION=linux-4.5
 
 CGCC="$(pwd)/sparse/cgcc"
 SPARSE="$(pwd)/sparse/sparse"
