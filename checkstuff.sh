@@ -29,7 +29,7 @@ LINUX_HEADERS="$(pwd)/linux-build/"
 GENERATE_CONFIG="$(pwd)/testhelpers/generate_config_params.py"
 
 MAKE="/usr/bin/make"
-extra_flags='-D__CHECK_ENDIAN__'
+extra_flags='-Werror -D__CHECK_ENDIAN__ -DDEBUG'
 export LANG=C
 
 check_external()
@@ -231,7 +231,7 @@ test_sparse()
 	linux_name="$2"
 	config="$3"
 
-	(EXTRA_CFLAGS="-Werror $extra_flags" "${MAKE}" CHECK="${SPARSE} -Wsparse-all -Wno-ptr-subtraction-blows -D__CHECK_ENDIAN__" $config CC="${CGCC}" KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" 3>&2 2>&1 1>&3 \
+	(EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SPARSE} -Wsparse-all -Wno-ptr-subtraction-blows $extra_flags" $config CC="${CGCC}" KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" 3>&2 2>&1 1>&3 \
 			|grep -v "hard-interface.c.*subtraction of functions? Share your drugs" \
 			|grep -v "No such file: c" \
 			|tee log) &> logfull
@@ -273,7 +273,7 @@ test_smatch()
 	linux_name="$2"
 	config="$3"
 
-	EXTRA_CFLAGS="-Werror $extra_flags" "${MAKE}" CHECK="${SMATCH} -p=kernel --two-passes --file-output" $config CC="${SMATCH_CGCC}" KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" -j"${JOBS}" &> /dev/null
+	EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SMATCH} -p=kernel --two-passes --file-output $extra_flags" $config CC="${SMATCH_CGCC}" KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" -j"${JOBS}" &> /dev/null
 	# installed filters:
 	#
 	# disabled for now: filter batadv_mcast_get_bridge - Linus says this was intentional to support compat code
