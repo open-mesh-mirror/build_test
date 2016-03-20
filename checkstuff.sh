@@ -51,8 +51,6 @@ check_external()
 	if [ ! -x "${SMATCH_CGCC}" -o ! -x "${SMATCH}" ]; then
 		echo "Required tool smatch missing:"
 		echo "    git clone http://repo.or.cz/smatch.git smatch"
-		echo "    git -C smatch reset --hard 8275cedc24555134f57d471e9db3612729374334"
-		echo "    git -C smatch am ../patches/smatch/9999-smatch-Workaround-to-allow-the-check-of-batadv_iv_og.patch"
 		echo "    make -C smatch"
 		exit 1
 	fi
@@ -275,8 +273,12 @@ test_smatch()
 	EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SMATCH} -p=kernel --two-passes --file-output $extra_flags" $config CC="${SMATCH_CGCC}" KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" -j"${JOBS}" &> /dev/null
 	# installed filters:
 	#
+	#  * "batadv_softif_slave_add warn: unused return: ret = batadv_hardif_enable_interface" regression in smatch 0b78084aeb0004db657d6e2d4fa4c17ec9f2e8e5
+	#  * "batadv_iv_ogm_process_per_outif warn: unused return: router_router = batadv_orig_router_get" regression in smatch 0b78084aeb0004db657d6e2d4fa4c17ec9f2e8e5
 	path="$(build_path)"
 	cat "${path}"/*.smatch \
+		| grep -v 'batadv_softif_slave_add warn: unused return: ret = batadv_hardif_enable_interface' \
+		| grep -v 'batadv_iv_ogm_process_per_outif warn: unused return: router_router = batadv_orig_router_get' \
 		> log
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "smatch $branch ${linux_name} $config" log log
