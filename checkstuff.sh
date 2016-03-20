@@ -232,7 +232,6 @@ test_sparse()
 	config="$3"
 
 	(EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SPARSE} -Wsparse-all -Wno-ptr-subtraction-blows $extra_flags" $config CC="${CGCC}" KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" 3>&2 2>&1 1>&3 \
-			|grep -v "hard-interface.c.*subtraction of functions? Share your drugs" \
 			|grep -v "No such file: c" \
 			|tee log) &> logfull
 	if [ -s "log" ]; then
@@ -276,16 +275,8 @@ test_smatch()
 	EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SMATCH} -p=kernel --two-passes --file-output $extra_flags" $config CC="${SMATCH_CGCC}" KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" -j"${JOBS}" &> /dev/null
 	# installed filters:
 	#
-	# disabled for now: filter batadv_mcast_get_bridge - Linus says this was intentional to support compat code
-	#	| grep -v batadv_mcast_get_bridge.*unreachable \
-	# ether_addr_equal_64bits - we don't care about upstream "problems"
-	# atomic_dec_and_test - yet another upstream regression
-	# batadv_mcast_has_bridge - yet another upstream regression
 	path="$(build_path)"
 	cat "${path}"/*.smatch \
-		| grep -v ether_addr_equal_64bits.*unreachable \
-		| grep -v atomic_dec_and_test.*info:\ ignoring\ unreachable\ code. \
-		| grep -v batadv_mcast_has_bridge.*info:\ ignoring\ unreachable\ code. \
 		> log
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "smatch $branch ${linux_name} $config" log log
