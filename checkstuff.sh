@@ -275,8 +275,10 @@ test_smatch()
 	EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SMATCH} -p=kernel --two-passes --file-output $extra_flags" $config CC="${SMATCH_CGCC}" KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" -j"${JOBS}" &> /dev/null
 	# installed filters:
 	#
+	# * "batadv_iv_ogm_orig_update() error: we previously assumed 'router' could be null" bug in 5da752f35cfa6763b56fac75da42e3c2de813f2b
 	path="$(build_path)"
 	cat "${path}"/*.smatch \
+		|grep -v "batadv_iv_ogm_orig_update() error: we previously assumed 'router' could be null" \
 		> log
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "smatch $branch ${linux_name} $config" log log
