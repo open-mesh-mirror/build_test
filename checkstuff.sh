@@ -51,7 +51,7 @@ check_external()
 	if [ ! -x "${SMATCH_CGCC}" -o ! -x "${SMATCH}" ]; then
 		echo "Required tool smatch missing:"
 		echo "    git clone http://repo.or.cz/smatch.git smatch"
-		echo "    git -C smatch reset --hard 5da752f35cfa6763b56fac75da42e3c2de813f2b"
+		echo "    git -C smatch reset --hard 3914f1e4941298bb5f025e11871fcd06a3b6e6cc"
 		echo "    git -C smatch am ../patches/smatch/9999-smatch-Workaround-to-allow-the-check-of-batadv_iv_og.patch"
 		echo "    make -C smatch"
 		exit 1
@@ -275,10 +275,8 @@ test_smatch()
 	EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SMATCH} -p=kernel --two-passes --file-output $extra_flags" $config CC="${SMATCH_CGCC}" KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" -j"${JOBS}" &> /dev/null
 	# installed filters:
 	#
-	# * "batadv_iv_ogm_orig_update() error: we previously assumed 'router' could be null" bug in 5da752f35cfa6763b56fac75da42e3c2de813f2b
 	path="$(build_path)"
 	cat "${path}"/*.smatch \
-		|grep -v "batadv_iv_ogm_orig_update() error: we previously assumed 'router' could be null" \
 		> log
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "smatch $branch ${linux_name} $config" log log
