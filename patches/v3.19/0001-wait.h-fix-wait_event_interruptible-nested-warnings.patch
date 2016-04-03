@@ -1,4 +1,3 @@
-From e72d3ad4a5f59817e4be03cbcc581f3655ba7207 Mon Sep 17 00:00:00 2001
 From: Simon Wunderlich <sw@simonwunderlich.de>
 Date: Wed, 19 Mar 2014 11:45:17 +0100
 Subject: [PATCH] wait.h: fix wait_event_interruptible() nested warnings
@@ -27,6 +26,3 @@ index 37423e0..1c089fc 100644
  })
  
  #define __wait_event_interruptible_timeout(wq, condition, timeout)	\
--- 
-2.1.4
-

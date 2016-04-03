@@ -1,14 +1,6 @@
-From patchwork Thu Feb 27 13:20:29 2014
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Subject: [net-next] ipv6: addrconf: silence sparse endianness warnings
-From: =?utf-8?q?Bj=C3=B8rn_Mork?= <bjorn@mork.no>
-X-Patchwork-Id: 324806
-Message-Id: <1393507229-14871-1-git-send-email-bjorn@mork.no>
-To: netdev@vger.kernel.org
-Cc: =?UTF-8?q?Bj=C3=B8rn=20Mork?= <bjorn@mork.no>
+From: Bjørn Mork <bjorn@mork.no>
 Date: Thu, 27 Feb 2014 14:20:29 +0100
+Subject: [PATCH] ipv6: addrconf: silence sparse endianness warnings
 
 Avoid the following sparse __CHECK_ENDIAN__ warnings:
 
@@ -29,10 +21,10 @@ Signed-off-by: Bjørn Mork <bjorn@mork.no>
  1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/include/net/addrconf.h b/include/net/addrconf.h
-index 50e39a8822b4..933a9f22a05f 100644
+index 21f70270..bbd16a0 100644
 --- a/include/net/addrconf.h
 +++ b/include/net/addrconf.h
-@@ -314,7 +314,7 @@ static inline bool ipv6_addr_is_multicast(const struct in6_addr *addr)
+@@ -294,7 +294,7 @@ static inline bool ipv6_addr_is_multicast(const struct in6_addr *addr)
  static inline bool ipv6_addr_is_ll_all_nodes(const struct in6_addr *addr)
  {
  #if defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS) && BITS_PER_LONG == 64
@@ -41,7 +33,7 @@ index 50e39a8822b4..933a9f22a05f 100644
  	return ((p[0] ^ cpu_to_be64(0xff02000000000000UL)) | (p[1] ^ cpu_to_be64(1))) == 0UL;
  #else
  	return ((addr->s6_addr32[0] ^ htonl(0xff020000)) |
-@@ -326,7 +326,7 @@ static inline bool ipv6_addr_is_ll_all_nodes(const struct in6_addr *addr)
+@@ -306,7 +306,7 @@ static inline bool ipv6_addr_is_ll_all_nodes(const struct in6_addr *addr)
  static inline bool ipv6_addr_is_ll_all_routers(const struct in6_addr *addr)
  {
  #if defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS) && BITS_PER_LONG == 64
@@ -50,7 +42,7 @@ index 50e39a8822b4..933a9f22a05f 100644
  	return ((p[0] ^ cpu_to_be64(0xff02000000000000UL)) | (p[1] ^ cpu_to_be64(2))) == 0UL;
  #else
  	return ((addr->s6_addr32[0] ^ htonl(0xff020000)) |
-@@ -343,7 +343,7 @@ static inline bool ipv6_addr_is_isatap(const struct in6_addr *addr)
+@@ -323,7 +323,7 @@ static inline bool ipv6_addr_is_isatap(const struct in6_addr *addr)
  static inline bool ipv6_addr_is_solict_mult(const struct in6_addr *addr)
  {
  #if defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS) && BITS_PER_LONG == 64

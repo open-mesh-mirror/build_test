@@ -1,8 +1,6 @@
-From 2128ff918e9f16eccdd1bf897e019ce3d068ac60 Mon Sep 17 00:00:00 2001
 From: James Hogan <james.hogan@imgtec.com>
 Date: Wed, 4 Jun 2014 16:11:16 -0700
-Subject: [PATCH] compiler.h: avoid sparse errors in
- __compiletime_error_fallback()
+Subject: [PATCH] compiler.h: avoid sparse errors in __compiletime_error_fallback()
 
 Usually, BUG_ON and friends aren't even evaluated in sparse, but recently
 compiletime_assert_atomic_type() was added, and that now results in a
@@ -59,6 +57,3 @@ index ee7239e..64fdfe1 100644
  # define __compiletime_error_fallback(condition) do { } while (0)
  #endif
  
--- 
-2.1.4
-

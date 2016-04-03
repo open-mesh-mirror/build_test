@@ -1,18 +1,17 @@
-From 6dcacdae96f9836c7f1b564527d132ed93f6c11b Mon Sep 17 00:00:00 2001
 From: Simon Wunderlich <sw@simonwunderlich.de>
 Date: Wed, 19 Mar 2014 11:46:59 +0100
-Subject: [PATCH 2/2] sysfs.h: don't return a void-valued expression
+Subject: [PATCH] sysfs.h: don't return a void-valued expression
 
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- include/linux/sysfs.h |    2 +-
+ include/linux/sysfs.h | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/include/linux/sysfs.h b/include/linux/sysfs.h
-index 6695040..e4f933e 100644
+index 5ffaa34..f97d0db 100644
 --- a/include/linux/sysfs.h
 +++ b/include/linux/sysfs.h
-@@ -452,7 +452,7 @@ static inline int __must_check sysfs_create_file(struct kobject *kobj,
+@@ -437,7 +437,7 @@ static inline int __must_check sysfs_create_file(struct kobject *kobj,
  static inline void sysfs_remove_file(struct kobject *kobj,
  				     const struct attribute *attr)
  {
@@ -21,6 +20,3 @@ index 6695040..e4f933e 100644
  }
  
  static inline int sysfs_rename_link(struct kobject *kobj, struct kobject *target,
--- 
-1.7.10.4
-
