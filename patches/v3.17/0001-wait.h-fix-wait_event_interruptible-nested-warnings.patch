@@ -4,14 +4,28 @@ Subject: [PATCH] wait.h: fix wait_event_interruptible() nested warnings
 
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 ---
- include/linux/wait.h | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ include/linux/wait.h | 23 +++++++++++++++--------
+ 1 file changed, 15 insertions(+), 8 deletions(-)
 
 diff --git a/include/linux/wait.h b/include/linux/wait.h
-index 6fb1ba5..7b84ba0 100644
+index 6fb1ba5..f3a231c 100644
 --- a/include/linux/wait.h
 +++ b/include/linux/wait.h
-@@ -338,10 +338,10 @@ do {									\
+@@ -188,6 +188,13 @@ wait_queue_head_t *bit_waitqueue(void *, int);
+ 		__ret = 1;						\
+ 	__cond || !__ret;						\
+ })
++#define ___wait_cond_timeout2(condition)					\
++({									\
++	bool __cond = (condition);					\
++	if (__cond && !__ret2)						\
++		__ret2 = 1;						\
++	__cond || !__ret2;						\
++})
+ 
+ #define ___wait_is_interruptible(state)					\
+ 	(!__builtin_constant_p(state) ||				\
+@@ -338,16 +345,16 @@ do {									\
   */
  #define wait_event_interruptible(wq, condition)				\
  ({									\
@@ -25,3 +39,26 @@ index 6fb1ba5..7b84ba0 100644
  })
  
  #define __wait_event_interruptible_timeout(wq, condition, timeout)	\
+ 	___wait_event(wq, ___wait_cond_timeout(condition),		\
+ 		      TASK_INTERRUPTIBLE, 0, timeout,			\
+-		      __ret = schedule_timeout(__ret))
++		      schedule_timeout(__ret))
+ 
+ /**
+  * wait_event_interruptible_timeout - sleep until a condition gets true or a timeout elapses
+@@ -369,11 +376,11 @@ do {									\
+  */
+ #define wait_event_interruptible_timeout(wq, condition, timeout)	\
+ ({									\
+-	long __ret = timeout;						\
+-	if (!___wait_cond_timeout(condition))				\
+-		__ret = __wait_event_interruptible_timeout(wq,		\
++	long __ret2 = timeout;						\
++	if (!___wait_cond_timeout2(condition))				\
++		__ret2 = __wait_event_interruptible_timeout(wq,		\
+ 						condition, timeout);	\
+-	__ret;								\
++	__ret2;								\
+ })
+ 
+ #define __wait_event_hrtimeout(wq, condition, timeout, state)		\
