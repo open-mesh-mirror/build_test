@@ -399,6 +399,7 @@ testbranch()
 			test_copyright "${branch}"
 		fi
 		test_brackets "${branch}"
+		rm -rf tmp
 	)
 }
 
