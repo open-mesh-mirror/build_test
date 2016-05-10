@@ -33,6 +33,8 @@ prepare_source()
 	grep -v 'CONFIG_ENABLE_WARN_DEPRECATED is not set' .config > .config.tmp; mv .config.tmp .config
 	grep -v 'CONFIG_CRC16 is not set' .config > .config.tmp; mv .config.tmp .config
 	grep -v 'CONFIG_DEBUG_FS is not set' .config > .config.tmp; mv .config.tmp .config
+	grep -v 'CONFIG_INET is not set' .config > .config.tmp; mv .config.tmp .config
+	grep -v 'CONFIG_CFG80211 is not set' .config > .config.tmp; mv .config.tmp .config
 	echo 'CONFIG_MODULES=y' >> .config
 	if [ "${MAKE_AMD64}" != "0" ]; then
 		echo 'CONFIG_64BIT=y' >> .config
@@ -45,6 +47,8 @@ prepare_source()
 	echo 'CONFIG_ENABLE_WARN_DEPRECATED=y' >> .config
 	echo 'CONFIG_CRC16=y' >> .config
 	echo 'CONFIG_DEBUG_FS=y' >> .config
+	echo 'CONFIG_INET=y' >> .config
+	echo 'CONFIG_CFG80211=y' >> .config
 	make oldnoconfig
 	make prepare
 	make modules
