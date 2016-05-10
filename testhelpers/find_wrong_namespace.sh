@@ -13,11 +13,10 @@ build_path()
 }
 
 path="$(build_path)"
-mv "${path}"/batman-adv.o "${path}"/batman-adv.o.disabled
-defined="`nm -g --defined-only "${path}"/*.o|awk '{ print $3}'|sort|uniq`"
-mv "${path}"/batman-adv.o.disabled "${path}"/batman-adv.o
+obj=$(ls -1 "${path}"/*.o|grep -v -e 'batman-adv\.o' -e 'batman-adv\.mod\.o')
+defined="`nm -g --defined-only ${obj}|awk '{ print $3}'|sort|uniq`"
 ret=0
-blacklist="cleanup_module init_module __this_module"
+blacklist="cleanup_module init_module"
 
 for i in $defined; do
 	found=0
