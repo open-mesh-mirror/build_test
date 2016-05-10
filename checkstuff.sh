@@ -6,6 +6,7 @@ TO=${TO:="$(whoami)"}
 FROM=${FROM:="$(whoami)"}
 REMOTE=${REMOTE:="git+ssh://git@git.open-mesh.org/batman-adv.git"}
 JOBS=${JOBS:=$(nproc || echo 1)}
+TESTBRANCHES=${TESTBRANCHES:="master next"}
 
 LINUX_VERSIONS=$(echo linux-3.{2..19} linux-4.{0..5})
 LINUX_DEFAULT_VERSION=linux-4.5
@@ -410,6 +411,7 @@ git --git-dir=linux-next/.git/ --work-tree=linux-next remote update --prune
 git --git-dir=linux-next/.git/ --work-tree=linux-next reset --hard origin/master
 
 "${MAIL_AGGREGATOR}" "${DB}" create
-testbranch "master"
-testbranch "next"
+for branch in $TESTBRANCHES; do
+	testbranch $branch
+done
 "${MAIL_AGGREGATOR}" "${DB}" send "${FROM}" "${TO}" "Build check errors found: `date '+%Y-%m-%d'`"
