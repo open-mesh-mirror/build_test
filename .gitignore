@@ -5,5 +5,5 @@
 /linux-next
 /smatch
 /sparse
-/tmp
+/tmp.*
 /mail
