@@ -7,6 +7,8 @@ FROM=${FROM:="$(whoami)"}
 REMOTE=${REMOTE:="git+ssh://git@git.open-mesh.org/batman-adv.git"}
 JOBS=${JOBS:=$(nproc || echo 1)}
 TESTBRANCHES=${TESTBRANCHES:="master next"}
+SUBMIT_BRANCH=${SUBMIT_BRANCH:="next"}
+INCOMING_BRANCH=${INCOMING_BRANCH:="next"}
 
 LINUX_VERSIONS=$(echo linux-3.{2..19} linux-4.{0..5})
 LINUX_DEFAULT_VERSION=linux-4.5
@@ -359,7 +361,7 @@ testbranch()
 	(
 		test_headers "$branch"
 
-		if [ "$branch" == "next" ]; then
+		if [ "$branch" == "${SUBMIT_BRANCH}" ]; then
 			test_compare_net_next "${branch}"
 		fi
 
@@ -395,7 +397,7 @@ testbranch()
 
 
 		test_checkpatch "${branch}"
-		if [ "$branch" == "master" ]; then
+		if [ "$branch" == "${INCOMING_BRANCH}" ]; then
 			test_kerneldoc "${branch}"
 			test_copyright "${branch}"
 		fi
