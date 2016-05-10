@@ -2,8 +2,8 @@
 
 cd "$(dirname "$0")"
 
-TO=${TO:="linux-merge@lists.open-mesh.org"}
-FROM=${FROM:="postmaster@open-mesh.org"}
+TO=${TO:="$(whoami)"}
+FROM=${FROM:="$(whoami)"}
 REMOTE=${REMOTE:="git+ssh://git@git.open-mesh.org/batman-adv.git"}
 JOBS=${JOBS:=$(nproc || echo 1)}
 
