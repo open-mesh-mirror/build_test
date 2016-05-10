@@ -12,6 +12,7 @@ INCOMING_BRANCH=${INCOMING_BRANCH:="next"}
 
 LINUX_VERSIONS=$(echo linux-3.{2..19} linux-4.{0..5})
 LINUX_DEFAULT_VERSION=linux-4.5
+TMPNAME="$(mktemp -d -p. -u)"
 
 CGCC="$(pwd)/sparse/cgcc"
 SPARSE="$(pwd)/sparse/sparse"
@@ -302,15 +303,15 @@ test_compare_net_next()
 {
 	branch="$1"
 
-	rm -rf tmp
-	mkdir tmp
+	rm -rf "${TMPNAME}"
+	mkdir "${TMPNAME}"
 
-	git archive --remote="${REMOTE}" --format=tar --prefix="tmp/batadv/" "$branch" -- net/batman-adv/ Documentation/networking/batman-adv.txt Documentation/ABI/testing/sysfs-class-net-batman-adv Documentation/ABI/testing/sysfs-class-net-mesh | tar x
-	git archive --remote="linux-next/.git/" --format=tar --prefix="tmp/netnext/" net-next/master -- net/batman-adv/ Documentation/networking/batman-adv.txt Documentation/ABI/testing/sysfs-class-net-batman-adv Documentation/ABI/testing/sysfs-class-net-mesh | tar x
+	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- net/batman-adv/ Documentation/networking/batman-adv.txt Documentation/ABI/testing/sysfs-class-net-batman-adv Documentation/ABI/testing/sysfs-class-net-mesh | tar x
+	git archive --remote="linux-next/.git/" --format=tar --prefix="${TMPNAME}/netnext/" net-next/master -- net/batman-adv/ Documentation/networking/batman-adv.txt Documentation/ABI/testing/sysfs-class-net-batman-adv Documentation/ABI/testing/sysfs-class-net-mesh | tar x
 
-	diff -ruN tmp/batadv tmp/netnext|diffstat -w 71 -q -p2 > tmp/log
-	if [ -s "tmp/log" ]; then
-		"${MAIL_AGGREGATOR}" "${DB}" add "difference between net-next and batadv ${branch}" tmp/log tmp/log
+	diff -ruN "${TMPNAME}"/batadv "${TMPNAME}"/netnext|diffstat -w 71 -q -p2 > "${TMPNAME}"/log
+	if [ -s "${TMPNAME}/log" ]; then
+		"${MAIL_AGGREGATOR}" "${DB}" add "difference between net-next and batadv ${branch}" "${TMPNAME}"/log "${TMPNAME}"/log
 	fi
 }
 
@@ -318,10 +319,10 @@ test_headers()
 {
 	branch="$1"
 
-	rm -rf tmp
-	git clone -b "$branch" "${REMOTE}" tmp
+	rm -rf "${TMPNAME}"
+	git clone -b "$branch" "${REMOTE}" "${TMPNAME}"
 	(
-		cd tmp || exit
+		cd "${TMPNAME}" || exit
 		spath="$(source_path)"
 
 		MAKE_CONFIG="CONFIG_BATMAN_ADV_DEBUG=y CONFIG_BATMAN_ADV_BLA=y CONFIG_BATMAN_ADV_DAT=y CONFIG_BATMAN_ADV_MCAST=y CONFIG_BATMAN_ADV_NC=y CONFIG_BATMAN_ADV_BATMAN_V=y KBUILD_SRC=${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}"
@@ -349,10 +350,10 @@ test_headers()
 		git diff > log
 
 	)
-	if [ -s "tmp/log" ]; then
-		"${MAIL_AGGREGATOR}" "${DB}" add "headers ${branch}" tmp/log tmp/log
+	if [ -s "${TMPNAME}/log" ]; then
+		"${MAIL_AGGREGATOR}" "${DB}" add "headers ${branch}" "${TMPNAME}"/log "${TMPNAME}"/log
 	fi
-	rm -rf tmp
+	rm -rf "${TMPNAME}"
 }
 
 testbranch()
@@ -365,9 +366,9 @@ testbranch()
 			test_compare_net_next "${branch}"
 		fi
 
-		rm -rf tmp
-		git archive --remote="${REMOTE}" --format=tar --prefix="tmp/" "$branch" | tar x
-		cd tmp
+		rm -rf "${TMPNAME}"
+		git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/" "$branch" | tar x
+		cd "${TMPNAME}"
 
 		test_cppcheck "${branch}"
 		test_comments "${branch}"
@@ -402,7 +403,7 @@ testbranch()
 			test_copyright "${branch}"
 		fi
 		test_brackets "${branch}"
-		rm -rf tmp
+		rm -rf "${TMPNAME}"
 	)
 }
 
