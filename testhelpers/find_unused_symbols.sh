@@ -13,8 +13,10 @@ build_path()
 }
 
 path="$(build_path)"
+mv "${path}"/batman-adv.o "${path}"/batman-adv.o.disabled
 defined="`nm -g --defined-only "${path}"/*.o|awk '{ print $3}'|sort|uniq`"
 used="`nm -g --undefined-only "${path}"/*.o|awk '{ print $2}'|sort|uniq`"
+mv "${path}"/batman-adv.o.disabled "${path}"/batman-adv.o
 ret=0
 blacklist="cleanup_module batadv_hash_set_lock_class batadv_send_skb_prepare_unicast_4addr batadv_unicast_4addr_prepare_skb batadv_skb_crc32 batadv_send_skb_packet batadv_parse_throughput"
 

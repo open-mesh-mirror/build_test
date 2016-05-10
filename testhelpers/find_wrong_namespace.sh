@@ -13,7 +13,9 @@ build_path()
 }
 
 path="$(build_path)"
+mv "${path}"/batman-adv.o "${path}"/batman-adv.o.disabled
 defined="`nm -g --defined-only "${path}"/*.o|awk '{ print $3}'|sort|uniq`"
+mv "${path}"/batman-adv.o.disabled "${path}"/batman-adv.o
 ret=0
 blacklist="cleanup_module init_module __this_module"
 
