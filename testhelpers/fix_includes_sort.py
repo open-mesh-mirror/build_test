@@ -148,7 +148,7 @@ _LINE_TYPES = [_COMMENT_LINE_RE, _BLANK_LINE_RE,
 # #includes to happen before them to function properly.
 # (Note that the barrier has no effect on where new #includes are
 # added; it just affects the reordering of existing #includes.)
-_BARRIER_INCLUDES = re.compile(r'^\s*#\s*include\s+(<linux/)')
+_BARRIER_INCLUDES = re.compile(r'^\s*#\s*include\s+("main\.h")')
 
 # A list of all known extensions for C++ source files, used to
 # guess if a filename is a source file or a header.
