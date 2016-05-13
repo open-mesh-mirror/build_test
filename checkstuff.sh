@@ -26,6 +26,7 @@ UNUSED_SYMBOLS="$(pwd)/testhelpers/find_unused_symbols.sh"
 CHECK_COPYRIGHT="$(pwd)/testhelpers/check_copyright.sh"
 WRONG_NAMESPACE="$(pwd)/testhelpers/find_wrong_namespace.sh"
 IWYU_KERNEL_MAPPINGS="$(pwd)/testhelpers/kernel_mappings.iwyu"
+FIX_INCLUDE_SORT="$(pwd)/testhelpers/fix_includes_sort.py"
 
 MAIL_AGGREGATOR="$(pwd)/testhelpers/mail_aggregator.py"
 DB="$(pwd)/error.db"
@@ -339,7 +340,7 @@ test_headers()
 		bpath="$(build_path)"
 
 		git add -f "${bpath}" "${spath}"
-		fix_include --nosafe_headers --noblank_lines --separate_project_includes="$(pwd)/${bpath}" < test
+		fix_include --nosafe_headers --separate_project_includes="$(pwd)/${bpath}" < test
 
 		# remove extra noise
 		git checkout -f -- compat-sources
@@ -347,6 +348,11 @@ test_headers()
 		sed -i '/struct batadv_hard_iface;/d' "${bpath}"/main.h
 		sed -i '/struct batadv_orig_node;/d' "${bpath}"/main.h
 		sed -i '/struct batadv_priv;/d' "${bpath}"/main.h
+
+		# TODO use sort test on each branch
+		if [ "$branch" == "${INCOMING_BRANCH}" ]; then
+			"${FIX_INCLUDE_SORT}" --sort_only "${bpath}"/*.c "${bpath}"/*.h
+		fi
 		git diff > log
 
 	)
