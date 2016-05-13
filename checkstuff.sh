@@ -300,6 +300,19 @@ test_copyright()
 	fi
 }
 
+test_main_include()
+{
+	branch="$1"
+
+	spath="$(source_path)"
+	for i in $(ls -1 "${spath}"|grep -v -e '^main.h$' -e '^packet.h$' -e '^types.h$'|grep -e '\.c$' -e '\.h$'); do
+		grep -L '#[[:space:]]*include[[:space:]]*"main.h"' net/batman-adv/"$i"
+	done|sed 's/^/missing include for "main.h" in /' > log
+	if [ -s "log" ]; then
+		"${MAIL_AGGREGATOR}" "${DB}" add "main.h include missing ${branch}" log log
+	fi
+}
+
 test_compare_net_next()
 {
 	branch="$1"
@@ -407,6 +420,7 @@ testbranch()
 		if [ "$branch" == "${INCOMING_BRANCH}" ]; then
 			test_kerneldoc "${branch}"
 			test_copyright "${branch}"
+			test_main_include "${branch}"
 		fi
 		test_brackets "${branch}"
 		rm -rf "${TMPNAME}"
