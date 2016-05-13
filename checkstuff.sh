@@ -8,7 +8,7 @@ REMOTE=${REMOTE:="git+ssh://git@git.open-mesh.org/batman-adv.git"}
 JOBS=${JOBS:=$(nproc || echo 1)}
 TESTBRANCHES=${TESTBRANCHES:="master next"}
 SUBMIT_BRANCH=${SUBMIT_BRANCH:="next"}
-INCOMING_BRANCH=${INCOMING_BRANCH:="next"}
+INCOMING_BRANCH=${INCOMING_BRANCH:="master"}
 
 LINUX_VERSIONS=$(echo linux-3.{2..19} linux-4.{0..5})
 LINUX_DEFAULT_VERSION=linux-4.5
