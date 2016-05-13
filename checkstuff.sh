@@ -333,6 +333,10 @@ test_compare_net_next()
 		rm -f "${TMPNAME}/netnext/MAINTAINERS"
 	fi
 
+	# compare against batman_adv.h
+	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- include/uapi/linux/batman_adv.h | tar x
+	git archive --remote="linux-next/.git/" --format=tar --prefix="${TMPNAME}/netnext/" net-next/master -- include/uapi/linux/batman_adv.h | tar x
+
 	diff -ruN "${TMPNAME}"/batadv "${TMPNAME}"/netnext|diffstat -w 71 -q -p2 > "${TMPNAME}"/log
 	if [ -s "${TMPNAME}/log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "difference between net-next and batadv ${branch}" "${TMPNAME}"/log "${TMPNAME}"/log
