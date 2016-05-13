@@ -323,6 +323,16 @@ test_compare_net_next()
 	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- net/batman-adv/ Documentation/networking/batman-adv.txt Documentation/ABI/testing/sysfs-class-net-batman-adv Documentation/ABI/testing/sysfs-class-net-mesh | tar x
 	git archive --remote="linux-next/.git/" --format=tar --prefix="${TMPNAME}/netnext/" net-next/master -- net/batman-adv/ Documentation/networking/batman-adv.txt Documentation/ABI/testing/sysfs-class-net-batman-adv Documentation/ABI/testing/sysfs-class-net-mesh | tar x
 
+	# compare against stripped down MAINTAINERS when available
+	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- MAINTAINERS | tar x
+	git archive --remote="linux-next/.git/" --format=tar --prefix="${TMPNAME}/netnext/" net-next/master -- MAINTAINERS | tar x
+	if [ -r "${TMPNAME}/batadv/MAINTAINERS" ]; then
+		awk '/^BATMAN ADVANCED$/{f=1};/^$/{f=0};f' "${TMPNAME}/netnext/MAINTAINERS" > "${TMPNAME}/netnext/MAINTAINERS.2"
+		mv "${TMPNAME}/netnext/MAINTAINERS.2" "${TMPNAME}/netnext/MAINTAINERS"
+	else
+		rm -f "${TMPNAME}/netnext/MAINTAINERS"
+	fi
+
 	diff -ruN "${TMPNAME}"/batadv "${TMPNAME}"/netnext|diffstat -w 71 -q -p2 > "${TMPNAME}"/log
 	if [ -s "${TMPNAME}/log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "difference between net-next and batadv ${branch}" "${TMPNAME}"/log "${TMPNAME}"/log
