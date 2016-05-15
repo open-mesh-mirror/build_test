@@ -93,11 +93,13 @@ test_cppcheck()
 				| grep -v "distributed-arp-table.c.* The function 'batadv_dat_cache_seq_print_text' is never used" \
 				| grep -v "distributed-arp-table.c.* The function 'batadv_dat_status_update' is never used" \
 				| grep -v "bridge_loop_avoidance.c.* The function 'batadv_bla_status_update' is never used" \
+				| grep -v "log.c.* The function 'batadv_debug_log' is never used" \
 				| grep -v "network-coding.c.* The function 'batadv_nc_nodes_seq_print_text' is never used" \
 				| grep -v "network-coding.c.* The function 'batadv_nc_status_update' is never used" \
 				| grep -v "multicast.c.* The function 'batadv_mcast_flags_seq_print_text' is never used" \
 				| grep -v "gateway_client.c.* Either the condition 'next_gw' is redundant or there is possible null pointer dereference: next_gw" \
 				| grep -v "main.c.* Either the condition '!tvlv_value' is redundant or there is possible null pointer dereference: tvlv_value" \
+				| grep -v "tvlv.c.* Either the condition '!tvlv_value' is redundant or there is possible null pointer dereference: tvlv_value" \
 				| grep -v "Cppcheck cannot find all the include files" \
 				|tee log) &> logfull
 	if [ -s "log" ]; then
