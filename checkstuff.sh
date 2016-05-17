@@ -441,8 +441,8 @@ testbranch()
 			test_main_include "${branch}"
 		fi
 		test_brackets "${branch}"
-		rm -rf "${TMPNAME}"
 	)
+	rm -rf "${TMPNAME}"
 }
 
 check_external
