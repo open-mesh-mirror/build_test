@@ -240,8 +240,10 @@ test_sparse()
 	linux_name="$2"
 	config="$3"
 
+	# hard-interface.c:.* delete is required for a warning caused by the compat.h hack for get_link_net
 	(EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SPARSE} -Wsparse-all -Wno-ptr-subtraction-blows $extra_flags" $config CC="${CGCC}" KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" 3>&2 2>&1 1>&3 \
 			|grep -v "No such file: c" \
+			|sed -e '/hard-interface.c:.* warning: incorrect type in return expression (different base types)/,+2d'|sed '/hard-interface.c: In function .batadv_getlink_net./,+3d' \
 			|tee log) &> logfull
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "sparse $branch ${linux_name} $(simplify_config_string "${config}")" log logfull
