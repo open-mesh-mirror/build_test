@@ -67,6 +67,7 @@ check_external()
 		echo "Required tool checkpatch and kernel-doc missing:"
 		echo "    git clone git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git linux-next"
 		echo "    git --git-dir=linux-next/.git/ remote add net-next git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git"
+		echo "    git --git-dir=linux-next/.git/ remote add net git://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git"
 		exit 1
 	fi
 
@@ -325,12 +326,25 @@ test_compare_net_next()
 	rm -rf "${TMPNAME}"
 	mkdir "${TMPNAME}"
 
+	netnext_rev="$(git -C "linux-next" rev-parse net-next/master)"
+	net_rev="$(git -C "linux-next" rev-parse net/master)"
+	netmerge_base="$(git -C "linux-next" merge-base "${net_rev}" "${netnext_rev}")"
+
+	# use net instead of net-next in case it net-next is currently frozen and everything is added to net
+	if [ "${netmerge_base}" = "${netnext_rev}" ]; then
+		upstream_rev="net/master"
+		upstream_name="net"
+	else
+		upstream_rev="net-next/master"
+		upstream_name="net-next"
+	fi
+
 	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- net/batman-adv/ Documentation/networking/batman-adv.txt Documentation/ABI/testing/sysfs-class-net-batman-adv Documentation/ABI/testing/sysfs-class-net-mesh | tar x
-	git archive --remote="linux-next/.git/" --format=tar --prefix="${TMPNAME}/netnext/" net-next/master -- net/batman-adv/ Documentation/networking/batman-adv.txt Documentation/ABI/testing/sysfs-class-net-batman-adv Documentation/ABI/testing/sysfs-class-net-mesh | tar x
+	git archive --remote="linux-next/.git/" --format=tar --prefix="${TMPNAME}/netnext/" "${upstream_rev}" -- net/batman-adv/ Documentation/networking/batman-adv.txt Documentation/ABI/testing/sysfs-class-net-batman-adv Documentation/ABI/testing/sysfs-class-net-mesh | tar x
 
 	# compare against stripped down MAINTAINERS when available
 	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- MAINTAINERS | tar x
-	git archive --remote="linux-next/.git/" --format=tar --prefix="${TMPNAME}/netnext/" net-next/master -- MAINTAINERS | tar x
+	git archive --remote="linux-next/.git/" --format=tar --prefix="${TMPNAME}/netnext/" "${upstream_rev}" -- MAINTAINERS | tar x
 	if [ -r "${TMPNAME}/batadv/MAINTAINERS" ]; then
 		awk '/^BATMAN ADVANCED$/{f=1};/^$/{f=0};f' "${TMPNAME}/netnext/MAINTAINERS" > "${TMPNAME}/netnext/MAINTAINERS.2"
 		mv "${TMPNAME}/netnext/MAINTAINERS.2" "${TMPNAME}/netnext/MAINTAINERS"
@@ -340,11 +354,11 @@ test_compare_net_next()
 
 	# compare against batman_adv.h
 	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- include/uapi/linux/batman_adv.h | tar x
-	git archive --remote="linux-next/.git/" --format=tar --prefix="${TMPNAME}/netnext/" net-next/master -- include/uapi/linux/batman_adv.h | tar x
+	git archive --remote="linux-next/.git/" --format=tar --prefix="${TMPNAME}/netnext/" "${upstream_rev}" -- include/uapi/linux/batman_adv.h | tar x
 
 	diff -ruN "${TMPNAME}"/batadv "${TMPNAME}"/netnext|diffstat -w 71 -q -p2 > "${TMPNAME}"/log
 	if [ -s "${TMPNAME}/log" ]; then
-		"${MAIL_AGGREGATOR}" "${DB}" add "difference between net-next and batadv ${branch}" "${TMPNAME}"/log "${TMPNAME}"/log
+		"${MAIL_AGGREGATOR}" "${DB}" add "difference between ${upstream_name} and batadv ${branch}" "${TMPNAME}"/log "${TMPNAME}"/log
 	fi
 }
 
