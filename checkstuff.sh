@@ -396,10 +396,7 @@ test_headers()
 		sed -i '/struct batadv_orig_node;/d' "${bpath}"/main.h
 		sed -i '/struct batadv_priv;/d' "${bpath}"/main.h
 
-		# TODO use sort test on each branch
-		if [ "$branch" == "${INCOMING_BRANCH}" ]; then
-			"${FIX_INCLUDE_SORT}" --sort_only "${bpath}"/*.c "${bpath}"/*.h
-		fi
+		"${FIX_INCLUDE_SORT}" --sort_only "${bpath}"/*.c "${bpath}"/*.h
 		git diff > log
 
 	)
