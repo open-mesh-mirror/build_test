@@ -21,8 +21,9 @@ CPPCHECK="$(pwd)/cppcheck/cppcheck"
 SMATCH="$(pwd)/smatch/smatch"
 SMATCH_CGCC="$(pwd)/smatch/cgcc"
 BRACKET="$(pwd)/testhelpers/bracket_align.py"
-CHECKPATCH="$(pwd)/linux-next/scripts/checkpatch.pl"
-KERNELDOC="$(pwd)/linux-next/scripts/kernel-doc"
+LINUXNEXT="$(pwd)/linux-next/"
+CHECKPATCH="${LINUXNEXT}/scripts/checkpatch.pl"
+KERNELDOC="${LINUXNEXT}/scripts/kernel-doc"
 UNUSED_SYMBOLS="$(pwd)/testhelpers/find_unused_symbols.sh"
 CHECK_COPYRIGHT="$(pwd)/testhelpers/check_copyright.sh"
 WRONG_NAMESPACE="$(pwd)/testhelpers/find_wrong_namespace.sh"
@@ -115,6 +116,24 @@ source_path()
 		echo "./net/batman-adv"
 	else
 		echo "."
+	fi
+}
+
+test_coccicheck()
+{
+	branch="$1"
+	path="$(source_path)"
+
+	rm -f log
+	make -s -C "${LINUXNEXT}" coccicheck MODE=report KBUILD_EXTMOD="$(pwd)/${path}/" | \
+		grep -v -e 'Please check for false positives in the output before submitting a patch.' \
+			-e 'When using "patch" mode, carefully review the patch before submitting it.' \
+			-e 'ERROR: next_gw is NULL but dereferenced.' \
+			-e 'tp_meter.c.*ERROR: reference preceded by free on line' \
+			-e '^$' \
+		> log
+	if [ -s "log" ]; then
+		"${MAIL_AGGREGATOR}" "${DB}" add "coccicheck $branch" log log
 	fi
 }
 
@@ -419,6 +438,10 @@ testbranch()
 		cd "${TMPNAME}"
 
 		test_cppcheck "${branch}"
+		# TODO enable also for all other branches
+		if [ "$branch" == "${INCOMING_BRANCH}" ]; then
+			test_coccicheck "${branch}"
+		fi
 		test_comments "${branch}"
 
 		for c in `"${GENERATE_CONFIG}" BLA DAT DEBUG NC MCAST BATMAN_V`; do
