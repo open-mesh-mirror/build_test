@@ -13,6 +13,7 @@ INCOMING_BRANCH=${INCOMING_BRANCH:="master"}
 BUILD_RUNS=${BUILD_RUNS:=1}
 CONFIGS_PER_RUN=${CONFIGS_PER_RUN:=4}
 LINUX_VERSIONS_PER_RUN=${LINUX_VERSIONS_PER_RUN:=0}
+MAX_BUILDTIME_PER_BRANCH=${MAX_BUILDTIME_PER_BRANCH:=725328000}
 
 DEFAULT_LINUX_VERSIONS=$(echo linux-3.{2..19} linux-4.{0..6})
 LINUX_VERSIONS=${LINUX_VERSIONS:=${DEFAULT_LINUX_VERSIONS}}
@@ -483,8 +484,15 @@ testbranch()
 		fi
 		test_comments "${branch}"
 
+		start_time="$(date +%s)"
+		end_time="$((${start_time} + ${MAX_BUILDTIME_PER_BRANCH}))"
 		for i in $(seq 1 "${BUILD_RUNS}"); do
 			test_builds "${branch}"
+
+			now="$(date +%s)"
+			if [ "${now}" -gt "${end_time}" ]; then
+				break
+			fi
 		done
 
 		test_checkpatch "${branch}"
