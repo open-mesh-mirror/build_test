@@ -4,9 +4,12 @@ import sys
 import itertools
 import random
 
-max_len = 4
+try:
+	max_len = int(sys.argv[1])
+except:
+	max_len = 4
 
-configs = sys.argv[1:]
+configs = sys.argv[2:]
 combinations = itertools.product("yn", repeat = len(configs))
 pool = tuple(combinations)
 random_options = []

@@ -10,6 +10,8 @@ TESTBRANCHES=${TESTBRANCHES:="master next"}
 SUBMIT_BRANCH=${SUBMIT_BRANCH:="next"}
 INCOMING_BRANCH=${INCOMING_BRANCH:="master"}
 
+CONFIGS_PER_RUN=${CONFIGS_PER_RUN:=4}
+
 DEFAULT_LINUX_VERSIONS=$(echo linux-3.{2..19} linux-4.{0..6})
 LINUX_VERSIONS=${LINUX_VERSIONS:=${DEFAULT_LINUX_VERSIONS}}
 LINUX_DEFAULT_VERSION=${LINUX_DEFAULT_VERSION:="linux-4.6"}
@@ -444,7 +446,7 @@ testbranch()
 		fi
 		test_comments "${branch}"
 
-		for c in `"${GENERATE_CONFIG}" BLA DAT DEBUGFS DEBUG NC MCAST BATMAN_V`; do
+		for c in `"${GENERATE_CONFIG}" "${CONFIGS_PER_RUN}" BLA DAT DEBUGFS DEBUG NC MCAST BATMAN_V`; do
 			config="`echo $c|sed 's/\+/ /g'`"
 
 			for linux_name in ${LINUX_VERSIONS}; do
