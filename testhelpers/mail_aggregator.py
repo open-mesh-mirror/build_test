@@ -76,6 +76,10 @@ def send():
 	logs = cur.fetchall()
 	cur.execute('SELECT COUNT(*) FROM buildtests')
 	buildcount = cur.fetchall()[0][0]
+	cur.execute('SELECT COUNT(DISTINCT version) FROM buildtests')
+	versioncount = cur.fetchall()[0][0]
+	cur.execute('SELECT COUNT(DISTINCT config) FROM buildtests')
+	configcount = cur.fetchall()[0][0]
 	cur.close()
 
 	if len(names) == 0:
@@ -114,6 +118,8 @@ def send():
 	mail.append("\n")
 	mail.append("Failed tests:          %8u\n" % (len(name_list)))
 	mail.append("Started build tests:   %8u\n" % (buildcount))
+	mail.append("Tested Linux versions: %8u\n" % (versioncount))
+	mail.append("Tested configs:        %8u\n" % (configcount))
 
 	msg = MIMEText("".join(mail))
 	msg['Subject'] = mail_subject
