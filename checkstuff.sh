@@ -11,6 +11,7 @@ SUBMIT_BRANCH=${SUBMIT_BRANCH:="next"}
 INCOMING_BRANCH=${INCOMING_BRANCH:="master"}
 
 CONFIGS_PER_RUN=${CONFIGS_PER_RUN:=4}
+LINUX_VERSIONS_PER_RUN=${LINUX_VERSIONS_PER_RUN:=0}
 
 DEFAULT_LINUX_VERSIONS=$(echo linux-3.{2..19} linux-4.{0..6})
 LINUX_VERSIONS=${LINUX_VERSIONS:=${DEFAULT_LINUX_VERSIONS}}
@@ -36,6 +37,7 @@ MAIL_AGGREGATOR="$(pwd)/testhelpers/mail_aggregator.py"
 DB="$(pwd)/error.db"
 LINUX_HEADERS="$(pwd)/linux-build/"
 GENERATE_CONFIG="$(pwd)/testhelpers/generate_config_params.py"
+GENERATE_LINUX_VERSIONS="$(pwd)/testhelpers/generate_linux_versions.py"
 
 MAKE="/usr/bin/make"
 extra_flags='-Werror -D__CHECK_ENDIAN__ -DDEBUG'
@@ -446,10 +448,11 @@ testbranch()
 		fi
 		test_comments "${branch}"
 
+		linux_test_versions="$("${GENERATE_LINUX_VERSIONS}" "${LINUX_VERSIONS_PER_RUN}" ${LINUX_VERSIONS})"
 		for c in `"${GENERATE_CONFIG}" "${CONFIGS_PER_RUN}" BLA DAT DEBUGFS DEBUG NC MCAST BATMAN_V`; do
 			config="`echo $c|sed 's/\+/ /g'`"
 
-			for linux_name in ${LINUX_VERSIONS}; do
+			for linux_name in ${linux_test_versions}; do
 				rm -f log logfull
 
 				# B.A.T.M.A.N. V only supports Linux >=3.16
