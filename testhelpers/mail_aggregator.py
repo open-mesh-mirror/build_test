@@ -74,8 +74,10 @@ def send():
 	names = cur.fetchall()
 	cur.execute('SELECT name,log FROM logs GROUP BY log ORDER BY name')
 	logs = cur.fetchall()
+	cur.execute('SELECT COUNT(*) FROM buildtests')
+	buildcount = cur.fetchall()[0][0]
 	cur.close()
-	
+
 	if len(names) == 0:
 		return
 
@@ -106,6 +108,12 @@ def send():
 	mail.append("================================\n")
 	mail.append("\n")
 	mail.append("%s\n" % ("\n\n\n".join(log_list)))
+	mail.append("\n")
+	mail.append("Statistics\n")
+	mail.append("==========\n")
+	mail.append("\n")
+	mail.append("Failed tests:          %8u\n" % (len(name_list)))
+	mail.append("Started build tests:   %8u\n" % (buildcount))
 
 	msg = MIMEText("".join(mail))
 	msg['Subject'] = mail_subject
