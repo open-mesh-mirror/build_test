@@ -438,6 +438,8 @@ test_builds()
 		config="`echo $c|sed 's/\+/ /g'`"
 
 		for linux_name in ${linux_test_versions}; do
+			"${MAIL_AGGREGATOR}" "${DB}" add_buildtests "${branch}" "${linux_name}" "${c}" || continue
+
 			rm -f log logfull
 
 			# B.A.T.M.A.N. V only supports Linux >=3.16

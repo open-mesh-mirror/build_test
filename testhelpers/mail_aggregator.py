@@ -14,6 +14,7 @@ def usage(prog):
 	print >> sys.stderr, '\tcreate'
 	print >> sys.stderr, '\tadd NAME LOGFILE LONGLOGFILE'
 	print >> sys.stderr, '\tsend FROM TO TOPIC'
+	print >> sys.stderr, '\tadd_buildtests BRANCH VERSION CONFIG'
 	sys.exit(1)
 
 
@@ -25,6 +26,8 @@ def create():
 	con = sqlite3.connect(dbfile)
 	cur = con.cursor()
 	cur.execute('CREATE TABLE logs (name, log, longlog)')
+	cur.execute('CREATE TABLE buildtests (branch, version, config)')
+	cur.execute('CREATE UNIQUE INDEX buildtests_unique ON buildtests(branch, version, config)')
 	con.commit()
 	cur.close()
 
@@ -42,6 +45,22 @@ def add():
 	cur.execute('INSERT INTO logs VALUES (?, ?, ?)', (name, log, longlog))
 	con.commit()
 	cur.close()
+
+def add_buildtests():
+	dbfile = sys.argv[1];
+	branch = sys.argv[3]
+	version = sys.argv[4]
+	config = sys.argv[5]
+
+	try:
+		con = sqlite3.connect(dbfile)
+		cur = con.cursor()
+		cur.execute('INSERT INTO buildtests VALUES (?, ?, ?)', (branch, version, config))
+		a = con.commit()
+		cur.close()
+		sys.exit(0)
+	except sqlite3.IntegrityError:
+		sys.exit(1)
 
 def send():
 	dbfile = sys.argv[1];
@@ -114,6 +133,8 @@ def main():
 		create()
 	elif sys.argv[2] == 'add' and len(sys.argv) == 6:
 		add()
+	elif sys.argv[2] == 'add_buildtests' and len(sys.argv) == 6:
+		add_buildtests()
 	elif sys.argv[2] == 'send' and len(sys.argv) == 6:
 		send()
 	else:
