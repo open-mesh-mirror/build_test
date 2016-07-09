@@ -10,6 +10,7 @@ TESTBRANCHES=${TESTBRANCHES:="master next"}
 SUBMIT_BRANCH=${SUBMIT_BRANCH:="next"}
 INCOMING_BRANCH=${INCOMING_BRANCH:="master"}
 
+BUILD_RUNS=${BUILD_RUNS:=1}
 CONFIGS_PER_RUN=${CONFIGS_PER_RUN:=4}
 LINUX_VERSIONS_PER_RUN=${LINUX_VERSIONS_PER_RUN:=0}
 
@@ -427,6 +428,40 @@ test_headers()
 	rm -rf "${TMPNAME}"
 }
 
+test_builds()
+{
+	branch="$1"
+
+	linux_test_versions="$("${GENERATE_LINUX_VERSIONS}" "${LINUX_VERSIONS_PER_RUN}" ${LINUX_VERSIONS})"
+	for c in `"${GENERATE_CONFIG}" "${CONFIGS_PER_RUN}" BLA DAT DEBUGFS DEBUG NC MCAST BATMAN_V`; do
+		config="`echo $c|sed 's/\+/ /g'`"
+
+		for linux_name in ${linux_test_versions}; do
+			rm -f log logfull
+
+			# B.A.T.M.A.N. V only supports Linux >=3.16
+			if [[ "${config}" == *"CONFIG_BATMAN_ADV_BATMAN_V=y"* ]]; then
+				if dpkg --compare-versions "${linux_name#linux-}" lt "3.16"; then
+					continue
+				fi
+			fi
+
+			# force DEBUGFS when DEBUG
+			if [[ "${config}" == *"CONFIG_BATMAN_ADV_DEBUG=y"* ]]; then
+				config="$(echo ${config}|sed 's/CONFIG_BATMAN_ADV_DEBUGFS=n/CONFIG_BATMAN_ADV_DEBUGFS=y/')"
+			fi
+
+			test_sparse "${branch}" "${linux_name}" "${config}"
+			test_unused_symbols "${branch}" "${linux_name}" "${config}"
+			test_wrong_namespace "${branch}" "${linux_name}" "${config}"
+			"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" -j"${JOBS}" clean
+
+			test_smatch "${branch}" "${linux_name}" "${config}"
+			"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" -j"${JOBS}" clean
+		done
+	done
+}
+
 testbranch()
 {
 	branch="$1"
@@ -448,35 +483,9 @@ testbranch()
 		fi
 		test_comments "${branch}"
 
-		linux_test_versions="$("${GENERATE_LINUX_VERSIONS}" "${LINUX_VERSIONS_PER_RUN}" ${LINUX_VERSIONS})"
-		for c in `"${GENERATE_CONFIG}" "${CONFIGS_PER_RUN}" BLA DAT DEBUGFS DEBUG NC MCAST BATMAN_V`; do
-			config="`echo $c|sed 's/\+/ /g'`"
-
-			for linux_name in ${linux_test_versions}; do
-				rm -f log logfull
-
-				# B.A.T.M.A.N. V only supports Linux >=3.16
-				if [[ "${config}" == *"CONFIG_BATMAN_ADV_BATMAN_V=y"* ]]; then
-					if dpkg --compare-versions "${linux_name#linux-}" lt "3.16"; then
-						continue
-					fi
-				fi
-
-				# force DEBUGFS when DEBUG
-				if [[ "${config}" == *"CONFIG_BATMAN_ADV_DEBUG=y"* ]]; then
-					config="$(echo ${config}|sed 's/CONFIG_BATMAN_ADV_DEBUGFS=n/CONFIG_BATMAN_ADV_DEBUGFS=y/')"
-				fi
-
-				test_sparse "${branch}" "${linux_name}" "${config}"
-				test_unused_symbols "${branch}" "${linux_name}" "${config}"
-				test_wrong_namespace "${branch}" "${linux_name}" "${config}"
-				"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" -j"${JOBS}" clean
-
-				test_smatch "${branch}" "${linux_name}" "${config}"
-				"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" -j"${JOBS}" clean
-			done
+		for i in $(seq 1 "${BUILD_RUNS}"); do
+			test_builds "${branch}"
 		done
-
 
 		test_checkpatch "${branch}"
 		if [ "$branch" == "${INCOMING_BRANCH}" ]; then
