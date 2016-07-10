@@ -140,17 +140,16 @@ def send():
 
 		underline = '-' * namelen
 
-		mail.append("%s\n%s\n\n%s\n" % (name, underline, "\n".join(name_list)))
-		mail.append("\n")
+		mail.append("%s\n%s\n\n%s\n\n" % (name, underline, "\n".join(name_list)))
 
+	mail.append("\n")
 	mail.append("Output of different failed tests\n")
 	mail.append("================================\n")
 	mail.append("\n")
-	mail.append("%s\n" % ("\n\n\n".join(log_list)))
-	mail.append("\n")
+	mail.append("%s\n" % ("\n\n".join(log_list)))
+	mail.append("\n\n")
 	mail.append("Statistics\n")
 	mail.append("==========\n")
-	mail.append("\n")
 
 	for b in branches:
 		namelen = len(b)
