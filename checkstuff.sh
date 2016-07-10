@@ -6,7 +6,7 @@ TO=${TO:="$(whoami)"}
 FROM=${FROM:="$(whoami)"}
 REMOTE=${REMOTE:="git+ssh://git@git.open-mesh.org/batman-adv.git"}
 JOBS=${JOBS:=$(nproc || echo 1)}
-TESTBRANCHES=${TESTBRANCHES:="master next"}
+TESTBRANCHES="${TESTBRANCHES:="master next"}"
 SUBMIT_BRANCH=${SUBMIT_BRANCH:="next"}
 INCOMING_BRANCH=${INCOMING_BRANCH:="master"}
 
@@ -111,7 +111,7 @@ test_cppcheck()
 				| grep -v "Cppcheck cannot find all the include files" \
 				|tee log) &> logfull
 	if [ -s "log" ]; then
-		"${MAIL_AGGREGATOR}" "${DB}" add "cppcheck $branch" log logfull
+		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "cppcheck" log logfull
 	fi
 	rm -f compat-autoconf.h
 }
@@ -139,7 +139,7 @@ test_coccicheck()
 			-e '^$' \
 		> log
 	if [ -s "log" ]; then
-		"${MAIL_AGGREGATOR}" "${DB}" add "coccicheck $branch" log log
+		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "coccicheck" log log
 	fi
 }
 
@@ -169,22 +169,22 @@ test_comments()
 
 	grep -nE "^\s*\*.+\*/" "${path}"/*.c "${path}"/*.h &> log
 	if [ -s "log" ]; then
-		"${MAIL_AGGREGATOR}" "${DB}" add "Multiline comment ending at a non-empty line $branch" log log
+		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "Multiline comment ending at a non-empty line" log log
 	fi
 
 	grep -nE "/\*\*..*$" "${path}"/*.c "${path}"/*.h &> log
 	if [ -s "log" ]; then
-		"${MAIL_AGGREGATOR}" "${DB}" add "Comment starting with two asterisk non-empty line $branch" log log
+		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "Comment starting with two asterisk non-empty line" log log
 	fi
 
 	grep -nE "[^ ]\*/$" "${path}"/*.c "${path}"/*.h &> log
 	if [ -s "log" ]; then
-		"${MAIL_AGGREGATOR}" "${DB}" add "Comment ending without space $branch" log log
+		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "Comment ending without space" log log
 	fi
 
 	grep -nE "/\*$" "${path}"/*.c "${path}"/*.h &> log
 	if [ -s "log" ]; then
-		"${MAIL_AGGREGATOR}" "${DB}" add "Multiline comment starting with empty line $branch" log log
+		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "Multiline comment starting with empty line" log log
 	fi
 }
 
@@ -209,7 +209,7 @@ test_checkpatch()
 				--strict --file "$i" &> logfull
 
 			if [ -s "logfull" ]; then
-				"${MAIL_AGGREGATOR}" "${DB}" add "checkpatch $branch $i" logfull logfull
+				"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "checkpatch $i" logfull logfull
 			fi
 		fi
 	done
@@ -236,7 +236,7 @@ test_kerneldoc()
 				-e 'no structured comments found' &> logfull
 
 			if [ -s "logfull" ]; then
-				"${MAIL_AGGREGATOR}" "${DB}" add "kerneldoc $branch $i" logfull logfull
+				"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "kerneldoc $i" logfull logfull
 			fi
 		fi
 	done
@@ -254,7 +254,7 @@ test_brackets()
 			"${BRACKET}" "$i" &> logfull
 
 			if [ -s logfull ]; then
-				"${MAIL_AGGREGATOR}" "${DB}" add "bracket_align $branch $i" logfull logfull
+				"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "bracket_align $i" logfull logfull
 			fi
 		fi
 	done
@@ -272,7 +272,7 @@ test_sparse()
 			|sed -e '/hard-interface.c:.* warning: incorrect type in return expression (different base types)/,+2d'|sed '/hard-interface.c: In function .batadv_getlink_net./,+3d' \
 			|tee log) &> logfull
 	if [ -s "log" ]; then
-		"${MAIL_AGGREGATOR}" "${DB}" add "sparse $branch ${linux_name} $(simplify_config_string "${config}")" log logfull
+		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "sparse ${linux_name} $(simplify_config_string "${config}")" log logfull
 	fi
 }
 
@@ -287,7 +287,7 @@ test_unused_symbols()
 		| grep -v batadv_tt_global_hash_count \
 	&> log
 	if [ -s "log" ]; then
-		"${MAIL_AGGREGATOR}" "${DB}" add "unused_symbols ${branch} ${linux_name} $(simplify_config_string "${config}")" log log
+		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "unused_symbols ${linux_name} $(simplify_config_string "${config}")" log log
 	fi
 }
 
@@ -299,7 +299,7 @@ test_wrong_namespace()
 
 	"${WRONG_NAMESPACE}" &> log
 	if [ -s "log" ]; then
-		"${MAIL_AGGREGATOR}" "${DB}" add "wrong namespace symbols ${branch} ${linux_name} $(simplify_config_string "${config}")" log log
+		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "wrong namespace symbols ${linux_name} $(simplify_config_string "${config}")" log log
 	fi
 }
 
@@ -316,7 +316,7 @@ test_smatch()
 	cat "${path}"/*.smatch \
 		> log
 	if [ -s "log" ]; then
-		"${MAIL_AGGREGATOR}" "${DB}" add "smatch $branch ${linux_name} $config" log log
+		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "smatch ${linux_name} $config" log log
 	fi
 }
 
@@ -327,7 +327,7 @@ test_copyright()
 	"${CHECK_COPYRIGHT}" \
 	&> log
 	if [ -s "log" ]; then
-		"${MAIL_AGGREGATOR}" "${DB}" add "copyright ${branch}" log log
+		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "copyright" log log
 	fi
 }
 
@@ -340,7 +340,7 @@ test_main_include()
 		grep -L '#[[:space:]]*include[[:space:]]*"main.h"' net/batman-adv/"$i"
 	done|sed 's/^/missing include for "main.h" in /' > log
 	if [ -s "log" ]; then
-		"${MAIL_AGGREGATOR}" "${DB}" add "main.h include missing ${branch}" log log
+		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "main.h include missing" log log
 	fi
 }
 
@@ -383,7 +383,7 @@ test_compare_net_next()
 
 	diff -ruN "${TMPNAME}"/batadv "${TMPNAME}"/netnext|diffstat -w 71 -q -p2 > "${TMPNAME}"/log
 	if [ -s "${TMPNAME}/log" ]; then
-		"${MAIL_AGGREGATOR}" "${DB}" add "difference between ${upstream_name} and batadv ${branch}" "${TMPNAME}"/log "${TMPNAME}"/log
+		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "difference between ${upstream_name} and batadv ${branch}" "${TMPNAME}"/log "${TMPNAME}"/log
 	fi
 }
 
@@ -424,7 +424,7 @@ test_headers()
 
 	)
 	if [ -s "${TMPNAME}/log" ]; then
-		"${MAIL_AGGREGATOR}" "${DB}" add "headers ${branch}" "${TMPNAME}"/log "${TMPNAME}"/log
+		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "headers" "${TMPNAME}"/log "${TMPNAME}"/log
 	fi
 	rm -rf "${TMPNAME}"
 }
