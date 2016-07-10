@@ -105,10 +105,6 @@ def send():
 	add_branchescounter_to_set(branches, versioncount)
 	add_branchescounter_to_set(branches, configcount)
 
-	name_list = []
-	for x in names:
-		name_list.append(" * %s: %s" % (x[0], x[1]))
-
 	log_list = []
 	for x in logs:
 		name = "%s: %s" % (x[0], x[1])
@@ -126,8 +122,27 @@ def send():
 	mail.append("Name of failed tests\n")
 	mail.append("====================\n")
 	mail.append("\n")
-	mail.append("%s\n" % ("\n".join(name_list)))
-	mail.append("\n")
+
+	for b in branches:
+		name_list = []
+		for x in names:
+			if x[0] != b:
+				continue
+
+			name_list.append(" * %s" % (x[1]))
+
+		if len(name_list) == 0:
+			continue
+
+		name = "%s" % (b)
+		namelen = len(name)
+		namelen = min(namelen, 75)
+
+		underline = '-' * namelen
+
+		mail.append("%s\n%s\n\n%s\n" % (name, underline, "\n".join(name_list)))
+		mail.append("\n")
+
 	mail.append("Output of different failed tests\n")
 	mail.append("================================\n")
 	mail.append("\n")
