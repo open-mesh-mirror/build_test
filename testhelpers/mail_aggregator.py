@@ -24,6 +24,7 @@ def create():
 		os.unlink(dbfile)
 
 	con = sqlite3.connect(dbfile)
+	con.text_factory = str
 	cur = con.cursor()
 	cur.execute('CREATE TABLE logs (branch, name, log, longlog)')
 	cur.execute('CREATE TABLE buildtests (branch, version, config)')
@@ -42,6 +43,7 @@ def add():
 	longlog = open(longlogfile).read()
 
 	con = sqlite3.connect(dbfile)
+	con.text_factory = str
 	cur = con.cursor()
 	cur.execute('INSERT INTO logs VALUES (?, ?, ?, ?)', (branch, name, log, longlog))
 	con.commit()
@@ -55,6 +57,7 @@ def add_buildtests():
 
 	try:
 		con = sqlite3.connect(dbfile)
+		con.text_factory = str
 		cur = con.cursor()
 		cur.execute('INSERT INTO buildtests VALUES (?, ?, ?)', (branch, version, config))
 		a = con.commit()
@@ -82,6 +85,7 @@ def send():
 	branches = set()
 
 	con = sqlite3.connect(dbfile)
+	con.text_factory = str
 	cur = con.cursor()
 	cur.execute('SELECT branch,name FROM logs ORDER BY name')
 	names = cur.fetchall()
