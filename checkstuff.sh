@@ -95,19 +95,25 @@ test_cppcheck()
 
 	touch compat-autoconf.h
 	rm -f log logfull
-	("${CPPCHECK}" --error-exitcode=42 -I../minilinux/ --enable=all --suppress=variableScope . 3>&2 2>&1 1>&3 \
-				| grep -v "bridge_loop_avoidance.c.* The function 'batadv_bla_backbone_table_seq_print_text' is never used" \
-				| grep -v "bridge_loop_avoidance.c.* The function 'batadv_bla_claim_table_seq_print_text' is never used" \
-				| grep -v "distributed-arp-table.c.* The function 'batadv_dat_cache_seq_print_text' is never used" \
-				| grep -v "distributed-arp-table.c.* The function 'batadv_dat_status_update' is never used" \
-				| grep -v "bridge_loop_avoidance.c.* The function 'batadv_bla_status_update' is never used" \
-				| grep -v "log.c.* The function 'batadv_debug_log' is never used" \
-				| grep -v "network-coding.c.* The function 'batadv_nc_nodes_seq_print_text' is never used" \
-				| grep -v "network-coding.c.* The function 'batadv_nc_status_update' is never used" \
-				| grep -v "multicast.c.* The function 'batadv_mcast_flags_seq_print_text' is never used" \
-				| grep -v "gateway_client.c.* Either the condition 'next_gw' is redundant or there is possible null pointer dereference: next_gw" \
-				| grep -v "main.c.* Either the condition '!tvlv_value' is redundant or there is possible null pointer dereference: tvlv_value" \
-				| grep -v "tvlv.c.* Either the condition '!tvlv_value' is redundant or there is possible null pointer dereference: tvlv_value" \
+	("${CPPCHECK}" --error-exitcode=42 \
+		-include "${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}"/generated/autoconf.h \
+		-I./include/ \
+		-I"${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}"/arch/x86/include \
+		-I"${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}"/arch/x86/include/generated/uapi \
+		-I"${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}"/arch/x86/include/generated \
+		-I"${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}"/include \
+		-I"${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}"/arch/x86/include/uapi \
+		-I"${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}"/arch/x86/include/generated/uapi \
+		-I"${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}"/include/uapi \
+		-I"${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}"/include/generated/uapi \
+		-i"${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}" \
+		--config-exclude="${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}" \
+		-I"$(gcc -print-file-name=include)" \
+		-i"$(gcc -print-file-name=include)" \
+		--config-exclude="$(gcc -print-file-name=include)" \
+		-icompat-include \
+		-icompat-sources \
+		--enable=all . 3>&2 2>&1 1>&3 \
 				| grep -v "Cppcheck cannot find all the include files" \
 				|tee log) &> logfull
 	if [ -s "log" ]; then
