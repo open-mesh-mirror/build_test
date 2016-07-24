@@ -137,6 +137,7 @@ test_coccicheck()
 			-e 'ERROR: next_gw is NULL but dereferenced.' \
 			-e 'tp_meter.c.*ERROR: reference preceded by free on line' \
 			-e '^$' \
+			-e 'coccicheck failed' \
 		> log
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "coccicheck" log log
