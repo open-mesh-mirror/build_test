@@ -26,7 +26,7 @@ CPPCHECK="$(pwd)/cppcheck/cppcheck"
 SMATCH="$(pwd)/smatch/smatch"
 SMATCH_CGCC="$(pwd)/smatch/cgcc"
 BRACKET="$(pwd)/testhelpers/bracket_align.py"
-LINUXNEXT="$(pwd)/linux-next/"
+LINUXNEXT="$(pwd)/linux-next"
 CHECKPATCH="${LINUXNEXT}/scripts/checkpatch.pl"
 KERNELDOC="${LINUXNEXT}/scripts/kernel-doc"
 UNUSED_SYMBOLS="$(pwd)/testhelpers/find_unused_symbols.sh"
@@ -37,7 +37,7 @@ FIX_INCLUDE_SORT="$(pwd)/testhelpers/fix_includes_sort.py"
 
 MAIL_AGGREGATOR="$(pwd)/testhelpers/mail_aggregator.py"
 DB="$(pwd)/error.db"
-LINUX_HEADERS="$(pwd)/linux-build/"
+LINUX_HEADERS="$(pwd)/linux-build"
 GENERATE_CONFIG="$(pwd)/testhelpers/generate_config_params.py"
 GENERATE_LINUX_VERSIONS="$(pwd)/testhelpers/generate_linux_versions.py"
 
@@ -131,7 +131,7 @@ test_coccicheck()
 	path="$(source_path)"
 
 	rm -f log
-	make -s -C "${LINUXNEXT}" coccicheck MODE=report KBUILD_EXTMOD="$(pwd)/${path}/" | \
+	make -s -C "${LINUXNEXT}" coccicheck MODE=report KBUILD_EXTMOD="$(pwd)/${path}" | \
 		grep -v -e 'Please check for false positives in the output before submitting a patch.' \
 			-e 'When using "patch" mode, carefully review the patch before submitting it.' \
 			-e 'ERROR: next_gw is NULL but dereferenced.' \
@@ -267,7 +267,7 @@ test_sparse()
 	config="$3"
 
 	# hard-interface.c:.* delete is required for a warning caused by the compat.h hack for get_link_net
-	(EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SPARSE} -Wsparse-all -Wno-ptr-subtraction-blows $extra_flags" $config CC="${CGCC}" KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" 3>&2 2>&1 1>&3 \
+	(EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SPARSE} -Wsparse-all -Wno-ptr-subtraction-blows $extra_flags" $config CC="${CGCC}" KERNELPATH="${LINUX_HEADERS}/${linux_name}" 3>&2 2>&1 1>&3 \
 			|grep -v "No such file: c" \
 			|sed -e '/hard-interface.c:.* warning: incorrect type in return expression (different base types)/,+2d'|sed '/hard-interface.c: In function .batadv_getlink_net./,+3d' \
 			|tee log) &> logfull
@@ -309,7 +309,7 @@ test_smatch()
 	linux_name="$2"
 	config="$3"
 
-	EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SMATCH} -p=kernel --two-passes --file-output $extra_flags" $config CC="${SMATCH_CGCC}" KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" -j"${JOBS}" &> /dev/null
+	EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SMATCH} -p=kernel --two-passes --file-output $extra_flags" $config CC="${SMATCH_CGCC}" KERNELPATH="${LINUX_HEADERS}/${linux_name}" -j"${JOBS}" &> /dev/null
 	# installed filters:
 	#
 	path="$(build_path)"
@@ -457,10 +457,10 @@ test_builds()
 			test_sparse "${branch}" "${linux_name}" "${config}"
 			test_unused_symbols "${branch}" "${linux_name}" "${config}"
 			test_wrong_namespace "${branch}" "${linux_name}" "${config}"
-			"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" -j"${JOBS}" clean
+			"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}/${linux_name}" -j"${JOBS}" clean
 
 			test_smatch "${branch}" "${linux_name}" "${config}"
-			"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}"/"${linux_name}" -j"${JOBS}" clean
+			"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}/${linux_name}" -j"${JOBS}" clean
 		done
 	done
 }
