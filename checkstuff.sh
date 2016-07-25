@@ -95,26 +95,18 @@ test_cppcheck()
 
 	touch compat-autoconf.h
 	rm -f log logfull
-	("${CPPCHECK}" --error-exitcode=42 \
-		-include "${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}"/generated/autoconf.h \
+	("${CPPCHECK}" --error-exitcode=42 --max-configs=64 \
 		-I./include/ \
-		-I"${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}"/arch/x86/include \
-		-I"${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}"/arch/x86/include/generated/uapi \
-		-I"${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}"/arch/x86/include/generated \
-		-I"${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}"/include \
-		-I"${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}"/arch/x86/include/uapi \
-		-I"${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}"/arch/x86/include/generated/uapi \
-		-I"${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}"/include/uapi \
-		-I"${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}"/include/generated/uapi \
-		-i"${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}" \
-		--config-exclude="${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}" \
-		-I"$(gcc -print-file-name=include)" \
-		-i"$(gcc -print-file-name=include)" \
-		--config-exclude="$(gcc -print-file-name=include)" \
+		-I"../minilinux/" \
+		-i"../minilinux/" \
+		--config-exclude="../minilinux/" \
 		-icompat-include \
 		-icompat-sources \
-		--enable=all . 3>&2 2>&1 1>&3 \
+		--enable=all --suppress=variableScope . 3>&2 2>&1 1>&3 \
+				| grep -v "gateway_client.c.* Either the condition 'next_gw' is redundant or there is possible null pointer dereference: next_gw" \
+				| grep -v "tvlv.c.* Either the condition '!tvlv_value' is redundant or there is possible null pointer dereference: tvlv_value" \
 				| grep -v "Cppcheck cannot find all the include files" \
+				| grep -v "../minilinux/" \
 				|tee log) &> logfull
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "cppcheck" log logfull
