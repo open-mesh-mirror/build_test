@@ -478,9 +478,9 @@ testbranch()
 		git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/" "$branch" | tar x
 		cd "${TMPNAME}"
 
-		test_cppcheck "${branch}"
 		# TODO enable also for all other branches
 		if [ "$branch" == "${INCOMING_BRANCH}" ]; then
+			test_cppcheck "${branch}"
 			test_coccicheck "${branch}"
 		fi
 		test_comments "${branch}"
