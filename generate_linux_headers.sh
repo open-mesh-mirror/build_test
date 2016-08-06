@@ -16,8 +16,8 @@ fi
 
 prepare_source()
 {
-	if [ -e include/linux/compiler-gcc4.h -a ! -e include/linux/compiler-gcc5.h ]; then
-		ln -s compiler-gcc4.h include/linux/compiler-gcc5.h
+	if [ -e include/linux/compiler-gcc4.h ]; then
+		cp ../patches/linux-compilersupport/compiler-gcc.h include/linux/compiler-gcc.h
 	fi
 
 	make allnoconfig
