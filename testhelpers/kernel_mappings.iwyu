@@ -94,6 +94,7 @@
 { include: ["\"linux/wait.h\"", "private", "<linux/wait.h>", "public"] },
 { include: ["\"linux/workqueue.h\"", "private", "<linux/workqueue.h>", "public"] },
 { include: ["\"net/addrconf.h\"", "private", "<net/addrconf.h>", "public"] },
+{ include: ["\"net/cfg80211.h\"", "private", "<net/cfg80211.h>", "public"] },
 { include: ["\"net/genetlink.h\"", "private", "<net/genetlink.h>", "public"] },
 { include: ["\"net/ipv6.h\"", "private", "<net/ipv6.h>", "public"] },
 { include: ["\"net/net_namespace.h\"", "private", "<net/net_namespace.h>", "public"] },
