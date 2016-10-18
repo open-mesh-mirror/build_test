@@ -205,6 +205,8 @@ test_checkpatch()
 
 			"${CHECKPATCH}" -q \
 				--ignore COMPLEX_MACRO \
+				--ignore MACRO_ARG_PRECEDENCE \
+				--ignore MACRO_ARG_REUSE \
 				--min-conf-desc-length=3 \
 				--strict --file "$i" &> logfull
 
