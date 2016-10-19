@@ -57,7 +57,7 @@ check_external()
 
 	if [ ! -x "${CPPCHECK}" ]; then
 		echo "Required tool cppcheck missing:"
-		echo "    git clone git://github.com/danmar/cppcheck.git cppcheck"
+		echo "    git clone -b 1.75 git://github.com/danmar/cppcheck.git cppcheck"
 		echo "    make -C cppcheck"
 		exit 1
 	fi
