@@ -17,7 +17,7 @@ obj=$(ls -1 "${path}"/*.o|grep -v -e 'batman-adv\.o' -e 'batman-adv\.mod\.o')
 defined="`nm -g --defined-only  ${obj}|awk '{ print $3}'|sort|uniq`"
 used="`nm -g --undefined-only  ${obj}|awk '{ print $2}'|sort|uniq`"
 ret=0
-blacklist="cleanup_module init_module batadv_send_skb_prepare_unicast_4addr batadv_skb_crc32 batadv_send_skb_packet batadv_parse_throughput batadv_gw_node_get batadv_get_real_netdev batadv_is_cfg80211_netdev"
+blacklist="cleanup_module init_module batadv_send_skb_prepare_unicast_4addr batadv_skb_crc32 batadv_send_skb_packet batadv_parse_throughput batadv_gw_node_get batadv_get_real_netdev batadv_is_cfg80211_hardif"
 
 for i in $defined; do
 	found=0
