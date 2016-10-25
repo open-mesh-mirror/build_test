@@ -275,6 +275,7 @@ test_sparse()
 			|sed -e '/hard-interface.c:.* warning: incorrect type in return expression (different base types)/,+2d'|sed '/hard-interface.c: In function .batadv_getlink_net./,+3d' \
 			|sed -e "/hard-interface.c:.*: note: in expansion of macro 'get_link_net'/,+2d" \
 			|sed -e '/In file included from <command-line>/d' \
+			|sed -e '/^[1-9][0-9]* files match$/d' \
 			|tee log) &> logfull
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "sparse ${linux_name} $(simplify_config_string "${config}")" log logfull
