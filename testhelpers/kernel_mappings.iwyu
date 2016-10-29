@@ -24,6 +24,7 @@
 { include: ["\"linux/bitops.h\"", "private", "<linux/bitops.h>", "public"] },
 { include: ["\"linux/bug.h\"", "private", "<linux/bug.h>", "public"] },
 { include: ["\"linux/byteorder/generic.h\"", "private", "<linux/byteorder/generic.h>", "public"] },
+{ include: ["\"linux/cache.h\"", "private", "<linux/cache.h>", "public"] },
 { include: ["\"linux/compiler.h\"", "private", "<linux/compiler.h>", "public"] },
 { include: ["\"linux/cpumask.h\"", "private", "<linux/cpumask.h>", "public"] },
 { include: ["\"linux/completion.h\"", "private", "<linux/completion.h>", "public"] },
