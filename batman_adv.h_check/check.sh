@@ -3,10 +3,11 @@
 TO="linux-merge@lists.open-mesh.org"
 REMOTE="/srv/git/repositories/batman-adv.git/"
 REMOTE_BATCTL="/srv/git/repositories/batctl.git/"
+REMOTE_ALFRED="/srv/git/repositories/alfred.git/"
 
 cd "$(dirname "$0")"
 
-rm -f batctl_maint.batman_adv.h batctl_master.batman_adv.h  batman-adv_maint.batman_adv.h  batman-adv_master.batman_adv.h
+rm -f batctl_maint.batman_adv.h batctl_master.batman_adv.h  alfred_maint.batman_adv.h alfred_master.batman_adv.h  batman-adv_maint.batman_adv.h batman-adv_master.batman_adv.h
 rm -f maint.diff master.diff
 
 checkout_batman_adv_h()
@@ -28,8 +29,12 @@ checkout_batman_adv_h "${REMOTE}" maint > batman-adv_maint.batman_adv.h
 checkout_batman_adv_h "${REMOTE_BATCTL}" master > batctl_master.batman_adv.h
 checkout_batman_adv_h "${REMOTE_BATCTL}" maint > batctl_maint.batman_adv.h
 
+checkout_batman_adv_h "${REMOTE_ALFRED}" master > alfred_master.batman_adv.h
+
 diff -ruN batman-adv_master.batman_adv.h batctl_master.batman_adv.h > master.diff
 diff -ruN batman-adv_maint.batman_adv.h batctl_maint.batman_adv.h > maint.diff
+
+diff -ruN batman-adv_master.batman_adv.h alfred_master.batman_adv.h > alfred.master.diff
 
 generate_email_header()
 {
@@ -43,7 +48,7 @@ generate_email_header()
 	EOF
 }
 
-for i in master.diff maint.diff; do
+for i in master.diff maint.diff alfred.master.diff; do
 	if [ -s "$i" ]; then
 		(generate_email_header "$TO" "$i"
 		cat "$i") | /usr/sbin/sendmail -t
