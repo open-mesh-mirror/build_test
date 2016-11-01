@@ -6,8 +6,8 @@ REMOTE_BATCTL="/srv/git/repositories/batctl.git/"
 
 cd "$(dirname "$0")"
 
-rm -f batctl_maint.batman_adv.h batctl_next.batman_adv.h  batctl_master.batman_adv.h  batman-adv_maint.batman_adv.h  batman-adv_next.batman_adv.h batman-adv_master.batman_adv.h
-rm -f maint.diff next.diff  master.diff
+rm -f batctl_maint.batman_adv.h batctl_master.batman_adv.h  batman-adv_maint.batman_adv.h  batman-adv_master.batman_adv.h
+rm -f maint.diff master.diff
 
 checkout_batman_adv_h()
 {
@@ -23,15 +23,12 @@ checkout_batman_adv_h()
 }
 
 checkout_batman_adv_h "${REMOTE}" master > batman-adv_master.batman_adv.h
-checkout_batman_adv_h "${REMOTE}" next > batman-adv_next.batman_adv.h
 checkout_batman_adv_h "${REMOTE}" maint > batman-adv_maint.batman_adv.h
 
 checkout_batman_adv_h "${REMOTE_BATCTL}" master > batctl_master.batman_adv.h
-checkout_batman_adv_h "${REMOTE_BATCTL}" next > batctl_next.batman_adv.h
 checkout_batman_adv_h "${REMOTE_BATCTL}" maint > batctl_maint.batman_adv.h
 
 diff -ruN batman-adv_master.batman_adv.h batctl_master.batman_adv.h > master.diff
-diff -ruN batman-adv_next.batman_adv.h batctl_next.batman_adv.h > next.diff
 diff -ruN batman-adv_maint.batman_adv.h batctl_maint.batman_adv.h > maint.diff
 
 generate_email_header()
@@ -46,7 +43,7 @@ generate_email_header()
 	EOF
 }
 
-for i in master.diff next.diff maint.diff; do
+for i in master.diff maint.diff; do
 	if [ -s "$i" ]; then
 		(generate_email_header "$TO" "$i"
 		cat "$i") | /usr/sbin/sendmail -t
