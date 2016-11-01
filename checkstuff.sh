@@ -539,8 +539,10 @@ testbranch()
 			fi
 		done
 
-		test_checkpatch "${branch}"
 		if [ "$branch" != "${SUBMIT_NET_BRANCH}" ]; then
+			# TODO enable checkpatch again when less noisy
+			test_checkpatch "${branch}"
+
 			test_kerneldoc "${branch}"
 			test_copyright "${branch}"
 			test_main_include "${branch}"
