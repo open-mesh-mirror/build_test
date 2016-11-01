@@ -6,8 +6,8 @@ TO=${TO:="$(whoami)"}
 FROM=${FROM:="$(whoami)"}
 REMOTE=${REMOTE:="git+ssh://git@git.open-mesh.org/batman-adv.git"}
 JOBS=${JOBS:=$(nproc || echo 1)}
-TESTBRANCHES="${TESTBRANCHES:="master next"}"
-SUBMIT_BRANCH=${SUBMIT_BRANCH:="next"}
+TESTBRANCHES="${TESTBRANCHES:="master"}"
+SUBMIT_BRANCH=${SUBMIT_BRANCH:="master"}
 INCOMING_BRANCH=${INCOMING_BRANCH:="master"}
 
 BUILD_RUNS=${BUILD_RUNS:=1}
