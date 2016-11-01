@@ -8,6 +8,7 @@ REMOTE=${REMOTE:="git+ssh://git@git.open-mesh.org/batman-adv.git"}
 JOBS=${JOBS:=$(nproc || echo 1)}
 TESTBRANCHES="${TESTBRANCHES:="master"}"
 SUBMIT_NET_NEXT_BRANCH=${SUBMIT_NET_NEXT_BRANCH:="master"}
+SUBMIT_NET_BRANCH=${SUBMIT_NET_BRANCH:="maint"}
 INCOMING_BRANCH=${INCOMING_BRANCH:="master"}
 
 BUILD_RUNS=${BUILD_RUNS:=1}
@@ -350,6 +351,39 @@ test_main_include()
 	fi
 }
 
+test_compare_net()
+{
+	branch="$1"
+
+	rm -rf "${TMPNAME}"
+	mkdir "${TMPNAME}"
+
+	upstream_rev="net/master"
+	upstream_name="net"
+
+	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- net/batman-adv/ Documentation/networking/batman-adv.txt Documentation/ABI/testing/sysfs-class-net-batman-adv Documentation/ABI/testing/sysfs-class-net-mesh | tar x
+	git archive --remote="linux-next/.git/" --format=tar --prefix="${TMPNAME}/net/" "${upstream_rev}" -- net/batman-adv/ Documentation/networking/batman-adv.txt Documentation/ABI/testing/sysfs-class-net-batman-adv Documentation/ABI/testing/sysfs-class-net-mesh | tar x
+
+	# compare against stripped down MAINTAINERS when available
+	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- MAINTAINERS | tar x
+	git archive --remote="linux-next/.git/" --format=tar --prefix="${TMPNAME}/net/" "${upstream_rev}" -- MAINTAINERS | tar x
+	if [ -r "${TMPNAME}/batadv/MAINTAINERS" ]; then
+		awk '/^BATMAN ADVANCED$/{f=1};/^$/{f=0};f' "${TMPNAME}/net/MAINTAINERS" > "${TMPNAME}/net/MAINTAINERS.2"
+		mv "${TMPNAME}/net/MAINTAINERS.2" "${TMPNAME}/net/MAINTAINERS"
+	else
+		rm -f "${TMPNAME}/net/MAINTAINERS"
+	fi
+
+	# compare against batman_adv.h
+	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- include/uapi/linux/batman_adv.h | tar x
+	git archive --remote="linux-next/.git/" --format=tar --prefix="${TMPNAME}/net/" "${upstream_rev}" -- include/uapi/linux/batman_adv.h | tar x
+
+	diff -ruN "${TMPNAME}"/batadv "${TMPNAME}"/net|diffstat -w 71 -q -p2 > "${TMPNAME}"/log
+	if [ -s "${TMPNAME}/log" ]; then
+		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "difference between ${upstream_name} and batadv ${branch}" "${TMPNAME}"/log "${TMPNAME}"/log
+	fi
+}
+
 test_compare_net_next()
 {
 	branch="$1"
@@ -479,6 +513,10 @@ testbranch()
 
 		if [ "$branch" == "${SUBMIT_NET_NEXT_BRANCH}" ]; then
 			test_compare_net_next "${branch}"
+		fi
+
+		if [ "$branch" == "${SUBMIT_NET_BRANCH}" ]; then
+			test_compare_net "${branch}"
 		fi
 
 		rm -rf "${TMPNAME}"
