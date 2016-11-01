@@ -9,7 +9,6 @@ JOBS=${JOBS:=$(nproc || echo 1)}
 TESTBRANCHES="${TESTBRANCHES:="master"}"
 SUBMIT_NET_NEXT_BRANCH=${SUBMIT_NET_NEXT_BRANCH:="master"}
 SUBMIT_NET_BRANCH=${SUBMIT_NET_BRANCH:="maint"}
-INCOMING_BRANCH=${INCOMING_BRANCH:="master"}
 
 BUILD_RUNS=${BUILD_RUNS:=1}
 CONFIGS_PER_RUN=${CONFIGS_PER_RUN:=4}
@@ -523,8 +522,7 @@ testbranch()
 		git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/" "$branch" | tar x
 		cd "${TMPNAME}"
 
-		# TODO enable also for all other branches
-		if [ "$branch" == "${INCOMING_BRANCH}" ]; then
+		if [ "$branch" != "${SUBMIT_NET_BRANCH}" ]; then
 			test_cppcheck "${branch}"
 			test_coccicheck "${branch}"
 		fi
@@ -542,7 +540,7 @@ testbranch()
 		done
 
 		test_checkpatch "${branch}"
-		if [ "$branch" == "${INCOMING_BRANCH}" ]; then
+		if [ "$branch" != "${SUBMIT_NET_BRANCH}" ]; then
 			test_kerneldoc "${branch}"
 			test_copyright "${branch}"
 			test_main_include "${branch}"
