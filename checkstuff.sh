@@ -7,7 +7,7 @@ FROM=${FROM:="$(whoami)"}
 REMOTE=${REMOTE:="git+ssh://git@git.open-mesh.org/batman-adv.git"}
 JOBS=${JOBS:=$(nproc || echo 1)}
 TESTBRANCHES="${TESTBRANCHES:="master"}"
-SUBMIT_BRANCH=${SUBMIT_BRANCH:="master"}
+SUBMIT_NET_NEXT_BRANCH=${SUBMIT_NET_NEXT_BRANCH:="master"}
 INCOMING_BRANCH=${INCOMING_BRANCH:="master"}
 
 BUILD_RUNS=${BUILD_RUNS:=1}
@@ -477,7 +477,7 @@ testbranch()
 	(
 		test_headers "$branch"
 
-		if [ "$branch" == "${SUBMIT_BRANCH}" ]; then
+		if [ "$branch" == "${SUBMIT_NET_NEXT_BRANCH}" ]; then
 			test_compare_net_next "${branch}"
 		fi
 
