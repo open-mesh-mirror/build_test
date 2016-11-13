@@ -16,10 +16,6 @@ fi
 
 prepare_source()
 {
-	if [ -e include/linux/compiler-gcc4.h ]; then
-		cp ../patches/linux-compilersupport/compiler-gcc.h include/linux/compiler-gcc.h
-	fi
-
 	make allnoconfig
 	grep -v 'CONFIG_MODULES is not set' .config > .config.tmp; mv .config.tmp .config
 	if [ "${MAKE_AMD64}" != "0" ]; then
