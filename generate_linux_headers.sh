@@ -87,12 +87,12 @@ for i in `seq 2 19`; do
 	git archive --remote="${LINUX_REPOSITORY}" --format tar --prefix=linux-3.${i}/ v3.${i}|tar x
 	(
 		cd "linux-3.${i}" || exit
-		prepare_source "3" "${i}"
 		if [ -d "../patches/v3.${i}" ]; then
 			for p in "../patches/v3.${i}/"*.patch; do
 				patch -p1 -i "${p}"
 			done
 		fi
+		prepare_source "3" "${i}"
 
 		clean_source
 	)
@@ -102,12 +102,12 @@ for i in `seq 0 8`; do
 	git archive --remote="${LINUX_REPOSITORY}" --format tar --prefix=linux-4.${i}/ v4.${i}|tar x
 	(
 		cd "linux-4.${i}" || exit
-		prepare_source "4" "${i}"
 		if [ -d "../patches/v4.${i}" ]; then
 			for p in "../patches/v4.${i}/"*.patch; do
 				patch -p1 -i "${p}"
 			done
 		fi
+		prepare_source "4" "${i}"
 
 		clean_source
 	)
