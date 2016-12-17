@@ -7,7 +7,7 @@ Subject: [PATCH] smatch: Workaround to allow the check of batadv_iv_ogm_process_
  2 files changed, 4 insertions(+), 4 deletions(-)
 
 diff --git a/smatch_implied.c b/smatch_implied.c
-index 7630443..630f256 100644
+index fbb744ce..e33328aa 100644
 --- a/smatch_implied.c
 +++ b/smatch_implied.c
 @@ -312,7 +312,7 @@ static void __separate_pools(struct sm_state *sm, int comparison, struct range_l
@@ -29,7 +29,7 @@ index 7630443..630f256 100644
  			static char buf[1028];
  			snprintf(buf, sizeof(buf), "debug: %s: nr_children over 4000 (%d). (%s %s)",
 diff --git a/smatch_slist.c b/smatch_slist.c
-index a25e40b..31118af 100644
+index bbcef670..ec344ba7 100644
 --- a/smatch_slist.c
 +++ b/smatch_slist.c
 @@ -238,14 +238,14 @@ int out_of_memory(void)
