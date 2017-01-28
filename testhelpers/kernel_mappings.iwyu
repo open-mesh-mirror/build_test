@@ -30,7 +30,7 @@
 { include: ["\"linux/cpumask.h\"", "private", "<linux/cpumask.h>", "public"] },
 { include: ["\"linux/completion.h\"", "private", "<linux/completion.h>", "public"] },
 { include: ["\"linux/device.h\"", "private", "<linux/device.h>", "public"] },
-{ include: ["\"linux/err.h\"", "private", "<linux/device.h>", "public"] },
+{ include: ["\"linux/err.h\"", "private", "<linux/err.h>", "public"] },
 { include: ["\"linux/etherdevice.h\"", "private", "<linux/etherdevice.h>", "public"] },
 { include: ["\"linux/ethtool.h\"", "private", "<linux/ethtool.h>", "public"] },
 { include: ["\"linux/export.h\"", "private", "<linux/export.h>", "public"] },
