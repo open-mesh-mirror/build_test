@@ -8,7 +8,7 @@ Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
  1 file changed, 16 insertions(+), 9 deletions(-)
 
 diff --git a/include/linux/wait.h b/include/linux/wait.h
-index 2408e8d5c05c..c1d495c3e5f8 100644
+index 2408e8d5..c1d495c 100644
 --- a/include/linux/wait.h
 +++ b/include/linux/wait.h
 @@ -243,6 +243,13 @@ wait_queue_head_t *bit_waitqueue(void *, int);

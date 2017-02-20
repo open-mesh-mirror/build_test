@@ -12,7 +12,7 @@ This reverts commit 7322dd755e7dd34bc5359aa27abeed1687e0f628.
  1 file changed, 9 insertions(+), 15 deletions(-)
 
 diff --git a/include/uapi/linux/swab.h b/include/uapi/linux/swab.h
-index 8f3a8f606fd9..3f10e5317b46 100644
+index 8f3a8f6..3f10e53 100644
 --- a/include/uapi/linux/swab.h
 +++ b/include/uapi/linux/swab.h
 @@ -45,7 +45,9 @@
