@@ -66,7 +66,7 @@ check_external()
 	if [ ! -x "${SMATCH_CGCC}" -o ! -x "${SMATCH}" ]; then
 		echo "Required tool smatch missing:"
 		echo "    git clone http://repo.or.cz/smatch.git smatch"
-		echo "    git -C smatch reset --hard 65577570db1a77c1af9c1acd5e31f3f9d19b209f"
+		echo "    git -C smatch reset --hard a6524ba1ac8cecd67529cf88570edbc245cf65a8"
 		echo "    git -C smatch am ../patches/smatch/9999-smatch-Workaround-to-allow-the-check-of-batadv_iv_og.patch"
 		echo "    make -C smatch"
 		exit 1
