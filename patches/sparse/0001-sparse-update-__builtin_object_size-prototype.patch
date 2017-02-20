@@ -20,11 +20,11 @@ Signed-off-by: Lance Richardson <lrichard@redhat.com>
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/lib.c b/lib.c
-index 8dc5bcf..cade28c 100644
+index d5b56b0..2d66aa0 100644
 --- a/lib.c
 +++ b/lib.c
-@@ -877,7 +877,7 @@ void declare_builtin_functions(void)
- 	add_pre_buffer("extern int __builtin_isunordered(float, float);\n");
+@@ -888,7 +888,7 @@ void declare_builtin_functions(void)
+ 	add_pre_buffer("extern long double __builtin_nanl(const char *);\n");
  
  	/* And some __FORTIFY_SOURCE ones.. */
 -	add_pre_buffer ("extern __SIZE_TYPE__ __builtin_object_size(void *, int);\n");
