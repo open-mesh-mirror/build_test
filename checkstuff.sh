@@ -200,20 +200,17 @@ test_checkpatch()
 			continue
 		fi
 
-		fname=$(basename "$i")
-		if [ "$fname" != "compat.c" -a "$fname" != "compat.h" -a "$fname" != "gen-compat-autoconf.sh" ]; then
-			rm -f log logfull
+		rm -f log logfull
 
-			"${CHECKPATCH}" -q \
-				--ignore COMPLEX_MACRO \
-				--ignore MACRO_ARG_PRECEDENCE \
-				--ignore MACRO_ARG_REUSE \
-				--min-conf-desc-length=3 \
-				--strict --file "$i" &> logfull
+		"${CHECKPATCH}" -q \
+			--ignore COMPLEX_MACRO \
+			--ignore MACRO_ARG_PRECEDENCE \
+			--ignore MACRO_ARG_REUSE \
+			--min-conf-desc-length=3 \
+			--strict --file "$i" &> logfull
 
-			if [ -s "logfull" ]; then
-				"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "checkpatch $i" logfull logfull
-			fi
+		if [ -s "logfull" ]; then
+			"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "checkpatch $i" logfull logfull
 		fi
 	done
 }
