@@ -202,10 +202,21 @@ test_checkpatch()
 
 		rm -f log logfull
 
+		fname="$(basename "$i")"
+		cp_extra_params=""
+
+		if [ "${fname}" = "sysfs.c" ]; then
+			cp_extra_params="${cp_extra_params} --ignore COMPLEX_MACRO"
+			cp_extra_params="${cp_extra_params} --ignore MACRO_ARG_PRECEDENCE"
+			cp_extra_params="${cp_extra_params} --ignore MACRO_ARG_REUSE"
+		fi
+
+		if [ "${fname}" = "log.h" ]; then
+			cp_extra_params="${cp_extra_params} --ignore MACRO_ARG_REUSE"
+		fi
+
 		"${CHECKPATCH}" -q \
-			--ignore COMPLEX_MACRO \
-			--ignore MACRO_ARG_PRECEDENCE \
-			--ignore MACRO_ARG_REUSE \
+			${cp_extra_params} \
 			--min-conf-desc-length=3 \
 			--strict --file "$i" &> logfull
 
