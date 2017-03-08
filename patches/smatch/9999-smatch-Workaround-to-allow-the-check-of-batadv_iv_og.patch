@@ -2,12 +2,12 @@ From: Sven Eckelmann <sven@narfation.org>
 Date: Tue, 21 Apr 2015 19:31:46 +0200
 Subject: [PATCH] smatch: Workaround to allow the check of batadv_iv_ogm_process_per_outif
 ---
- smatch_implied.c | 4 ++--
- smatch_slist.c   | 4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+ smatch_implied.c | 10 +++++-----
+ smatch_slist.c   |  4 ++--
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/smatch_implied.c b/smatch_implied.c
-index c64924c7..c53617b9 100644
+index c64924c781fad6452a6be58021071a08377f6adb..825faa94b83246fb6e04452e3783749f01d05265 100644
 --- a/smatch_implied.c
 +++ b/smatch_implied.c
 @@ -312,7 +312,7 @@ static void __separate_pools(struct sm_state *sm, int comparison, struct range_l
@@ -28,8 +28,21 @@ index c64924c7..c53617b9 100644
  		if (option_debug || option_debug_implied) {
  			static char buf[1028];
  			snprintf(buf, sizeof(buf), "debug: %s: nr_children over 4000 (%d). (%s %s)",
+@@ -561,9 +561,9 @@ static void separate_and_filter(struct sm_state *sm, int comparison, struct rang
+ 	}
+ 
+ 	gettimeofday(&time_after, NULL);
+-	if (time_after.tv_sec - time_before.tv_sec > 20) {
+-		sm->nr_children = 4000;
+-		sm_msg("Function too hairy.  Giving up.");
++	if (time_after.tv_sec - time_before.tv_sec > 120) {
++		sm->nr_children = 40000;
++		sm_msg("Function too hairy.  Giving up. (timeout)");
+ 	}
+ }
+ 
 diff --git a/smatch_slist.c b/smatch_slist.c
-index bbcef670..ec344ba7 100644
+index bbcef6700967ba4f4234c80f7c38bda710837415..ec344ba70cecf18f9c2b3a11ddbbf16c8b816a5b 100644
 --- a/smatch_slist.c
 +++ b/smatch_slist.c
 @@ -238,14 +238,14 @@ int out_of_memory(void)
