@@ -380,10 +380,14 @@ test_compare_net()
 		rm -f "${TMPNAME}/net/MAINTAINERS"
 	fi
 
+	# only allow YEAR.RELEASE version numbers and not YEAR.RELEASE.MINOR in net.git
+	sed -i 's/^#define BATADV_SOURCE_VERSION "\([0-9][0-9]*\)\.\([0-9][0-9]*\)\(\.[0-9][0-9]*\)*"/#define BATADV_SOURCE_VERSION "\1.\2"/' "${TMPNAME}/batadv/net/batman-adv/main.h"
+
 	# compare against batman_adv.h
 	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- include/uapi/linux/batman_adv.h | tar x
 	git archive --remote="linux-next/.git/" --format=tar --prefix="${TMPNAME}/net/" "${upstream_rev}" -- include/uapi/linux/batman_adv.h | tar x
 
+	diff -ruN "${TMPNAME}"/batadv "${TMPNAME}"/net > /home/sven/projekte/build_test/foo.diff
 	diff -ruN "${TMPNAME}"/batadv "${TMPNAME}"/net|diffstat -w 71 -q -p2 > "${TMPNAME}"/log
 	if [ -s "${TMPNAME}/log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "difference between ${upstream_name} and batadv ${branch}" "${TMPNAME}"/log "${TMPNAME}"/log
