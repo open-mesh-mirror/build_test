@@ -33,6 +33,7 @@ blacklist="
 	batadv_v_elp_rx_ingress_bad
 	batadv_v_elp_tx_egress_bad
 	batadv_v_elp_tx_ingress_bad
+	batadv_forw_packet_is_rebroadcast
 "
 
 for i in $defined; do
