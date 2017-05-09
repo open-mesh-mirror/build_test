@@ -50,7 +50,7 @@ check_external()
 	if [ ! -x "${CGCC}" -o ! -x "${SPARSE}" ]; then
 		echo "Required tool sparse missing:"
 		echo "    git clone git://git.kernel.org/pub/scm/devel/sparse/sparse.git sparse"
-		echo "    git -C sparse reset --hard fbbfc73099d16057cfad98668dafb50ce3844719"
+		echo "    git -C sparse reset --hard 14964df5373292af78b29529d4fc7e1a26b67a97"
 		echo "    make -C sparse"
 		exit 1
 	fi
