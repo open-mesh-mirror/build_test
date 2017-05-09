@@ -2,7 +2,7 @@
 set -e
 
 LINUX_REPOSITORY=${LINUX_REPOSITORY:="$HOME/tmp/linux-next/"}
-LINUX_VERSIONS=$(echo linux-3.{2..19} linux-4.{0..10})
+LINUX_VERSIONS=$(echo linux-3.{2..19} linux-4.{0..11})
 PATCHDIR="$(pwd)/../patches/"
 
 
