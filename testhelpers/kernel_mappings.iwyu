@@ -66,6 +66,7 @@
 { include: ["\"linux/netdevice.h\"", "private", "<linux/netdevice.h>", "public"] },
 { include: ["\"linux/net.h\"", "private", "<linux/netdevice.h>", "public"] },
 { include: ["\"linux/netlink.h\"", "private", "<linux/netlink.h>", "public"] },
+{ include: ["\"linux/nl80211.h\"", "private", "<linux/nl80211.h>", "public"] },
 { include: ["\"linux/notifier.h\"", "private", "<linux/notifier.h>", "public"] },
 { include: ["\"linux/ns_common.h\"", "private", "<linux/ns_common.h>", "public"] },
 { include: ["\"linux/percpu.h\"", "private", "<linux/percpu.h>", "public"] },
