@@ -7,7 +7,7 @@ Subject: [PATCH] smatch: Workaround to allow the check of batadv_iv_ogm_process_
  2 files changed, 7 insertions(+), 7 deletions(-)
 
 diff --git a/smatch_implied.c b/smatch_implied.c
-index c64924c781fad6452a6be58021071a08377f6adb..825faa94b83246fb6e04452e3783749f01d05265 100644
+index f6dd15a28fa694f080642fc864a0e7f529917133..966d6a5745a962a497dfbff5b26828724d1ca19e 100644
 --- a/smatch_implied.c
 +++ b/smatch_implied.c
 @@ -312,7 +312,7 @@ static void __separate_pools(struct sm_state *sm, int comparison, struct range_l
@@ -34,22 +34,22 @@ index c64924c781fad6452a6be58021071a08377f6adb..825faa94b83246fb6e04452e3783749f
  	gettimeofday(&time_after, NULL);
 -	if (time_after.tv_sec - time_before.tv_sec > 20) {
 -		sm->nr_children = 4000;
--		sm_msg("Function too hairy.  Giving up.");
+-		sm_msg("Function too hairy.  Giving up after 20 seconds.");
 +	if (time_after.tv_sec - time_before.tv_sec > 120) {
 +		sm->nr_children = 40000;
-+		sm_msg("Function too hairy.  Giving up. (timeout)");
++		sm_msg("Function too hairy.  Giving up after 120 seconds.");
  	}
  }
  
 diff --git a/smatch_slist.c b/smatch_slist.c
-index bbcef6700967ba4f4234c80f7c38bda710837415..ec344ba70cecf18f9c2b3a11ddbbf16c8b816a5b 100644
+index 4790b2d3881a96ecb58754c66dba17b5cb6daf67..c980d5a02c4731a765478672813a1ea134b3720a 100644
 --- a/smatch_slist.c
 +++ b/smatch_slist.c
 @@ -238,14 +238,14 @@ int out_of_memory(void)
  	 * It works out OK for the kernel and so it should work
  	 * for most other projects as well.
  	 */
--	if (sm_state_counter * sizeof(struct sm_state) >= 50000000)
+-	if (sm_state_counter * sizeof(struct sm_state) >= 100000000)
 +	if (sm_state_counter * sizeof(struct sm_state) >= 500000000)
  		return 1;
  	return 0;
