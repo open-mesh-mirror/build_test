@@ -50,7 +50,7 @@ check_external()
 	if [ ! -x "${CGCC}" -o ! -x "${SPARSE}" ]; then
 		echo "Required tool sparse missing:"
 		echo "    git clone git://git.kernel.org/pub/scm/devel/sparse/sparse.git sparse"
-		echo "    git -C sparse reset --hard 14964df5373292af78b29529d4fc7e1a26b67a97"
+		echo "    git -C sparse reset --hard 88578349140acf4405b768a60be05e10b7b8b158"
 		echo "    make -C sparse"
 		exit 1
 	fi
@@ -279,10 +279,6 @@ test_sparse()
 	# hard-interface.c:.* delete is required for a warning caused by the compat.h hack for get_link_net
 	(EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SPARSE} -Wsparse-all -Wno-ptr-subtraction-blows $extra_flags" $config CC="${CGCC}" KERNELPATH="${LINUX_HEADERS}/${linux_name}" 3>&2 2>&1 1>&3 \
 			|grep -v "No such file: c" \
-			|sed -e '/hard-interface.c:.* warning: incorrect type in return expression (different base types)/,+2d'|sed '/hard-interface.c: In function .batadv_getlink_net./,+3d' \
-			|sed -e "/hard-interface.c:.*: note: in expansion of macro 'get_link_net'/,+2d" \
-			|sed -e '/In file included from <command-line>/d' \
-			|sed -e '/^[1-9][0-9]* files match$/d' \
 			|tee log) &> logfull
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "sparse ${linux_name} $(simplify_config_string "${config}")" log logfull
