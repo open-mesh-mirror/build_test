@@ -107,4 +107,5 @@
 { include: ["\"uapi/linux/batman_adv.h\"", "private", "<uapi/linux/batman_adv.h>", "public"] },
 { include: ["\"types.h\"", "private", "\"main.h\"", "public"] },
 { symbol: ["NET_IP_ALIGN", "private", "<linux/skbuff.h>", "public"] },
+{ symbol: [ "BIT", private, "<linux/bitops.h>", public ] },
 ]
