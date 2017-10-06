@@ -73,9 +73,12 @@ check_external()
 
 	if [ ! -x "${CHECKPATCH}" -o ! -x "${KERNELDOC}" ]; then
 		echo "Required tool checkpatch and kernel-doc missing:"
-		echo "    git clone git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git linux-next"
-		echo "    git --git-dir=linux-next/.git/ remote add net-next git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git"
-		echo "    git --git-dir=linux-next/.git/ remote add net git://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git"
+		echo "    git clone --depth=1 git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git linux-next"
+		echo "    git --git-dir=linux-next/.git/ remote add -t master --no-tags net-next git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git"
+		echo "    git --git-dir=linux-next/.git/ remote add -t master --no-tags net git://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git"
+		echo "    git --git-dir=linux-next/.git/ config remote.origin.tagopt --no-tags"
+		echo "    git --git-dir=linux-next/.git/ fetch --depth=1 net-next"
+		echo "    git --git-dir=linux-next/.git/ fetch --depth=1 net"
 		exit 1
 	fi
 
