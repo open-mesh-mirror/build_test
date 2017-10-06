@@ -41,6 +41,7 @@ LINUX_HEADERS="$(pwd)/linux-build"
 GENERATE_CONFIG="$(pwd)/testhelpers/generate_config_params.py"
 GENERATE_LINUX_VERSIONS="$(pwd)/testhelpers/generate_linux_versions.py"
 
+CCACHE="/usr/bin/ccache"
 MAKE="/usr/bin/make"
 extra_flags='-Werror -D__CHECK_ENDIAN__ -DDEBUG'
 export LANG=C
@@ -133,7 +134,7 @@ test_coccicheck()
 	path="$(source_path)"
 
 	rm -f log
-	make -s -C "${LINUXNEXT}" coccicheck MODE=report KBUILD_EXTMOD="$(pwd)/${path}" | \
+	"${MAKE}" -s -C "${LINUXNEXT}" coccicheck MODE=report KBUILD_EXTMOD="$(pwd)/${path}" | \
 		grep -v -e 'Please check for false positives in the output before submitting a patch.' \
 			-e 'When using "patch" mode, carefully review the patch before submitting it.' \
 			-e 'ERROR: next_gw is NULL but dereferenced.' \
@@ -280,7 +281,7 @@ test_sparse()
 	config="$3"
 
 	# hard-interface.c:.* delete is required for a warning caused by the compat.h hack for get_link_net
-	(EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SPARSE} -Wsparse-all -Wno-ptr-subtraction-blows $extra_flags" $config CC="${CGCC}" KERNELPATH="${LINUX_HEADERS}/${linux_name}" 3>&2 2>&1 1>&3 \
+	(EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SPARSE} -Wsparse-all -Wno-ptr-subtraction-blows $extra_flags" $config CC="${CGCC}" REAL_CC="${CCACHE} gcc" KERNELPATH="${LINUX_HEADERS}/${linux_name}" 3>&2 2>&1 1>&3 \
 			|grep -v "No such file: c" \
 			|tee log) &> logfull
 	if [ -s "log" ]; then
@@ -321,7 +322,7 @@ test_smatch()
 	linux_name="$2"
 	config="$3"
 
-	EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SMATCH} -p=kernel --two-passes --file-output $extra_flags" $config CC="${SMATCH_CGCC}" KERNELPATH="${LINUX_HEADERS}/${linux_name}" -j"${JOBS}" &> /dev/null
+	EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SMATCH} -p=kernel --two-passes --file-output $extra_flags" $config CC="${SMATCH_CGCC}" REAL_CC="${CCACHE} gcc" KERNELPATH="${LINUX_HEADERS}/${linux_name}" -j"${JOBS}" &> /dev/null
 	# installed filters:
 	#
 	path="$(build_path)"
@@ -454,8 +455,8 @@ test_headers()
 		sed -i 's/\/\* for packet.h \*\//\/\* for packet.h \*\/ \/\/ IWYU pragma: keep/' "${spath}"/*c "${spath}"/*.h
 		sed -i 's/#include <linux\/printk.h>/#include <linux\/printk.h> \/\* for pr_warn_once \*\/ \/\/ IWYU pragma: keep/' "${spath}"/multicast.c
 
-		make KERNELPATH="${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}" $MAKE_CONFIG clean
-		make KERNELPATH="${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}" -j1 -k CC="iwyu -Xiwyu --prefix_header_includes=keep -Xiwyu --no_default_mappings -Xiwyu --transitive_includes_only -Xiwyu --verbose=1 -Xiwyu --mapping_file=$IWYU_KERNEL_MAPPINGS" $MAKE_CONFIG 2> test
+		"${MAKE}" KERNELPATH="${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}" $MAKE_CONFIG clean
+		"${MAKE}" KERNELPATH="${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}" -j1 -k CC="iwyu -Xiwyu --prefix_header_includes=keep -Xiwyu --no_default_mappings -Xiwyu --transitive_includes_only -Xiwyu --verbose=1 -Xiwyu --mapping_file=$IWYU_KERNEL_MAPPINGS" $MAKE_CONFIG 2> test
 
 		bpath="$(build_path)"
 
@@ -507,10 +508,10 @@ test_builds()
 			test_sparse "${branch}" "${linux_name}" "${config}"
 			test_unused_symbols "${branch}" "${linux_name}" "${config}"
 			test_wrong_namespace "${branch}" "${linux_name}" "${config}"
-			"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}/${linux_name}" -j"${JOBS}" clean
+			"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}/${linux_name}" REAL_CC="${CCACHE} gcc" -j"${JOBS}" clean
 
 			test_smatch "${branch}" "${linux_name}" "${config}"
-			"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}/${linux_name}" -j"${JOBS}" clean
+			"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}/${linux_name}" REAL_CC="${CCACHE} gcc" -j"${JOBS}" clean
 		done
 	done
 }
@@ -531,6 +532,8 @@ testbranch()
 
 		rm -rf "${TMPNAME}"
 		git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/" "$branch" | tar x
+
+		export CCACHE_BASEDIR="$(pwd)"
 		cd "${TMPNAME}"
 
 		if [ "$branch" != "${SUBMIT_NET_BRANCH}" ]; then
