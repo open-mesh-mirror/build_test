@@ -33,6 +33,7 @@ KERNELDOC="${LINUXNEXT}/scripts/kernel-doc"
 UNUSED_SYMBOLS="$(pwd)/testhelpers/find_unused_symbols.sh"
 CHECK_COPYRIGHT="$(pwd)/testhelpers/check_copyright.sh"
 WRONG_NAMESPACE="$(pwd)/testhelpers/find_wrong_namespace.sh"
+MISSING_KERNELDOC_SYMBOLS="$(pwd)/testhelpers/find_missing_kerneldoc_symbols.sh"
 IWYU_KERNEL_MAPPINGS="$(pwd)/testhelpers/kernel_mappings.iwyu"
 FIX_INCLUDE_SORT="$(pwd)/testhelpers/fix_includes_sort.py"
 
@@ -316,6 +317,20 @@ test_wrong_namespace()
 	fi
 }
 
+test_missing_kerneldoc_symbols()
+{
+	branch="$1"
+	linux_name="$2"
+	config="$3"
+
+	path="$(source_path)"
+
+	"${MISSING_KERNELDOC_SYMBOLS}" $("${KERNELDOC}" -list "${path}"/*{c,h} 2> /dev/null) &> log
+	if [ -s "log" ]; then
+		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "missing kerneldoc for non-static symbols ${linux_name} $(simplify_config_string "${config}")" log log
+	fi
+}
+
 test_smatch()
 {
 	branch="$1"
@@ -508,6 +523,11 @@ test_builds()
 			test_sparse "${branch}" "${linux_name}" "${config}"
 			test_unused_symbols "${branch}" "${linux_name}" "${config}"
 			test_wrong_namespace "${branch}" "${linux_name}" "${config}"
+
+			if [ "$branch" != "${SUBMIT_NET_BRANCH}" ]; then
+				test_missing_kerneldoc_symbols "${branch}" "${linux_name}" "${config}"
+			fi
+
 			"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}/${linux_name}" -j"${JOBS}" clean
 
 			test_smatch "${branch}" "${linux_name}" "${config}"
