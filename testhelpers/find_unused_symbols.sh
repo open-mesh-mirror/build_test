@@ -27,12 +27,6 @@ blacklist="
 	batadv_gw_node_get
 	batadv_get_real_netdev
 	batadv_is_cfg80211_hardif
-	batadv_tvlv_containers_process2
-	batadv_v_elp_nhh_cmp
-	batadv_v_elp_rx_egress_bad
-	batadv_v_elp_rx_ingress_bad
-	batadv_v_elp_tx_egress_bad
-	batadv_v_elp_tx_ingress_bad
 	batadv_forw_packet_is_rebroadcast
 "
 
