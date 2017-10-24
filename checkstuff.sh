@@ -524,9 +524,9 @@ test_builds()
 			test_unused_symbols "${branch}" "${linux_name}" "${config}"
 			test_wrong_namespace "${branch}" "${linux_name}" "${config}"
 
-			if [ "$branch" != "${SUBMIT_NET_BRANCH}" ]; then
-				test_missing_kerneldoc_symbols "${branch}" "${linux_name}" "${config}"
-			fi
+#			if [ "$branch" != "${SUBMIT_NET_BRANCH}" ]; then
+#				test_missing_kerneldoc_symbols "${branch}" "${linux_name}" "${config}"
+#			fi
 
 			"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}/${linux_name}" -j"${JOBS}" clean
 
