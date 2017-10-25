@@ -17,7 +17,15 @@ obj=$(ls -1 "${path}"/*.o|grep -v -e 'batman-adv\.o' -e 'batman-adv\.mod\.o')
 defined="`nm -g --defined-only  ${obj}|awk '{ print $3}'|grep '^batadv'|sort|uniq`"
 used="$@"
 ret=0
-blacklist=""
+blacklist="
+  batadv_broadcast_addr
+  batadv_event_workqueue
+  batadv_hardif_list
+  batadv_hard_if_notifier
+  batadv_link_ops
+  batadv_netlink_family
+  batadv_routing_algo
+"
 
 for i in $defined; do
 	found=0
