@@ -540,7 +540,9 @@ testbranch()
 {
 	branch="$1"
 	(
-		test_headers "$branch"
+		if [ "$branch" != "${SUBMIT_NET_BRANCH}" ]; then
+			test_headers "$branch"
+		fi
 
 		if [ "$branch" == "${SUBMIT_NET_NEXT_BRANCH}" ]; then
 			test_compare_net_next "${branch}"
