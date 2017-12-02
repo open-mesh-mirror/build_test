@@ -177,7 +177,7 @@ test_comments()
 		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "Multiline comment ending at a non-empty line" log log
 	fi
 
-	grep -nE "/\*\*..*$" "${path}"/*.c "${path}"/*.h &> log
+	grep -nE "/\*\*..*$" "${path}"/*.c "${path}"/*.h|grep -v -nE '\*/$' &> log
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "Comment starting with two asterisk non-empty line" log log
 	fi
