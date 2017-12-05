@@ -26,6 +26,7 @@
 { include: ["\"linux/bug.h\"", "private", "<linux/bug.h>", "public"] },
 { include: ["\"linux/build_bug.h\"", "private", "<linux/build_bug.h>", "public"] },
 { include: ["\"linux/byteorder/generic.h\"", "private", "<linux/byteorder/generic.h>", "public"] },
+{ include: ["\"linux/byteorder/little_endian.h\"", "private", "<asm/byteorder.h>", "public"] },
 { include: ["\"linux/cache.h\"", "private", "<linux/cache.h>", "public"] },
 { include: ["\"linux/compiler.h\"", "private", "<linux/compiler.h>", "public"] },
 { include: ["\"linux/cpumask.h\"", "private", "<linux/cpumask.h>", "public"] },
