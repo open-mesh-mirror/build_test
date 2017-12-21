@@ -199,7 +199,7 @@ test_checkpatch()
 	path="$(source_path)"
 
 	rm -f log logfull
-	for i in "${path}"/*; do
+	for i in "${path}"/* include/uapi/linux/*; do
 		if [ ! -f "$i" ]; then
 			continue
 		fi
