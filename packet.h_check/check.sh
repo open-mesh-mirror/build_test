@@ -14,12 +14,25 @@ checkout_packet_h()
 	remote="${1}"
 	branch="${2}"
 
+	git --git-dir="${remote}" cat-file -p "${branch}":include/uapi/linux/batadv_packet.h 2> /dev/null
+	if [ "$?" = "0" ]; then
+		return
+	fi
+
+	git --git-dir="${remote}" cat-file -p "${branch}":batadv_packet.h 2> /dev/null
+	if [ "$?" = "0" ]; then
+		return
+	fi
+
 	git --git-dir="${remote}" cat-file -p "${branch}":net/batman-adv/packet.h 2> /dev/null
 	if [ "$?" = "0" ]; then
 		return
 	fi
 
 	git --git-dir="${remote}" cat-file -p "${branch}":packet.h 2> /dev/null
+	if [ "$?" = "0" ]; then
+		return
+	fi
 }
 
 checkout_packet_h "${REMOTE}" master > batman-adv_master.packet.h
@@ -36,7 +49,7 @@ generate_email_header()
 	cat <<-EOF
 	From: postmaster@open-mesh.org
 	To: $1
-	Subject: Noticed difference in packet.h in $2
+	Subject: Noticed difference in batadv_packet.h in $2
 	MIME-Version: 1.0
 	Content-Type: text/plain; charset=UTF-8
 
