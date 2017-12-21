@@ -262,7 +262,7 @@ test_brackets()
 	branch="$1"
 	path="$(source_path)"
 
-	for i in "${path}"/*.c "${path}"/*.h; do
+	for i in "${path}"/*.c "${path}"/*.h include/uapi/linux/*; do
 		fname=$(basename "$i")
 		if [ "$fname" != "compat.c" -a "$fname" != "compat.h" ]; then
 			rm -f log logfull
