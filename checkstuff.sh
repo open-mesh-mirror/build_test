@@ -364,7 +364,7 @@ test_main_include()
 	branch="$1"
 
 	spath="$(source_path)"
-	for i in $(ls -1 "${spath}"|grep -v -e '^main.h$' -e '^packet.h$' -e '^types.h$'|grep -e '\.c$' -e '\.h$'); do
+	for i in $(ls -1 "${spath}"|grep -v -e '^main.h$' -e '^types.h$'|grep -e '\.c$' -e '\.h$'); do
 		grep -L '#[[:space:]]*include[[:space:]]*"main.h"' net/batman-adv/"$i"
 	done|sed 's/^/missing include for "main.h" in /' > log
 	if [ -s "log" ]; then
