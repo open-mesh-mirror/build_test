@@ -245,7 +245,7 @@ test_kerneldoc()
 		if [ "$fname" != "compat.c" -a "$fname" != "compat.h" -a "$fname" != "gen-compat-autoconf.sh" ]; then
 			rm -f log logfull
 
-			("${KERNELDOC}" -v -list "$i" 2>&1 > /dev/null)| \
+			("${KERNELDOC}" -v -none "$i" 2>&1 > /dev/null)| \
 				grep -v Scanning|grep -v \
 				-e "[0-9]* warnings" \
 				-e 'no structured comments found' &> logfull
