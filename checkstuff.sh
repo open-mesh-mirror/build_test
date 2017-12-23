@@ -325,7 +325,8 @@ test_missing_kerneldoc_symbols()
 
 	path="$(source_path)"
 
-	"${MISSING_KERNELDOC_SYMBOLS}" $("${KERNELDOC}" -list "${path}"/*{c,h} 2> /dev/null) &> log
+
+	"${MISSING_KERNELDOC_SYMBOLS}" $("${KERNELDOC}" -rst "${path}"/*{c,h} include/uapi/linux/* 2>/dev/null|grep '^\.\. c:function::'|sed -e 's/[^(]* \([A-Za-z_][A-Za-z0-9_]*\) (.*/\1/') &> log
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "missing kerneldoc for non-static symbols ${linux_name} $(simplify_config_string "${config}")" log log
 	fi
