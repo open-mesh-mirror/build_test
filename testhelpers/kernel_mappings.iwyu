@@ -1,5 +1,6 @@
 [
 { include: ["\"linux/compiler-gcc.h\"", "private", "<linux/compiler.h>", "public"] },
+{ include: ["\"linux/compiler_types.h\"", "private", "<linux/compiler.h>", "public"] },
 { include: ["\"asm/atomic.h\"", "private", "<linux/atomic.h>", "public"] },
 { include: ["\"asm/atomic64.h\"", "private", "<linux/atomic.h>", "public"] },
 { include: ["\"asm/atomic64_64.h\"", "private", "<linux/atomic.h>", "public"] },

@@ -210,7 +210,7 @@ for i in `seq 2 19`; do
 	)
 done
 
-for i in `seq 0 14`; do
+for i in `seq 0 15`; do
 	git archive --remote="${LINUX_REPOSITORY}" --format tar --prefix=linux-4.${i}/ v4.${i}|tar x
 	(
 		cd "linux-4.${i}" || exit

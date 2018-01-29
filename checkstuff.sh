@@ -15,9 +15,9 @@ CONFIGS_PER_RUN=${CONFIGS_PER_RUN:=4}
 LINUX_VERSIONS_PER_RUN=${LINUX_VERSIONS_PER_RUN:=0}
 MAX_BUILDTIME_PER_BRANCH=${MAX_BUILDTIME_PER_BRANCH:=725328000}
 
-DEFAULT_LINUX_VERSIONS=$(echo linux-3.{2..19} linux-4.{0..14})
+DEFAULT_LINUX_VERSIONS=$(echo linux-3.{2..19} linux-4.{0..15})
 LINUX_VERSIONS=${LINUX_VERSIONS:=${DEFAULT_LINUX_VERSIONS}}
-LINUX_DEFAULT_VERSION=${LINUX_DEFAULT_VERSION:="linux-4.14"}
+LINUX_DEFAULT_VERSION=${LINUX_DEFAULT_VERSION:="linux-4.15"}
 DEFAULT_TMPNAME="$(mktemp -d -p. -u)"
 TMPNAME=${TMPNAME:=${DEFAULT_TMPNAME}}
 
@@ -343,6 +343,7 @@ test_smatch()
 	#
 	path="$(build_path)"
 	cat "${path}"/*.smatch \
+		|grep -v 'arch/x86/include/asm/refcount.h' \
 		> log
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "smatch ${linux_name} $config" log log
