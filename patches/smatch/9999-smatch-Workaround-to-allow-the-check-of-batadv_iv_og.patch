@@ -2,12 +2,12 @@ From: Sven Eckelmann <sven@narfation.org>
 Date: Tue, 21 Apr 2015 19:31:46 +0200
 Subject: [PATCH] smatch: Workaround to allow the check of batadv_iv_ogm_process_per_outif
 ---
- smatch_implied.c | 10 +++++-----
- smatch_slist.c   |  4 ++--
- 2 files changed, 7 insertions(+), 7 deletions(-)
+ smatch_implied.c | 8 ++++----
+ smatch_slist.c   | 4 ++--
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
 diff --git a/smatch_implied.c b/smatch_implied.c
-index f6dd15a28fa694f080642fc864a0e7f529917133..966d6a5745a962a497dfbff5b26828724d1ca19e 100644
+index e139e18aad775e98d4a0c549fa0709e686d649ff..682a1824d1130705f01cdd2f9c98fe2ff4bfacb2 100644
 --- a/smatch_implied.c
 +++ b/smatch_implied.c
 @@ -312,7 +312,7 @@ static void __separate_pools(struct sm_state *sm, int comparison, struct range_l
@@ -19,33 +19,31 @@ index f6dd15a28fa694f080642fc864a0e7f529917133..966d6a5745a962a497dfbff5b2682872
  		if (option_debug || option_debug_implied) {
  			static char buf[1028];
  			snprintf(buf, sizeof(buf), "debug: %s: nr_children over 4000 (%d). (%s %s)",
-@@ -413,7 +413,7 @@ struct sm_state *filter_pools(struct sm_state *sm,
- 	if (!sm)
- 		return NULL;
+@@ -436,7 +436,7 @@ struct sm_state *filter_pools(struct sm_state *sm,
+ 		return sm;
  
--	if (sm->nr_children > 4000) {
-+	if (sm->nr_children > 40000) {
- 		if (option_debug || option_debug_implied) {
+ 	gettimeofday(&now, NULL);
+-	if ((*recurse_cnt)++ > 1000 || now.tv_sec - start->tv_sec > 5) {
++	if ((*recurse_cnt)++ > 10000 || now.tv_sec - start->tv_sec > 30) {
+ 		if (local_debug || option_debug_implied) {
  			static char buf[1028];
  			snprintf(buf, sizeof(buf), "debug: %s: nr_children over 4000 (%d). (%s %s)",
-@@ -561,9 +561,9 @@ static void separate_and_filter(struct sm_state *sm, int comparison, struct rang
- 	}
+@@ -594,8 +594,8 @@ static void separate_and_filter(struct sm_state *sm, int comparison, struct rang
  
  	gettimeofday(&time_after, NULL);
--	if (time_after.tv_sec - time_before.tv_sec > 20) {
+ 	sec = time_after.tv_sec - time_before.tv_sec;
+-	if (sec > 20) {
 -		sm->nr_children = 4000;
--		sm_msg("Function too hairy.  Giving up after 20 seconds.");
-+	if (time_after.tv_sec - time_before.tv_sec > 120) {
++	if (sec > 120) {
 +		sm->nr_children = 40000;
-+		sm_msg("Function too hairy.  Giving up after 120 seconds.");
+ 		sm_msg("Function too hairy.  Ignoring implications after %d seconds.", sec);
  	}
  }
- 
 diff --git a/smatch_slist.c b/smatch_slist.c
-index 4790b2d3881a96ecb58754c66dba17b5cb6daf67..c980d5a02c4731a765478672813a1ea134b3720a 100644
+index 29422ace9b2fe05d26dae3577517e89c8e7cfa31..c9536916db313244c7190c338dfc1feae3e3d471 100644
 --- a/smatch_slist.c
 +++ b/smatch_slist.c
-@@ -238,14 +238,14 @@ int out_of_memory(void)
+@@ -241,14 +241,14 @@ int out_of_memory(void)
  	 * It works out OK for the kernel and so it should work
  	 * for most other projects as well.
  	 */
