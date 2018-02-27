@@ -479,7 +479,7 @@ test_headers()
 		bpath="$(build_path)"
 
 		git add -f "${bpath}" "${spath}"
-		fix_include --nosafe_headers --separate_project_includes="$(pwd)/${bpath}" < test
+		"${FIX_INCLUDE_SORT}" --nosafe_headers --separate_project_includes="$(pwd)/${bpath}" < test
 
 		# remove extra noise
 		git checkout -f -- compat-sources
