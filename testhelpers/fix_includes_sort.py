@@ -288,7 +288,7 @@ class IWYUOutputParser(object):
   # of each section also has the filename.
   _ADD_SECTION_RE = re.compile(r'^(.*) should add these lines:$')
   _REMOVE_SECTION_RE = re.compile(r'^(.*) should remove these lines:$')
-  _TOTAL_SECTION_RE = re.compile(r'^The full include-list for ([^:]*):$')
+  _TOTAL_SECTION_RE = re.compile(r'^The full include-list for (.*):$')
   _SECTION_END_RE = re.compile(r'^---$')
 
   # Alternately, if a file does not need any iwyu modifications (though
@@ -613,7 +613,7 @@ def PrintFileDiff(old_file_contents, new_file_contents):
   try:
     next(diff)
     next(diff)
-    print('\n'.join(diff))
+    print('\n'.join(l.rstrip() for l in diff))
   except StopIteration:
     pass
 
@@ -1437,7 +1437,7 @@ def _IsMainCUInclude(line_info, filename):
     return False
   # First, normalize the includee by getting rid of -inl.h and .h
   # suffixes (for the #include) and the "'s around the #include line.
-  canonical_include = re.sub(r'(-inl\.h|\.h)$',
+  canonical_include = re.sub(r'(-inl\.h|\.h|\.H)$',
                              '', line_info.key.replace('"', ''))
   # Then normalize includer by stripping extension and Google's test suffixes.
   canonical_file, _ = os.path.splitext(filename)
@@ -2157,10 +2157,11 @@ def FixManyFiles(iwyu_records, flags):
   for iwyu_record in iwyu_records:
     try:
       fixed_lines = GetFixedFile(iwyu_record, flags)
-      if not flags.dry_run and fixed_lines is not None:
+      if fixed_lines is not None:
         file_and_fix_pairs.append((iwyu_record.filename, fixed_lines))
-        if (flags.checkout_command and
-            not os.access(iwyu_record.filename, os.W_OK)):
+        if flags.checkout_command and \
+           not flags.dry_run and \
+           not os.access(iwyu_record.filename, os.W_OK):
           files_to_checkout.append(iwyu_record.filename)
     except FixIncludesError as why:
       print('ERROR: %s - skipping file %s' % (why, iwyu_record.filename))
@@ -2187,8 +2188,9 @@ def FixManyFiles(iwyu_records, flags):
       checkout_command += (' -c %d' % flags.append_to_cl)
     _RunCommand(checkout_command, files_to_checkout)
 
-  for filename, fixed_lines in file_and_fix_pairs:
-    _WriteFileContents(filename, fixed_lines)
+  if not flags.dry_run:
+    for filename, fixed_lines in file_and_fix_pairs:
+      _WriteFileContents(filename, fixed_lines)
 
   files_fixed = [filename for filename, _ in file_and_fix_pairs]
 
