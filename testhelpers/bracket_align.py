@@ -81,6 +81,27 @@ def strip_comments(line, in_comment):
     return (line, in_comment)
 
 
+def check_combound_statement(line, pos):
+    # check what we expect for combound statement
+    if line[pos] == '(':
+        expected = '{'
+        expected_post = pos + 1
+    elif line[pos] == ')':
+        expected = '}'
+        expected_post = pos - 1
+    else:
+        return False
+
+    # check if this position is actually possible
+    if expected_post < 0 or expected_post > len(line):
+        return False
+
+    if line[expected_post] == expected:
+        return True
+    else:
+        False
+
+
 def main():
     bracket_stack = []
 
@@ -114,10 +135,11 @@ def main():
         pos_close = line.find(')', pos)
         pos = min_findpos(pos_open, pos_close)
         while pos != -1:
-            if line[pos] == '(':
-                bracket_stack.append(pos)
-            else:
-                bracket_stack.pop()
+            if not check_combound_statement(line, pos):
+                if line[pos] == '(':
+                    bracket_stack.append(pos)
+                else:
+                    bracket_stack.pop()
 
             pos += 1
             pos_open = line.find('(', pos)
