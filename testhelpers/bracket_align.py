@@ -38,8 +38,8 @@ def min_findpos(x, y):
 
 
 def get_first_nonspace(line):
-    for i in range(0, len(line)):
-        if line[i] != ' ':
+    for i, c in enumerate(line):
+        if c != ' ':
             return i
 
     return -1
@@ -90,18 +90,16 @@ def main():
     lines = open(sys.argv[1]).readlines()
 
     # convert tabs to spaces
-    for i in range(0, len(lines)):
-        lines[i] = tabs2spaces(lines[i])
-        lines[i] = lines[i].strip('\n\r')
+    lines = list(map(lambda line: tabs2spaces(line).strip('\n\r'), lines))
 
     # strip comments
     in_comment = 0
-    for i in range(0, len(lines)):
-        (lines[i], in_comment) = strip_comments(lines[i], in_comment)
+    for i, line in enumerate(lines):
+        (lines[i], in_comment) = strip_comments(line, in_comment)
 
-    for i in range(0, len(lines)):
+    for i, line in enumerate(lines):
         # check for correct alignment
-        nonspace_pos = get_first_nonspace(lines[i])
+        nonspace_pos = get_first_nonspace(line)
         if nonspace_pos != -1 and len(bracket_stack) != 0:
             expected = bracket_stack[len(bracket_stack) - 1] + 1
             if expected != nonspace_pos:
@@ -112,18 +110,18 @@ def main():
         # create stack of opened and closed brackets
         pos = 0
 
-        pos_open = lines[i].find('(', pos)
-        pos_close = lines[i].find(')', pos)
+        pos_open = line.find('(', pos)
+        pos_close = line.find(')', pos)
         pos = min_findpos(pos_open, pos_close)
         while pos != -1:
-            if lines[i][pos] == '(':
+            if line[pos] == '(':
                 bracket_stack.append(pos)
             else:
                 bracket_stack.pop()
 
             pos += 1
-            pos_open = lines[i].find('(', pos)
-            pos_close = lines[i].find(')', pos)
+            pos_open = line.find('(', pos)
+            pos_close = line.find(')', pos)
             pos = min_findpos(pos_open, pos_close)
 
 
