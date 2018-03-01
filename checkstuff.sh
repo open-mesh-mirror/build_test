@@ -45,7 +45,7 @@ GENERATE_LINUX_VERSIONS="$(pwd)/testhelpers/generate_linux_versions.py"
 
 MAKE="/usr/bin/make"
 extra_flags='-Werror -D__CHECK_ENDIAN__ -DDEBUG'
-export LANG=C
+export LANG=C.UTF-8
 
 check_external()
 {
