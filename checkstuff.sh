@@ -486,6 +486,7 @@ test_headers()
 		sed -i '/^struct batadv_hard_iface;$/d' "${bpath}"/main.h
 		sed -i '/^struct batadv_orig_node;$/d' "${bpath}"/main.h
 		sed -i '/^struct batadv_priv;$/d' "${bpath}"/main.h
+		sed -i '/^struct netlink_ext_ack;$/,+1d' "${bpath}"/soft-interface.c
 
 		"${FIX_INCLUDE_SORT}" --sort_only "${bpath}"/*.c "${bpath}"/*.h
 		git diff > log
