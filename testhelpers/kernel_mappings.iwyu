@@ -36,6 +36,7 @@
 { include: ["\"linux/err.h\"", "private", "<linux/err.h>", "public"] },
 { include: ["\"linux/etherdevice.h\"", "private", "<linux/etherdevice.h>", "public"] },
 { include: ["\"linux/ethtool.h\"", "private", "<linux/ethtool.h>", "public"] },
+{ include: ["\"linux/eventpoll.h\"", "private", "<linux/eventpoll.h>", "public"] },
 { include: ["\"linux/export.h\"", "private", "<linux/export.h>", "public"] },
 { include: ["\"linux/fs.h\"", "private", "<linux/fs.h>", "public"] },
 { include: ["\"linux/gfp.h\"", "private", "<linux/gfp.h>", "public"] },
