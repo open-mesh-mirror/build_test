@@ -23,7 +23,6 @@ TMPNAME=${TMPNAME:=${DEFAULT_TMPNAME}}
 
 CGCC="$(pwd)/sparse/cgcc"
 SPARSE="$(pwd)/sparse/sparse"
-CPPCHECK="$(pwd)/cppcheck/cppcheck"
 SMATCH="$(pwd)/smatch/smatch"
 SMATCH_CGCC="$(pwd)/smatch/cgcc"
 BRACKET="$(pwd)/testhelpers/bracket_align.py"
@@ -54,13 +53,6 @@ check_external()
 		echo "    git clone git://git.kernel.org/pub/scm/devel/sparse/sparse.git sparse"
 		echo "    git -C sparse reset --hard v0.5.1-55-gd1c2f8d"
 		echo "    make -C sparse"
-		exit 1
-	fi
-
-	if [ ! -x "${CPPCHECK}" ]; then
-		echo "Required tool cppcheck missing:"
-		echo "    git clone -b 1.78 git://github.com/danmar/cppcheck.git cppcheck"
-		echo "    make -C cppcheck"
 		exit 1
 	fi
 
@@ -95,31 +87,6 @@ check_external()
 			exit 1
 		fi
 	done
-}
-
-test_cppcheck()
-{
-	branch="$1"
-
-	touch compat-autoconf.h
-	rm -f log logfull
-	("${CPPCHECK}" --error-exitcode=42 --max-configs=64 \
-		-I./include/ \
-		-I"../minilinux/" \
-		-i"../minilinux/" \
-		--config-exclude="../minilinux/" \
-		-icompat-include \
-		-icompat-sources \
-		--enable=all --suppress=variableScope . 3>&2 2>&1 1>&3 \
-				| grep -v "gateway_client.c.* Either the condition 'next_gw' is redundant or there is possible null pointer dereference: next_gw" \
-				| grep -v "tvlv.c.* Either the condition '!tvlv_value' is redundant or there is possible null pointer dereference: tvlv_value" \
-				| grep -v "Cppcheck cannot find all the include files" \
-				| grep -v "../minilinux/" \
-				|tee log) &> logfull
-	if [ -s "log" ]; then
-		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "cppcheck" log logfull
-	fi
-	rm -f compat-autoconf.h
 }
 
 source_path()
@@ -560,7 +527,6 @@ testbranch()
 		cd "${TMPNAME}"
 
 		if [ "$branch" != "${SUBMIT_NET_BRANCH}" ]; then
-			test_cppcheck "${branch}"
 			test_coccicheck "${branch}"
 		fi
 		test_comments "${branch}"
