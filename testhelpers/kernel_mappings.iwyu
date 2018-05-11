@@ -62,6 +62,7 @@
 { include: ["\"linux/kobject.h\"", "private", "<linux/kobject.h>", "public"] },
 { include: ["\"linux/kref.h\"", "private", "<linux/kref.h>", "public"] },
 { include: ["\"linux/list.h\"", "private", "<linux/list.h>", "public"] },
+{ include: ["\"linux/log2.h\"", "private", "<linux/log2.h>", "public"] },
 { include: ["\"linux/lockdep.h\"", "private", "<linux/lockdep.h>", "public"] },
 { include: ["\"linux/module.h\"", "private", "<linux/module.h>", "public"] },
 { include: ["\"linux/moduleparam.h\"", "private", "<linux/moduleparam.h>", "public"] },
