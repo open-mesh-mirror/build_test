@@ -195,7 +195,7 @@ generate_squashfs()
 	echo ok
 }
 
-for i in `seq 2 19`; do
+for i in `seq 16 19`; do
 	git archive --remote="${LINUX_REPOSITORY}" --format tar --prefix=linux-3.${i}/ v3.${i}|tar x
 	(
 		cd "linux-3.${i}" || exit
