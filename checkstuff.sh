@@ -51,7 +51,8 @@ check_external()
 	if [ ! -x "${CGCC}" -o ! -x "${SPARSE}" ]; then
 		echo "Required tool sparse missing:"
 		echo "    git clone git://git.kernel.org/pub/scm/devel/sparse/sparse.git sparse"
-		echo "    git -C sparse reset --hard v0.5.1-55-gd1c2f8d"
+		echo "    git -C sparse reset --hard v0.5.2"
+		echo "    git -C sparse am ../patches/sparse/0001-sparse-add-Wpointer-arith-flag-to-toggle-sizeof-void.patch"
 		echo "    make -C sparse"
 		exit 1
 	fi
@@ -251,7 +252,7 @@ test_sparse()
 	config="$3"
 
 	# hard-interface.c:.* delete is required for a warning caused by the compat.h hack for get_link_net
-	(EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SPARSE} -Wsparse-all -Wno-ptr-subtraction-blows $extra_flags" $config CC="${CGCC}" KERNELPATH="${LINUX_HEADERS}/${linux_name}" 3>&2 2>&1 1>&3 \
+	(EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SPARSE} -Wsparse-all -Wnopointer-arith -Wno-ptr-subtraction-blows $extra_flags" $config CC="${CGCC}" KERNELPATH="${LINUX_HEADERS}/${linux_name}" 3>&2 2>&1 1>&3 \
 			|grep -v "No such file: c" \
 			|tee log) &> logfull
 	if [ -s "log" ]; then
