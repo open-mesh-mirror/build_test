@@ -15,9 +15,9 @@ CONFIGS_PER_RUN=${CONFIGS_PER_RUN:=4}
 LINUX_VERSIONS_PER_RUN=${LINUX_VERSIONS_PER_RUN:=0}
 MAX_BUILDTIME_PER_BRANCH=${MAX_BUILDTIME_PER_BRANCH:=725328000}
 
-DEFAULT_LINUX_VERSIONS=$(echo linux-3.{16..19} linux-4.{0..16})
+DEFAULT_LINUX_VERSIONS=$(echo linux-3.{16..19} linux-4.{0..17})
 LINUX_VERSIONS=${LINUX_VERSIONS:=${DEFAULT_LINUX_VERSIONS}}
-LINUX_DEFAULT_VERSION=${LINUX_DEFAULT_VERSION:="linux-4.16"}
+LINUX_DEFAULT_VERSION=${LINUX_DEFAULT_VERSION:="linux-4.17"}
 DEFAULT_TMPNAME="$(mktemp -d -p. -u)"
 TMPNAME=${TMPNAME:=${DEFAULT_TMPNAME}}
 
@@ -314,6 +314,7 @@ test_smatch()
 	path="$(build_path)"
 	cat "${path}"/*.smatch \
 		|grep -v 'arch/x86/include/asm/refcount.h' \
+		|grep -v 'warn: was || intended here instead of &&?' \
 		> log
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "smatch ${linux_name} $config" log log
@@ -441,7 +442,7 @@ test_headers()
 		sed -i 's/\/\* for linux\/wait.h \*\//\/\* for linux\/wait.h \*\/ \/\/ IWYU pragma: keep/' "${spath}"/*c "${spath}"/*.h
 
 		make KERNELPATH="${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}" $MAKE_CONFIG clean
-		make KERNELPATH="${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}" -j1 -k CC="iwyu -Xiwyu --prefix_header_includes=keep -Xiwyu --no_default_mappings -Xiwyu --transitive_includes_only -Xiwyu --verbose=1 -Xiwyu --mapping_file=$IWYU_KERNEL_MAPPINGS" $MAKE_CONFIG 2> test
+		make KERNELPATH="${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}" -j1 -k CC_HAVE_ASM_GOTO=1 CC="iwyu -Xiwyu --prefix_header_includes=keep -Xiwyu --no_default_mappings -Xiwyu --transitive_includes_only -Xiwyu --verbose=1 -Xiwyu --mapping_file=$IWYU_KERNEL_MAPPINGS" $MAKE_CONFIG 2> test
 
 		bpath="$(build_path)"
 
