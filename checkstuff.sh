@@ -21,10 +21,8 @@ LINUX_DEFAULT_VERSION=${LINUX_DEFAULT_VERSION:="linux-4.17"}
 DEFAULT_TMPNAME="$(mktemp -d -p. -u)"
 TMPNAME=${TMPNAME:=${DEFAULT_TMPNAME}}
 
-CGCC="$(pwd)/sparse/cgcc"
 SPARSE="$(pwd)/sparse/sparse"
 SMATCH="$(pwd)/smatch/smatch"
-SMATCH_CGCC="$(pwd)/smatch/cgcc"
 BRACKET="$(pwd)/testhelpers/bracket_align.py"
 LINUXNEXT="$(pwd)/linux-next"
 CHECKPATCH="${LINUXNEXT}/scripts/checkpatch.pl"
@@ -48,7 +46,7 @@ export LANG=C.UTF-8
 
 check_external()
 {
-	if [ ! -x "${CGCC}" -o ! -x "${SPARSE}" ]; then
+	if [ ! -x "${SPARSE}" ]; then
 		echo "Required tool sparse missing:"
 		echo "    git clone git://git.kernel.org/pub/scm/devel/sparse/sparse.git sparse"
 		echo "    git -C sparse reset --hard v0.5.2"
@@ -57,7 +55,7 @@ check_external()
 		exit 1
 	fi
 
-	if [ ! -x "${SMATCH_CGCC}" -o ! -x "${SMATCH}" ]; then
+	if [ ! -x "${SMATCH}" ]; then
 		echo "Required tool smatch missing:"
 		echo "    git clone http://repo.or.cz/smatch.git smatch"
 		echo "    git -C smatch reset --hard 45eb228201137f975805eb79437eb363272df88d"
@@ -252,7 +250,7 @@ test_sparse()
 	config="$3"
 
 	# hard-interface.c:.* delete is required for a warning caused by the compat.h hack for get_link_net
-	(EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SPARSE} -Wsparse-all -Wnopointer-arith -Wno-ptr-subtraction-blows $extra_flags" $config CC="${CGCC}" KERNELPATH="${LINUX_HEADERS}/${linux_name}" 3>&2 2>&1 1>&3 \
+	(EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SPARSE} -Wsparse-all -Wnopointer-arith -Wno-ptr-subtraction-blows $extra_flags" $config C=1 KERNELPATH="${LINUX_HEADERS}/${linux_name}" 3>&2 2>&1 1>&3 \
 			|grep -v "No such file: c" \
 			|tee log) &> logfull
 	if [ -s "log" ]; then
@@ -308,7 +306,7 @@ test_smatch()
 	linux_name="$2"
 	config="$3"
 
-	EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SMATCH} -p=kernel --two-passes --file-output $extra_flags" $config CC="${SMATCH_CGCC}" KERNELPATH="${LINUX_HEADERS}/${linux_name}" -j"${JOBS}" &> /dev/null
+	EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SMATCH} -p=kernel --two-passes --file-output $extra_flags" $config C=1 KERNELPATH="${LINUX_HEADERS}/${linux_name}" -j"${JOBS}" &> /dev/null
 	# installed filters:
 	#
 	path="$(build_path)"
