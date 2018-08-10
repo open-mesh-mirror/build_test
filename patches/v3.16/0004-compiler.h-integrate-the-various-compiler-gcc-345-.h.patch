@@ -2,7 +2,7 @@ From: Sven Eckelmann <sven@narfation.org>
 Date: Sun, 13 Nov 2016 13:35:56 +0100
 Subject: [PATCH] compiler.h: integrate the various compiler-gcc[345].h files
 ---
- include/linux/compiler-gcc.h | 197 +++++++++++++++++++++++++++++++++----------
+ include/linux/compiler-gcc.h | 197 +++++++++++++++++++++++++++--------
  1 file changed, 154 insertions(+), 43 deletions(-)
 
 diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h

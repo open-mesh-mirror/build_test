@@ -8,7 +8,7 @@ Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
  1 file changed, 16 insertions(+), 9 deletions(-)
 
 diff --git a/include/linux/wait.h b/include/linux/wait.h
-index 158715445ffb62f6db0f71808e14f2145e468f6f..86870950bf09ea44ac42e6b40675aa861a829e75 100644
+index 1587154..8687095 100644
 --- a/include/linux/wait.h
 +++ b/include/linux/wait.h
 @@ -264,6 +264,13 @@ extern void init_wait_entry(struct wait_queue_entry *wq_entry, int flags);
