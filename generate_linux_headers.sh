@@ -153,6 +153,18 @@ CONFIG_DEBUG_WQ_FORCE_RR_CPU=y
 CONFIG_OPTIMIZE_INLINING=y
 CONFIG_ENABLE_MUST_CHECK=y
 CONFIG_ENABLE_WARN_DEPRECATED=y
+CONFIG_UNWINDER_ORC=y
+CONFIG_FTRACE=y
+CONFIG_FUNCTION_TRACER=y
+CONFIG_FUNCTION_GRAPH_TRACER=y
+CONFIG_FTRACE_SYSCALLS=y
+CONFIG_TRACER_SNAPSHOT=y
+CONFIG_TRACER_SNAPSHOT_PER_CPU_SWAP=y
+CONFIG_STACK_TRACER=y
+CONFIG_UPROBE_EVENTS=y
+CONFIG_DYNAMIC_FTRACE=y
+CONFIG_FUNCTION_PROFILER=y
+CONFIG_HIST_TRIGGERS=y
 EOF
 	if [ "${MAKE_AMD64}" != "0" ]; then
 		cat >> .config << EOF
@@ -169,7 +181,7 @@ EOF
 clean_source()
 {
 	find . -iname "*.S" -print0 | xargs --null rm -f
-	find . -iname "*.c" -print0 | xargs --null rm -f
+	find . -iname "*.c" | grep -v -e '/scripts/' | xargs -d '\n' rm -f
 	find . -iname "*.o" -print0 | xargs --null rm -f
 	find . -iname "*.cmd" -not -iname "auto.conf.cmd" -print0 | xargs --null rm -f
 	find . -iname "modules.order" -print0 | xargs --null rm -f
@@ -178,7 +190,7 @@ clean_source()
 	find include -maxdepth 1 -type d -iname "asm-*" -not -iname asm-i386 -not -iname asm-x86_64 -not -iname asm-x86 -not -iname asm-generic  -not -iname include -print0 | xargs --null rm -rf
 	rm -rf Documentation
 	rm -f linux
-	find |grep -v '/include/'|grep -v '/arch/'|grep "\.h$"|xargs -d '\n' rm -f
+	find |grep -v -e '/include/' -e '/arch/' -e '/scripts/'|grep "\.h$"|xargs -d '\n' rm -f
 	rm -f .config.old
 }
 
