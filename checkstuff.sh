@@ -109,6 +109,7 @@ test_coccicheck()
 			-e 'ERROR: next_gw is NULL but dereferenced.' \
 			-e 'tp_meter.c.*ERROR: reference preceded by free on line' \
 			-e '^$' \
+			-e "recipe for target 'coccicheck' failed" \
 			-e 'coccicheck failed' \
 		> log
 	if [ -s "log" ]; then
