@@ -23,6 +23,7 @@ TMPNAME=${TMPNAME:=${DEFAULT_TMPNAME}}
 
 SPARSE="$(pwd)/sparse/sparse"
 SMATCH="$(pwd)/smatch/smatch"
+SPATCH="$(pwd)/coccinelle/spatch"
 BRACKET="$(pwd)/testhelpers/bracket_align.py"
 LINUXNEXT="$(pwd)/linux-next"
 CHECKPATCH="${LINUXNEXT}/scripts/checkpatch.pl"
@@ -77,6 +78,27 @@ check_external()
 		exit 1
 	fi
 
+	if [ ! -x "${CHECKPATCH}" -o ! -x "${KERNELDOC}" ]; then
+		echo "Required tool checkpatch and kernel-doc missing:"
+		echo "    git clone --depth=1 git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git linux-next"
+		echo "    git --git-dir=linux-next/.git/ remote add -t master --no-tags net-next git://git.kernel.org/pub/scm/linux/kernel/git/davem/net-next.git"
+		echo "    git --git-dir=linux-next/.git/ remote add -t master --no-tags net git://git.kernel.org/pub/scm/linux/kernel/git/davem/net.git"
+		echo "    git --git-dir=linux-next/.git/ config remote.origin.tagopt --no-tags"
+		echo "    git --git-dir=linux-next/.git/ fetch --depth=1 net-next"
+		echo "    git --git-dir=linux-next/.git/ fetch --depth=1 net"
+		exit 1
+	fi
+
+	if [ ! -x "${SPATCH}" ]; then
+		echo "Required tool spatch missing:"
+		echo "    git clone https://github.com/coccinelle/coccinelle coccinelle"
+		echo "    git -C coccinelle reset --hard 97695d059cd5e3a7a5597e056f748e5fdb97ddac"
+		echo "    (cd coccinelle && ./autogen && ./configure)"
+		echo "    make -C coccinelle"
+		echo "    make -C coccinelle spatch"
+		exit 1
+	fi
+
 	for linux_name in ${LINUX_VERSIONS} ${LINUX_DEFAULT_VERSION}; do
 		if [ ! -d "${LINUX_HEADERS}/${linux_name}" ]; then
 			echo "Required linux header for ${linux_name} missing:"
@@ -103,7 +125,7 @@ test_coccicheck()
 	path="$(source_path)"
 
 	rm -f log
-	make -s -C "${LINUXNEXT}" coccicheck MODE=report KBUILD_EXTMOD="$(pwd)/${path}" | \
+	make -s -C "${LINUXNEXT}" coccicheck SPATCH="${SPATCH}" MODE=report KBUILD_EXTMOD="$(pwd)/${path}" | \
 		grep -v -e 'Please check for false positives in the output before submitting a patch.' \
 			-e 'When using "patch" mode, carefully review the patch before submitting it.' \
 			-e 'ERROR: next_gw is NULL but dereferenced.' \
