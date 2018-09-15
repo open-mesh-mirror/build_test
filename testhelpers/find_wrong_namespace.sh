@@ -17,6 +17,7 @@ obj=$(ls -1 "${path}"/*.o|grep -v -e 'batman-adv\.o' -e 'batman-adv\.mod\.o')
 defined="`nm -g --defined-only ${obj}|awk '{ print $3}'|sort|uniq`"
 ret=0
 blacklist="
+	__tracepoint_batadv_dbg
 	cleanup_module
 	init_module
 "

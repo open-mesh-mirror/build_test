@@ -200,6 +200,10 @@ test_checkpatch()
 		fname="$(basename "$i")"
 		cp_extra_params=""
 
+		if [ "${fname}" = "trace.h" ]; then
+			continue
+		fi
+
 		if [ "${fname}" = "sysfs.c" ]; then
 			cp_extra_params="${cp_extra_params} --ignore COMPLEX_MACRO"
 			cp_extra_params="${cp_extra_params} --ignore MACRO_ARG_PRECEDENCE"
@@ -255,7 +259,7 @@ test_brackets()
 
 	for i in "${path}"/*.c "${path}"/*.h include/uapi/linux/*; do
 		fname=$(basename "$i")
-		if [ "$fname" != "compat.c" -a "$fname" != "compat.h" ]; then
+		if [ "$fname" != "compat.c" -a "$fname" != "compat.h" -a "$fname" != "trace.h" ]; then
 			rm -f log logfull
 			"${BRACKET}" "$i" &> logfull
 
@@ -275,6 +279,7 @@ test_sparse()
 	# hard-interface.c:.* delete is required for a warning caused by the compat.h hack for get_link_net
 	(EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SPARSE} -Wsparse-all -Wnopointer-arith -Wno-ptr-subtraction-blows $extra_flags" $config C=1 KERNELPATH="${LINUX_HEADERS}/${linux_name}" 3>&2 2>&1 1>&3 \
 			|grep -v "No such file: c" \
+			|grep -v 'trace.h:' \
 			|tee log) &> logfull
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "sparse ${linux_name} $(simplify_config_string "${config}")" log logfull
@@ -336,6 +341,8 @@ test_smatch()
 	cat "${path}"/*.smatch \
 		|grep -v 'arch/x86/include/asm/refcount.h' \
 		|grep -v 'warn: was || intended here instead of &&?' \
+		|grep -v 'trace_event_define_fields_' \
+		|grep -v 'ftrace_define_fields_batadv_dbg() warn: unused return: ret = trace_define_field' \
 		> log
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "smatch ${linux_name} $config" log log
@@ -358,7 +365,7 @@ test_main_include()
 	branch="$1"
 
 	spath="$(source_path)"
-	for i in $(ls -1 "${spath}"|grep -v -e '^main.h$' -e '^types.h$'|grep -e '\.c$' -e '\.h$'); do
+	for i in $(ls -1 "${spath}"|grep -v -e '^main.h$' -e '^types.h$' -e '^trace.c$'|grep -e '\.c$' -e '\.h$'); do
 		grep -L '#[[:space:]]*include[[:space:]]*"main.h"' net/batman-adv/"$i"
 	done|sed 's/^/missing include for "main.h" in /' > log
 	if [ -s "log" ]; then

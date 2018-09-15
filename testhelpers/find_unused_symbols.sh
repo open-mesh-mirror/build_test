@@ -28,6 +28,7 @@ blacklist="
 	batadv_get_real_netdev
 	batadv_is_cfg80211_hardif
 	batadv_forw_packet_is_rebroadcast
+	__tracepoint_batadv_dbg
 "
 
 for i in $defined; do
