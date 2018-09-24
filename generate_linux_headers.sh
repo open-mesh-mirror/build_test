@@ -3,6 +3,7 @@ set -e
 
 LINUX_REPOSITORY=${LINUX_REPOSITORY:="git+ssh://git@git.open-mesh.org/linux-merge.git"}
 MAKE_AMD64=${MAKE_AMD64:=1}
+LINUX_VERSIONS="$(echo linux-3.{16..19} linux-4.{0..18}) linux-3.16.57 linux-4.4.157 linux-4.9.128 linux-4.14.71"
 
 if [ -e "linux-build.img" ]; then
 	echo "Please delete linux-build.img before running this script"
@@ -207,31 +208,18 @@ generate_squashfs()
 	echo ok
 }
 
-for i in `seq 16 19`; do
-	git archive --remote="${LINUX_REPOSITORY}" --format tar --prefix=linux-3.${i}/ v3.${i}|tar x
+for i in ${LINUX_VERSIONS}; do
+	version="$(echo "${i}"|sed 's/^linux-/v/')"
+
+	git archive --remote="${LINUX_REPOSITORY}" --format tar --prefix=${i}/ ${version}|tar x
 	(
-		cd "linux-3.${i}" || exit
-		if [ -d "../patches/v3.${i}" ]; then
-			for p in "../patches/v3.${i}/"*.patch; do
+		cd "${i}" || exit
+		if [ -d "../patches/${version}" ]; then
+			for p in "../patches/${version}/"*.patch; do
 				patch -p1 -i "${p}"
 			done
 		fi
-		prepare_source "3" "${i}"
-
-		clean_source
-	)
-done
-
-for i in `seq 0 18`; do
-	git archive --remote="${LINUX_REPOSITORY}" --format tar --prefix=linux-4.${i}/ v4.${i}|tar x
-	(
-		cd "linux-4.${i}" || exit
-		if [ -d "../patches/v4.${i}" ]; then
-			for p in "../patches/v4.${i}/"*.patch; do
-				patch -p1 -i "${p}"
-			done
-		fi
-		prepare_source "4" "${i}"
+		prepare_source
 
 		clean_source
 	)
