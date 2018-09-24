@@ -280,6 +280,7 @@ test_sparse()
 	(EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SPARSE} -Wsparse-all -Wnopointer-arith -Wno-ptr-subtraction-blows $extra_flags" $config C=1 KERNELPATH="${LINUX_HEADERS}/${linux_name}" 3>&2 2>&1 1>&3 \
 			|grep -v "No such file: c" \
 			|grep -v 'trace.h:' \
+			|grep -v 'include/uapi/linux/perf_event.h:.*: warning: cast truncates bits from constant value (8000000000000000 becomes 0)' \
 			|tee log) &> logfull
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "sparse ${linux_name} $(simplify_config_string "${config}")" log logfull
