@@ -201,8 +201,7 @@ generate_squashfs()
 	rm -f linux-build.img
 	rm -rf linux-build
 	mkdir -p linux-build
-	mv linux-3* linux-build
-	mv linux-4* linux-build
+	mv ${LINUX_VERSIONS} linux-build/
 	mksquashfs linux-build linux-build.img
 	rm -rf linux-build
 	echo ok
