@@ -2,7 +2,7 @@
 set -e
 
 LINUX_REPOSITORY=${LINUX_REPOSITORY:="$HOME/tmp/qemu-batman/linux-next/"}
-LINUX_VERSIONS="$(echo linux-3.{16..19} linux-4.{0..18}) linux-3.16.57 linux-4.4.157 linux-4.9.128 linux-4.14.71"
+LINUX_VERSIONS="$(echo linux-3.{16..19} linux-4.{0..18}) linux-3.16.59 linux-4.4.162 linux-4.9.135 linux-4.14.78 linux-4.18.16"
 PATCHDIR="$(pwd)/../patches/"
 
 
