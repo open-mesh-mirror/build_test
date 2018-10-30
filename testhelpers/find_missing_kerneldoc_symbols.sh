@@ -21,6 +21,7 @@ blacklist="
   batadv_broadcast_addr
   batadv_event_workqueue
   batadv_hardif_list
+  batadv_hardif_generation
   batadv_hard_if_notifier
   batadv_link_ops
   batadv_netlink_family
