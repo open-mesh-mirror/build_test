@@ -184,7 +184,7 @@ CONFIG_X86_VSYSCALL_EMULATION=n
 CONFIG_IA32_EMULATION=n
 EOF
 	fi
-	make oldnoconfig
+	make olddefconfig
 	make prepare
 	make modules
 }
