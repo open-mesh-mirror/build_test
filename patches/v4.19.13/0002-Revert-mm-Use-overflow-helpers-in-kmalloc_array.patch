@@ -16,7 +16,7 @@ This reverts commit 49b7f8983aa78581bfd511a26891b26cd734e293.
  1 file changed, 6 insertions(+), 11 deletions(-)
 
 diff --git a/include/linux/slab.h b/include/linux/slab.h
-index 14e3fe4..f3b7afb 100644
+index ed9cbdd..fe7652a 100644
 --- a/include/linux/slab.h
 +++ b/include/linux/slab.h
 @@ -13,7 +13,6 @@
