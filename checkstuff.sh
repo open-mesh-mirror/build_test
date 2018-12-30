@@ -50,8 +50,9 @@ check_external()
 	if [ ! -x "${SPARSE}" ]; then
 		echo "Required tool sparse missing:"
 		echo "    git clone git://git.kernel.org/pub/scm/devel/sparse/sparse.git sparse"
-		echo "    git -C sparse reset --hard v0.6.0"
-		echo "    make -C sparse HAVE_LLVM=''"
+		echo "    git -C sparse reset --hard v0.5.2"
+		echo "    git -C sparse am ../patches/sparse/0001-sparse-add-Wpointer-arith-flag-to-toggle-sizeof-void.patch"
+		echo "    make -C sparse"
 		exit 1
 	fi
 
