@@ -103,6 +103,7 @@
 { include: ["\"linux/trace_events.h\"", "private", "<trace/define_trace.h>", "public"] },
 { include: ["\"linux/tracepoint-defs.h\"", "private", "<trace/define_trace.h>", "public"] },
 { include: ["\"linux/types.h\"", "private", "<linux/types.h>", "public"] },
+{ include: ["\"linux/uaccess.h\"", "private", "<linux/uaccess.h>", "public"] },
 { include: ["\"linux/udp.h\"", "private", "<linux/udp.h>", "public"] },
 { include: ["\"linux/wait.h\"", "private", "<linux/wait.h>", "public"] },
 { include: ["\"linux/workqueue.h\"", "private", "<linux/workqueue.h>", "public"] },
