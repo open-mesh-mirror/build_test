@@ -505,11 +505,6 @@ test_builds()
 				fi
 			fi
 
-			# force DEBUGFS when DEBUG
-			if [[ "${config}" == *"CONFIG_BATMAN_ADV_DEBUG=y"* ]]; then
-				config="$(echo ${config}|sed 's/CONFIG_BATMAN_ADV_DEBUGFS=n/CONFIG_BATMAN_ADV_DEBUGFS=y/')"
-			fi
-
 			test_sparse "${branch}" "${linux_name}" "${config}"
 			test_unused_symbols "${branch}" "${linux_name}" "${config}"
 			test_wrong_namespace "${branch}" "${linux_name}" "${config}"
