@@ -1,6 +1,6 @@
 From: Johannes Berg <johannes.berg@intel.com>
 Date: Thu, 25 Aug 2016 15:16:45 -0700
-Subject: [PATCH] byteswap: don't use __builtin_bswap*() with sparse
+Subject: byteswap: don't use __builtin_bswap*() with sparse
 
 Although sparse declares __builtin_bswap*(), it can't actually do
 constant folding inside them (yet).  As such, things like
@@ -21,12 +21,9 @@ Signed-off-by: Johannes Berg <johannes.berg@intel.com>
 Acked-by: Arnd Bergmann <arnd@arndb.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
----
- include/linux/compiler-gcc.h | 8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
-index e294939..8dbc892 100644
+index e2949397c19b0d58bbebf84d37028ae9b969546c..8dbc8929a6a0051a2840a3badb580b7bb3d8adc4 100644
 --- a/include/linux/compiler-gcc.h
 +++ b/include/linux/compiler-gcc.h
 @@ -242,7 +242,11 @@

@@ -1,6 +1,6 @@
 From: Josh Poimboeuf <jpoimboe@redhat.com>
 Date: Thu, 15 Mar 2018 22:11:54 -0500
-Subject: [PATCH] objtool, perf: Fix GCC 8 -Wrestrict error
+Subject: objtool, perf: Fix GCC 8 -Wrestrict error
 
 Starting with recent GCC 8 builds, objtool and perf fail to build with
 the following error:
@@ -22,12 +22,9 @@ Cc: Namhyung Kim <namhyung@kernel.org>
 Cc: Wang Nan <wangnan0@huawei.com>
 Link: http://lkml.kernel.org/r/20180316031154.juk2uncs7baffctp@treble
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
----
- tools/lib/str_error_r.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/tools/lib/str_error_r.c b/tools/lib/str_error_r.c
-index 503ae07..9ab2d0a 100644
+index 503ae072244cb2ea9fcbfdffada5815642c875d4..9ab2d0ad22d55ad92aea7dbbe9cf91c929fff4e0 100644
 --- a/tools/lib/str_error_r.c
 +++ b/tools/lib/str_error_r.c
 @@ -21,6 +21,6 @@ char *str_error_r(int errnum, char *buf, size_t buflen)

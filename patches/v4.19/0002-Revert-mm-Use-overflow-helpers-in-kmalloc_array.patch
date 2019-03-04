@@ -1,6 +1,6 @@
 From: Sven Eckelmann <sven@narfation.org>
 Date: Thu, 16 Aug 2018 08:56:00 +0200
-Subject: [PATCH] Revert "mm: Use overflow helpers in kmalloc_array*()"
+Subject: Revert "mm: Use overflow helpers in kmalloc_array*()"
 
 Causes sparse errors:
 
@@ -11,12 +11,9 @@ Causes sparse errors:
   ./include/linux/slab.h:631:13: warning: call with no type!
 
 This reverts commit 49b7f8983aa78581bfd511a26891b26cd734e293.
----
- include/linux/slab.h | 17 ++++++-----------
- 1 file changed, 6 insertions(+), 11 deletions(-)
 
 diff --git a/include/linux/slab.h b/include/linux/slab.h
-index ed9cbdd..fe7652a 100644
+index ed9cbddeb4a6fa68ca54e20eed0492ee2439a34f..fe7652a92d303c6b77d5e3330ac6bdfbb66f8e07 100644
 --- a/include/linux/slab.h
 +++ b/include/linux/slab.h
 @@ -13,7 +13,6 @@

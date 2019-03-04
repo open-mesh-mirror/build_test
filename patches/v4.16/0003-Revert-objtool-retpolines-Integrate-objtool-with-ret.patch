@@ -1,17 +1,11 @@
 From: Sven Eckelmann <sven@narfation.org>
 Date: Sat, 20 Oct 2018 23:40:53 +0200
-Subject: [PATCH] Revert "objtool, retpolines: Integrate objtool with retpoline support more closely"
+Subject: Revert "objtool, retpolines: Integrate objtool with retpoline support more closely"
 
 This reverts commit d5028ba8ee5a18c9d0bb926d883c28b370f89009.
----
- Makefile               |  5 -----
- arch/x86/Kconfig       |  1 -
- arch/x86/Makefile      | 10 +++++++---
- scripts/Makefile.build |  2 --
- 4 files changed, 7 insertions(+), 11 deletions(-)
 
 diff --git a/Makefile b/Makefile
-index 363dd09..9fd7554 100644
+index 363dd096e46e59ee60f3e446fdd9d59083f3a262..9fd7554f6e1c1216f583eabc4c0e689271085ddd 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -491,11 +491,6 @@ KBUILD_CFLAGS += $(call cc-option, -no-integrated-as)
@@ -27,7 +21,7 @@ index 363dd09..9fd7554 100644
  # ===========================================================================
  # *config targets only - make sure prerequisites are updated, and descend
 diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 0fa71a7..9a7ec9a 100644
+index 0fa71a78ec99a9ae2e4dcbbadfa74773a5ebc031..9a7ec9a1278a3d22909b193677b0bd6a4f75caac 100644
 --- a/arch/x86/Kconfig
 +++ b/arch/x86/Kconfig
 @@ -430,7 +430,6 @@ config GOLDFISH
@@ -39,7 +33,7 @@ index 0fa71a7..9a7ec9a 100644
  	  Compile kernel with the retpoline compiler options to guard against
  	  kernel-to-user data leaks by avoiding speculative indirect
 diff --git a/arch/x86/Makefile b/arch/x86/Makefile
-index 1c4d012..33c2646 100644
+index 1c4d012550ec5fab1e2ae26b9cf8a67168da75fd..33c26465c55a53d1160d46c796d249074fbef63c 100644
 --- a/arch/x86/Makefile
 +++ b/arch/x86/Makefile
 @@ -241,9 +241,13 @@ KBUILD_CFLAGS += -fno-asynchronous-unwind-tables
@@ -60,7 +54,7 @@ index 1c4d012..33c2646 100644
  
  archscripts: scripts_basic
 diff --git a/scripts/Makefile.build b/scripts/Makefile.build
-index 4f2b25d..ce0fc4d 100644
+index 4f2b25d43ec9b46923e52ae5d6f2bf789a6465b4..ce0fc4dd68c659c6706b0d478c513c74e4c546cb 100644
 --- a/scripts/Makefile.build
 +++ b/scripts/Makefile.build
 @@ -267,10 +267,8 @@ else

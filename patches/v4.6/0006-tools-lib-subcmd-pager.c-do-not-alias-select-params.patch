@@ -1,6 +1,6 @@
 From: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 Date: Tue, 6 Feb 2018 15:37:52 -0800
-Subject: [PATCH] tools/lib/subcmd/pager.c: do not alias select() params
+Subject: tools/lib/subcmd/pager.c: do not alias select() params
 
 Use a separate fd set for select()-s exception fds param to fix the
 following gcc warning:
@@ -14,12 +14,9 @@ Signed-off-by: Sergey Senozhatsky <sergey.senozhatsky@gmail.com>
 Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
----
- tools/lib/subcmd/pager.c | 5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
 
 diff --git a/tools/lib/subcmd/pager.c b/tools/lib/subcmd/pager.c
-index d50f3b58..3151883 100644
+index d50f3b58606bf536934ef7488306c400ac8e5e75..3151883aecf3b3cd8943f018e18a845eaf70e250 100644
 --- a/tools/lib/subcmd/pager.c
 +++ b/tools/lib/subcmd/pager.c
 @@ -27,10 +27,13 @@ static void pager_preexec(void)

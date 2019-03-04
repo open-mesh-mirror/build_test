@@ -1,6 +1,6 @@
 From: Vlastimil Babka <vbabka@suse.cz>
 Date: Sat, 22 Dec 2018 10:55:22 +1100
-Subject: [PATCH] include/linux/slab.h: fix sparse warning in kmalloc_type()
+Subject: include/linux/slab.h: fix sparse warning in kmalloc_type()
 
 Multiple people have reported the following sparse warning:
 
@@ -33,12 +33,9 @@ Suggested-by: Andrew Morton <akpm@linux-foundation.org>
 Suggested-by: David Laight <David.Laight@ACULAB.COM>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- include/linux/slab.h | 24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
 
 diff --git a/include/linux/slab.h b/include/linux/slab.h
-index 712958c..0ec13d8 100644
+index 712958cc701514972d7a4c855c6099ac985fbe82..0ec13d8e33d0e217952c75c96f9bd0ac0a707c84 100644
 --- a/include/linux/slab.h
 +++ b/include/linux/slab.h
 @@ -313,22 +313,22 @@ kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1];

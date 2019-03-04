@@ -1,6 +1,6 @@
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Date: Fri, 4 Nov 2016 19:39:40 +0100
-Subject: [PATCH] x86/kexec: add -fno-PIE
+Subject: x86/kexec: add -fno-PIE
 
 If the gcc is configured to do -fPIE by default then the build aborts
 later with:
@@ -14,12 +14,9 @@ Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Signed-off-by: Michal Marek <mmarek@suse.com>
 
 Origin: backport, https://git.kernel.org/cgit/linux/kernel/git/mmarek/kbuild.git/commit/?id=90944e40ba1838de4b2a9290cf273f9d76bd3bdd
----
- arch/x86/purgatory/Makefile | 1 +
- 1 file changed, 1 insertion(+)
 
 diff --git a/arch/x86/purgatory/Makefile b/arch/x86/purgatory/Makefile
-index 2c835e3..d445c5f 100644
+index 2c835e356349b9284b6b6997fff19208b6dd1b61..d445c5f1aeb1f8f162ae348686918b4297ffa6df 100644
 --- a/arch/x86/purgatory/Makefile
 +++ b/arch/x86/purgatory/Makefile
 @@ -12,6 +12,7 @@ targets += purgatory.ro

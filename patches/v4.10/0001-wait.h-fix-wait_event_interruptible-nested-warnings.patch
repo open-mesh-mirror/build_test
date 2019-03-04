@@ -1,14 +1,11 @@
 From: Simon Wunderlich <sw@simonwunderlich.de>
 Date: Wed, 19 Mar 2014 11:45:17 +0100
-Subject: [PATCH] wait.h: fix wait_event_interruptible() nested warnings
+Subject: wait.h: fix wait_event_interruptible() nested warnings
 
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
----
- include/linux/wait.h | 25 ++++++++++++++++---------
- 1 file changed, 16 insertions(+), 9 deletions(-)
 
 diff --git a/include/linux/wait.h b/include/linux/wait.h
-index 1421132..e48528d 100644
+index 1421132e90861be2112fdc22d511395ab933ae50..e48528d771bcbebc04f1d2966eb751a04a0b8d04 100644
 --- a/include/linux/wait.h
 +++ b/include/linux/wait.h
 @@ -243,6 +243,13 @@ wait_queue_head_t *bit_waitqueue(void *, int);

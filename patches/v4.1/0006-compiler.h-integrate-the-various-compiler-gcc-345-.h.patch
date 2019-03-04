@@ -1,12 +1,9 @@
 From: Sven Eckelmann <sven@narfation.org>
 Date: Sun, 13 Nov 2016 13:36:13 +0100
-Subject: [PATCH] compiler.h: integrate the various compiler-gcc[345].h files
----
- include/linux/compiler-gcc.h | 205 +++++++++++++++++++++++++++--------
- 1 file changed, 161 insertions(+), 44 deletions(-)
+Subject: compiler.h: integrate the various compiler-gcc[345].h files
 
 diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
-index 371e560..dfaa7b3 100644
+index 371e560d13cf1d19abe18e982f27d39d8ab6fc0a..dfaa7b3e9ae900676b61dc7c3f693c78de97e8cd 100644
 --- a/include/linux/compiler-gcc.h
 +++ b/include/linux/compiler-gcc.h
 @@ -5,9 +5,9 @@

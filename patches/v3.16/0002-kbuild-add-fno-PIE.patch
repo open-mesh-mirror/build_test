@@ -1,6 +1,6 @@
 From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Date: Fri, 4 Nov 2016 19:39:38 +0100
-Subject: [PATCH] kbuild: add -fno-PIE
+Subject: kbuild: add -fno-PIE
 
 Debian started to build the gcc with -fPIE by default so the kernel
 build ends before it starts properly with:
@@ -19,12 +19,9 @@ Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 Signed-off-by: Michal Marek <mmarek@suse.com>
 
 Origin: backport, https://git.kernel.org/cgit/linux/kernel/git/mmarek/kbuild.git/commit/?id=8ae94224c9d72fc4d9aaac93b2d7833cf46d7141
----
- Makefile | 2 ++
- 1 file changed, 2 insertions(+)
 
 diff --git a/Makefile b/Makefile
-index d0901b4..c65401d 100644
+index d0901b46b4bfd15aedfd3a0ccfa2d3c3255ff8fc..c65401d969ff4d04304c73c228cfba86cc695af3 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -614,6 +614,8 @@ all: vmlinux

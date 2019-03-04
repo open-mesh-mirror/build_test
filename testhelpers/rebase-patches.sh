@@ -17,5 +17,5 @@ for i in ${LINUX_VERSIONS}; do
 	git checkout "${version}"
 	git am "${PATCHDIR}/${version}/"*
 	rm "${PATCHDIR}/${version}/"*
-	git -c core.abbrev=7 format-patch --output-directory "${PATCHDIR}/${version}/" --diff-algorithm=histogram --no-signature --format=format:'From: %an <%ae>%nDate: %aD%nSubject: [PATCH] %B' --abbrev=7  "${version}"
+	git format-patch --output-directory "${PATCHDIR}/${version}/" --no-stat --full-index --no-renames --binary --diff-algorithm=histogram --no-signature --format=format:'From: %an <%ae>%nDate: %aD%nSubject: %B' "${version}"
 done

@@ -1,6 +1,6 @@
 From: Eric Dumazet <edumazet@google.com>
 Date: Fri, 15 May 2015 05:48:07 -0700
-Subject: [PATCH] net: fix two sparse errors
+Subject: net: fix two sparse errors
 
 First one in __skb_checksum_validate_complete() fixes the following
 (and other callers)
@@ -27,12 +27,9 @@ Signed-off-by: Eric Dumazet <edumazet@google.com>
 CC: Tom Herbert <tom@herbertland.com>
 Acked-by: Tom Herbert <tom@herbertland.com>
 Signed-off-by: David S. Miller <davem@davemloft.net>
----
- include/linux/skbuff.h | 11 +++++------
- 1 file changed, 5 insertions(+), 6 deletions(-)
 
 diff --git a/include/linux/skbuff.h b/include/linux/skbuff.h
-index 85ab7d7..b8e6e88 100644
+index 85ab7d72b54c2f269812015b19544674bc6dcd72..b8e6e88073cdb33da2dae97b62ea4ff9e09071a6 100644
 --- a/include/linux/skbuff.h
 +++ b/include/linux/skbuff.h
 @@ -3018,7 +3018,7 @@ static inline __sum16 __skb_checksum_validate_complete(struct sk_buff *skb,

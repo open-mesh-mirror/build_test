@@ -1,6 +1,6 @@
 From: Linus Torvalds <torvalds@linux-foundation.org>
 Date: Thu, 2 Mar 2017 12:17:22 -0800
-Subject: [PATCH] give up on gcc ilog2() constant optimizations
+Subject: give up on gcc ilog2() constant optimizations
 
 gcc-7 has an "optimization" pass that completely screws up, and
 generates the code expansion for the (impossible) case of calling
@@ -40,13 +40,9 @@ Cc: John Stultz <john.stultz@linaro.org>,
 Cc: Thomas Gleixner <tglx@linutronix.de>
 Cc: Ard Biesheuvel <ard.biesheuvel@linaro.org>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
----
- include/linux/log2.h       | 13 ++-----------
- tools/include/linux/log2.h | 13 ++-----------
- 2 files changed, 4 insertions(+), 22 deletions(-)
 
 diff --git a/include/linux/log2.h b/include/linux/log2.h
-index ef3d4f6..c373295 100644
+index ef3d4f67118ce0f60789e6e749a4773754e01e87..c373295f359fa582859962bbf3295dbd936111ad 100644
 --- a/include/linux/log2.h
 +++ b/include/linux/log2.h
 @@ -15,12 +15,6 @@
@@ -84,7 +80,7 @@ index ef3d4f6..c373295 100644
  	__ilog2_u32(n) :			\
  	__ilog2_u64(n)				\
 diff --git a/tools/include/linux/log2.h b/tools/include/linux/log2.h
-index 4144666..d5677d3 100644
+index 41446668ccce18a6777f87f124f98eb715406f02..d5677d39c1e4c88c254b0d55b9d0ca5ab505fd92 100644
 --- a/tools/include/linux/log2.h
 +++ b/tools/include/linux/log2.h
 @@ -12,12 +12,6 @@
