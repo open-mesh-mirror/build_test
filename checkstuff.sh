@@ -468,7 +468,7 @@ test_headers()
 		"${FIX_INCLUDE_SORT}" --nosafe_headers --separate_project_includes="$(pwd)/${bpath}" < test
 
 		# remove extra noise
-		git checkout -f -- compat-sources
+		git checkout -f -- compat-sources compat-includes
 		sed -i '/^struct batadv_algo_ops;$/d' "${bpath}"/main.h
 		sed -i '/^struct batadv_hard_iface;$/d' "${bpath}"/main.h
 		sed -i '/^struct batadv_orig_node;$/d' "${bpath}"/main.h
