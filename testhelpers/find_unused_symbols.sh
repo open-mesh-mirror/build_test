@@ -30,6 +30,8 @@ blacklist="
 	batadv_forw_packet_is_rebroadcast
 	batadv_netlink_notify_hardif
 	__tracepoint_batadv_dbg
+	batadv_tt_global_entry_put
+	batadv_tt_global_hash_find
 "
 
 for i in $defined; do
