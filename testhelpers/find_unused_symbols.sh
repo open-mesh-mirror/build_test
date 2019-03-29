@@ -32,6 +32,9 @@ blacklist="
 	__tracepoint_batadv_dbg
 	batadv_tt_global_entry_put
 	batadv_tt_global_hash_find
+	batadv_gw_bandwidth_set
+	batadv_netlink_notify_mesh
+	batadv_netlink_notify_vlan
 "
 
 for i in $defined; do
