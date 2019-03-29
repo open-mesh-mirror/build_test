@@ -420,8 +420,8 @@ test_compare_net_next()
 		upstream_name="net-next"
 	fi
 
-	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- net/batman-adv/ Documentation/networking/batman-adv.rst Documentation/ABI/testing/sysfs-class-net-batman-adv Documentation/ABI/testing/sysfs-class-net-mesh | tar x
-	git archive --remote="linux-next/.git/" --format=tar --prefix="${TMPNAME}/netnext/" "${upstream_rev}" -- net/batman-adv/ Documentation/networking/batman-adv.rst Documentation/ABI/testing/sysfs-class-net-batman-adv Documentation/ABI/testing/sysfs-class-net-mesh | tar x
+	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- net/batman-adv/ Documentation/networking/batman-adv.rst Documentation/ABI/obsolete/sysfs-class-net-batman-adv Documentation/ABI/obsolete/sysfs-class-net-mesh | tar x
+	git archive --remote="linux-next/.git/" --format=tar --prefix="${TMPNAME}/netnext/" "${upstream_rev}" -- net/batman-adv/ Documentation/networking/batman-adv.rst Documentation/ABI/obsolete/sysfs-class-net-batman-adv Documentation/ABI/obsolete/sysfs-class-net-mesh | tar x
 
 	# compare against stripped down MAINTAINERS when available
 	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- MAINTAINERS | tar x
