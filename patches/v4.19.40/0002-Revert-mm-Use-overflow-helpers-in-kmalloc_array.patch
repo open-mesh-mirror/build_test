@@ -13,7 +13,7 @@ Causes sparse errors:
 This reverts commit 49b7f8983aa78581bfd511a26891b26cd734e293.
 
 diff --git a/include/linux/slab.h b/include/linux/slab.h
-index 918f374e7156f4739b30c178e5c8beaf5137c4d0..712958cc701514972d7a4c855c6099ac985fbe82 100644
+index d6393413ef097d4ca13c21a3a8fdb51c01ae79fd..07c12d1920e5c0f1d54096a82f2397cdffc2d772 100644
 --- a/include/linux/slab.h
 +++ b/include/linux/slab.h
 @@ -13,7 +13,6 @@
@@ -24,7 +24,7 @@ index 918f374e7156f4739b30c178e5c8beaf5137c4d0..712958cc701514972d7a4c855c6099ac
  #include <linux/types.h>
  #include <linux/workqueue.h>
  
-@@ -660,13 +659,11 @@ int memcg_update_all_caches(int num_memcgs);
+@@ -628,13 +627,11 @@ int memcg_update_all_caches(int num_memcgs);
   */
  static inline void *kmalloc_array(size_t n, size_t size, gfp_t flags)
  {
@@ -41,7 +41,7 @@ index 918f374e7156f4739b30c178e5c8beaf5137c4d0..712958cc701514972d7a4c855c6099ac
  }
  
  /**
-@@ -695,13 +692,11 @@ extern void *__kmalloc_track_caller(size_t, gfp_t, unsigned long);
+@@ -663,13 +660,11 @@ extern void *__kmalloc_track_caller(size_t, gfp_t, unsigned long);
  static inline void *kmalloc_array_node(size_t n, size_t size, gfp_t flags,
  				       int node)
  {
