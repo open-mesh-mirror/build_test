@@ -222,8 +222,8 @@ for i in ${LINUX_VERSIONS}; do
 	git archive --remote="${LINUX_REPOSITORY}" --format tar --prefix=${i}/ ${version}|tar x
 	(
 		cd "${i}" || exit
-		if [ -d "../patches/${version}" ]; then
-			for p in "../patches/${version}/"*.patch; do
+		if [ -d "../patches/${i}" ]; then
+			for p in "../patches/${i}/"*.patch; do
 				patch -p1 -i "${p}"
 			done
 		fi
