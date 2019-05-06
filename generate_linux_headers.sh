@@ -3,8 +3,7 @@ set -e
 
 LINUX_REPOSITORY=${LINUX_REPOSITORY:="git+ssh://git@git.open-mesh.org/linux-merge.git"}
 MAKE_AMD64=${MAKE_AMD64:=1}
-LINUX_VERSIONS="$(echo linux-3.{16..19} linux-4.{0..20} linux-5.{0..1}) linux-3.16.66 linux-4.4.179 linux-4.9.173 linux-4.14.116 linux-4.19.40 linux-5.0.13"
-LINUX_DEFAULT_VERSION=${LINUX_DEFAULT_VERSION:="linux-5.1"}
+. linux-versions
 
 if [ -e "linux-build.img" ]; then
 	echo "Please delete linux-build.img before running this script"
