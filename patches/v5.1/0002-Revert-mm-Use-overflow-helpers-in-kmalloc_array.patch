@@ -1,0 +1,60 @@
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 16 Aug 2018 08:56:00 +0200
+Subject: Revert "mm: Use overflow helpers in kmalloc_array*()"
+
+Causes sparse errors:
+
+  ./include/linux/slab.h:631:13: error: undefined identifier '__builtin_mul_overflow'
+  ./include/linux/slab.h:631:13: error: not a function <noident>
+  ./include/linux/slab.h:631:13: error: not a function <noident>
+  ./include/linux/slab.h:631:13: error: not a function <noident>
+  ./include/linux/slab.h:631:13: warning: call with no type!
+
+This reverts commit 49b7f8983aa78581bfd511a26891b26cd734e293.
+
+diff --git a/include/linux/slab.h b/include/linux/slab.h
+index 9449b19c5f107a73bfe7eca9fe875708862dc3b9..af450685086b9ad9c519c078ccf24405ce76d8c6 100644
+--- a/include/linux/slab.h
++++ b/include/linux/slab.h
+@@ -13,7 +13,6 @@
+ #define	_LINUX_SLAB_H
+ 
+ #include <linux/gfp.h>
+-#include <linux/overflow.h>
+ #include <linux/types.h>
+ #include <linux/workqueue.h>
+ 
+@@ -661,13 +660,11 @@ int memcg_update_all_caches(int num_memcgs);
+  */
+ static inline void *kmalloc_array(size_t n, size_t size, gfp_t flags)
+ {
+-	size_t bytes;
+-
+-	if (unlikely(check_mul_overflow(n, size, &bytes)))
++	if (size != 0 && n > SIZE_MAX / size)
+ 		return NULL;
+ 	if (__builtin_constant_p(n) && __builtin_constant_p(size))
+-		return kmalloc(bytes, flags);
+-	return __kmalloc(bytes, flags);
++		return kmalloc(n * size, flags);
++	return __kmalloc(n * size, flags);
+ }
+ 
+ /**
+@@ -696,13 +693,11 @@ extern void *__kmalloc_track_caller(size_t, gfp_t, unsigned long);
+ static inline void *kmalloc_array_node(size_t n, size_t size, gfp_t flags,
+ 				       int node)
+ {
+-	size_t bytes;
+-
+-	if (unlikely(check_mul_overflow(n, size, &bytes)))
++	if (size != 0 && n > SIZE_MAX / size)
+ 		return NULL;
+ 	if (__builtin_constant_p(n) && __builtin_constant_p(size))
+-		return kmalloc_node(bytes, flags, node);
+-	return __kmalloc_node(bytes, flags, node);
++		return kmalloc_node(n * size, flags, node);
++	return __kmalloc_node(n * size, flags, node);
+ }
+ 
+ static inline void *kcalloc_node(size_t n, size_t size, gfp_t flags, int node)
