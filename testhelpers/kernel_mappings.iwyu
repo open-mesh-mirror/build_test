@@ -25,6 +25,7 @@
 { include: ["\"asm/uaccess.h\"", "private", "<linux/uaccess.h>", "public"] },
 { include: ["\"crypto/hash.h\"", "private", "<crypto/hash.h>", "public"] },
 { include: ["\"linux/average.h\"", "private", "<linux/average.h>", "public"] },
+{ include: ["\"linux/atomic-fallback.h\"", "private", "<linux/atomic.h>", "public"] },
 { include: ["\"linux/atomic.h\"", "private", "<linux/atomic.h>", "public"] },
 { include: ["\"linux/bitmap.h\"", "private", "<linux/bitmap.h>", "public"] },
 { include: ["\"linux/bitops.h\"", "private", "<linux/bitops.h>", "public"] },
