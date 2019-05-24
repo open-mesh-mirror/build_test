@@ -459,7 +459,7 @@ test_headers()
 		sed -i 's/\/\* for linux\/wait.h \*\//\/\* for linux\/wait.h \*\/ \/\/ IWYU pragma: keep/' "${spath}"/*c "${spath}"/*.h
 
 		make KERNELPATH="${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}" $MAKE_CONFIG clean
-		make KERNELPATH="${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}" -j1 -k CC_HAVE_ASM_GOTO=1 CC="iwyu -ferror-limit=1073741824 -Xiwyu --prefix_header_includes=keep -Xiwyu --no_default_mappings -Xiwyu --transitive_includes_only -Xiwyu --verbose=1 -Xiwyu --mapping_file=$IWYU_KERNEL_MAPPINGS" $MAKE_CONFIG 2> test
+		make KERNELPATH="${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}" -j1 -k CC_HAVE_ASM_GOTO=1 CC="iwyu -ferror-limit=1073741824 -Xiwyu --no_fwd_decls -Xiwyu --prefix_header_includes=keep -Xiwyu --no_default_mappings -Xiwyu --transitive_includes_only -Xiwyu --verbose=1 -Xiwyu --mapping_file=$IWYU_KERNEL_MAPPINGS" $MAKE_CONFIG 2> test
 
 		bpath="$(build_path)"
 
@@ -469,12 +469,6 @@ test_headers()
 		# remove extra noise
 		git checkout -f -- compat-include
 		git checkout -f -- compat-sources
-		sed -i '/^#include "main.h"$/d' "${bpath}"/main.h
-		sed -i '/^struct batadv_algo_ops;$/d' "${bpath}"/main.h
-		sed -i '/^struct batadv_hard_iface;$/d' "${bpath}"/main.h
-		sed -i '/^struct batadv_orig_node;$/d' "${bpath}"/main.h
-		sed -i '/^struct batadv_priv;$/d' "${bpath}"/main.h
-		sed -i '/^struct netlink_ext_ack;$/,+1d' "${bpath}"/soft-interface.c
 
 		"${FIX_INCLUDE_SORT}" --sort_only "${bpath}"/*.c "${bpath}"/*.h
 		git diff > log
