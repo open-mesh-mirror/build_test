@@ -457,20 +457,26 @@ test_headers()
 		# don't touch main.h and files which are required by linux/wait.h, packet.h
 		sed -i 's/#include "main.h"/#include "main.h" \/\/ IWYU pragma: keep/' "${spath}"/*c "${spath}"/*.h
 		sed -i 's/\/\* for linux\/wait.h \*\//\/\* for linux\/wait.h \*\/ \/\/ IWYU pragma: keep/' "${spath}"/*c "${spath}"/*.h
+		echo '#include "types.h"' > net/batman-adv/types.c
+		echo 'batman-adv-y += types.o' >> net/batman-adv/Makefile
 
 		make KERNELPATH="${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}" $MAKE_CONFIG clean
-		make KERNELPATH="${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}" -j1 -k CC_HAVE_ASM_GOTO=1 CC="iwyu -ferror-limit=1073741824 -Xiwyu --no_fwd_decls -Xiwyu --prefix_header_includes=keep -Xiwyu --no_default_mappings -Xiwyu --transitive_includes_only -Xiwyu --verbose=1 -Xiwyu --mapping_file=$IWYU_KERNEL_MAPPINGS" $MAKE_CONFIG 2> test
+		make KERNELPATH="${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}" -j1 -k CC="iwyu -ferror-limit=1073741824 -Xiwyu --no_fwd_decls -Xiwyu --prefix_header_includes=keep -Xiwyu --no_default_mappings -Xiwyu --transitive_includes_only -Xiwyu --verbose=1 -Xiwyu --mapping_file=$IWYU_KERNEL_MAPPINGS" $MAKE_CONFIG 2> test
 
 		bpath="$(build_path)"
 
 		git add -f "${bpath}" "${spath}"
+
+		sed -i '/^#include ".*net\/batman-adv\/main\.h"$/d' test
 		"${FIX_INCLUDE_SORT}" --nosafe_headers --separate_project_includes="$(pwd)/${bpath}" < test
 
 		# remove extra noise
 		git checkout -f -- compat-include
 		git checkout -f -- compat-sources
+		git checkout -f -- net/batman-adv/Makefile
+		git checkout -f -- net/batman-adv/types.h
 
-		"${FIX_INCLUDE_SORT}" --sort_only "${bpath}"/*.c "${bpath}"/*.h
+		"${FIX_INCLUDE_SORT}" --reorder --sort_only "${bpath}"/*.c "${bpath}"/*.h
 		git diff > log
 
 	)
