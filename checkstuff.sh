@@ -469,6 +469,7 @@ test_headers()
 		# remove extra noise
 		git checkout -f -- compat-include
 		git checkout -f -- compat-sources
+		sed -i '/^#include "main.h"$/d' "${bpath}"/main.h
 		sed -i '/^struct batadv_algo_ops;$/d' "${bpath}"/main.h
 		sed -i '/^struct batadv_hard_iface;$/d' "${bpath}"/main.h
 		sed -i '/^struct batadv_orig_node;$/d' "${bpath}"/main.h
