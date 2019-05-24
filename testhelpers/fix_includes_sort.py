@@ -19,11 +19,6 @@ mentioned in the output, removing their old #include lines and
 replacing them with the lines given by the include_what_you_use
 script.
 
-We only edit files that are writeable (presumably open for p4 edit),
-unless the user supplies a command to make files writeable via the
---checkout_command flag (eg '--checkout_command="p4 edit"').
-
-
 This script runs in four stages.  In the first, it groups physical
 lines together to form 'move spans'.  A 'move span' is the atomic unit
 for moving or deleting code.  A move span is either a) an #include
@@ -67,10 +62,8 @@ __author__ = 'csilvers@google.com (Craig Silverstein)'
 import difflib
 import optparse
 import os
-import pipes  # For (undocumented) pipes.quote
 import re
 import sys
-import subprocess
 from collections import OrderedDict
 
 _USAGE = """\
@@ -85,11 +78,9 @@ modifies the files mentioned in the output, removing their old
 include_what_you_use script.  It also sorts the #include and
 forward-declare lines.
 
-Only writable files (those opened for p4 edit) are modified (unless
---checkout_command is specified).  All files mentioned in the
-include-what-you-use script are modified, unless filenames are
-specified on the commandline, in which case only those files are
-modified.
+All files mentioned in the include-what-you-use script are modified,
+unless filenames are specified on the commandline, in which case only
+those files are modified.
 
 The exit code is the number of files that were modified (or that would
 be modified if --dry_run was specified) unless that number exceeds 100,
@@ -113,6 +104,12 @@ _ENDIF_RE = re.compile(r'\s*#\s*endif\b')
 _NAMESPACE_START_RE = re.compile(r'\s*(namespace\b[^{]*{\s*)+(//.*)?$|'
                                  r'\s*(U_NAMESPACE_BEGIN)|'
                                  r'\s*(HASH_NAMESPACE_DECLARATION_START)')
+# Also detect Allman and mixed style namespaces.  Use a continue regex for
+# validation and to correctly set the line info.
+_NAMESPACE_START_ALLMAN_RE = re.compile(r'\s*(namespace\b[^{]*)+(//.*)?$')
+_NAMESPACE_START_MIXED_RE = re.compile(
+  r'\s*(namespace\b[^{]*{\s*)+(namespace\b[^{]*)+(//.*)?$')
+_NAMESPACE_CONTINUE_ALLMAN_MIXED_RE = re.compile(r'\s*{\s*(//.*)?$')
 _NAMESPACE_END_RE = re.compile(r'\s*(})|'
                                r'\s*(U_NAMESPACE_END)|'
                                r'\s*(HASH_NAMESPACE_DECLARATION_END)')
@@ -133,8 +130,12 @@ _HEADER_GUARD_DEFINE_RE = re.compile(r'\s*#\s*define\s+')
 # We annotate every line in the source file by the re it matches, or None.
 # Note that not all of the above RE's are represented here; for instance,
 # we fold _C_COMMENT_START_RE and _C_COMMENT_END_RE into _COMMENT_LINE_RE.
+# The _NAMESPACE_CONTINUE_ALLMAN_MIXED_RE is also set on lines when Allman
+# and mixed namespaces are detected but the RE is too easy to match to add
+# under normal circumstances (must always be proceded by Allman/mixed).
 _LINE_TYPES = [_COMMENT_LINE_RE, _BLANK_LINE_RE,
-               _NAMESPACE_START_RE, _NAMESPACE_END_RE,
+               _NAMESPACE_START_RE, _NAMESPACE_START_ALLMAN_RE,
+               _NAMESPACE_START_MIXED_RE, _NAMESPACE_END_RE,
                _IF_RE, _ELSE_RE, _ENDIF_RE,
                _INCLUDE_RE, _FORWARD_DECLARE_RE,
                _HEADER_GUARD_RE, _HEADER_GUARD_DEFINE_RE,
@@ -319,7 +320,7 @@ class IWYUOutputParser(object):
     self.filename = '<unknown file>'
     self.lines_by_section = {}     # key is an RE, value is a list of lines
 
-  def _ProcessOneLine(self, line):
+  def _ProcessOneLine(self, line, basedir=None):
     """Reads one line of input, updates self, and returns False at EORecord.
 
     If the line matches one of the hard-coded section names, updates
@@ -346,7 +347,8 @@ class IWYUOutputParser(object):
       if m:
         # Check or set the filename (if the re has a group, it's for filename).
         if section_re.groups >= 1:
-          this_filename = m.group(1)
+          this_filename = NormalizeFilePath(basedir, m.group(1))
+
           if (self.current_section is not None and
               this_filename != self.filename):
             raise FixIncludesError('"%s" section for %s comes after "%s" for %s'
@@ -397,7 +399,8 @@ class IWYUOutputParser(object):
        FixIncludesError: for malformed-looking lines in the iwyu output.
     """
     for line in iwyu_output:
-      if not self._ProcessOneLine(line):   # returns False at end-of-record
+      if not self._ProcessOneLine(line, flags.basedir):
+        # returns False at end-of-record
         break
     else:                                  # for/else
       return None                          # at EOF
@@ -510,100 +513,86 @@ class LineInfo(object):
             % (line, type_id, self.key, self.move_span, self.reorder_span))
 
 
-def _ReadFile(filename):
+class FileInfo(object):
+  """ Details about a file's storage encoding  """
+  DEFAULT_LINESEP = os.linesep
+  DEFAULT_ENCODING = 'utf-8'
+
+  def __init__(self, linesep, encoding):
+    self.linesep = linesep
+    self.encoding = encoding
+
+  @staticmethod
+  def parse(filename):
+    """ Return a FileInfo object describing file encoding details. """
+    with open(filename, 'rb') as f:
+      content = f.read()
+
+    linesep = FileInfo.guess_linesep(content)
+    encoding = FileInfo.guess_encoding(content)
+    return FileInfo(linesep, encoding)
+
+  @staticmethod
+  def guess_linesep(bytebuf):
+    """ Return most frequent line separator of buffer. """
+    win = bytebuf.count(b'\r\n')
+    unix = bytebuf.count(b'\n') - win
+    if win > unix:
+      return '\r\n'
+    elif unix > win:
+      return '\n'
+
+    return FileInfo.DEFAULT_LINESEP
+
+  @staticmethod
+  def guess_encoding(bytebuf):
+    """ Return approximate encoding for buffer.
+
+    This is heavily heuristic, and will return any supported encoding that can
+    describe the file without losing information, not necessarily the *right*
+    encoding. This is usually OK, because IWYU typically only adds ASCII content
+    (or content pulled from the file itself).
+    """
+    def try_decode(buf, encoding):
+      try:
+        buf.decode(encoding, errors='strict')
+      except UnicodeError:
+        return False
+      return True
+
+    # Special-case UTF-8 BOM
+    if bytebuf[0:3] == b'\xef\xbb\xbf':
+      if try_decode(bytebuf, 'utf-8'):
+        return 'utf-8'
+
+    encodings = ['ascii', 'utf-8', 'windows-1250', 'windows-1252']
+    for encoding in encodings:
+      if try_decode(bytebuf, encoding):
+        return encoding
+
+    return FileInfo.DEFAULT_ENCODING
+
+
+def _ReadFile(filename, fileinfo):
   """Read from filename and return a list of file lines."""
   try:
-    return open(filename).read().splitlines()
+    with open(filename, 'rb') as f:
+      content = f.read()
+      return content.decode(fileinfo.encoding).splitlines()
   except (IOError, OSError) as why:
     print("Skipping '%s': %s" % (filename, why))
   return None
 
 
-def _ReadWriteableFile(filename, ignore_writeable):
-  """Read from filename and return a list of file lines.
-
-  Given a filename, if the file is found and is writable, read
-  the file contents and return it as a list of lines (newlines
-  removed).  If the file is not found or is not writable, or if
-  there is another IO error, return None.
-
-  Arguments:
-    filename: the name of the file to read.
-    ignore_writeable: if True, don't check whether the file is writeable;
-       return the contents anyway.
-
-  Returns:
-    A list of lines (without trailing newline) from filename, or None
-    if the file is not writable, or cannot be read.
-  """
-  if os.access(filename, os.W_OK) or ignore_writeable:
-    return _ReadFile(filename)
-  return None
-
-
-def _WriteFileContentsToFileObject(f, file_lines, line_ending):
-  """Write the given file-lines to the file."""
-  f.write(line_ending.join(file_lines))
-  f.write(line_ending)
-
-def _DetectLineEndings(filename):
-  """Detect line ending of given file."""
-
-  # Find out which file ending is used first. The
-  # first lines indicate the line ending for the whole file
-  # so pathological files with mixed endings aren't handled properly!
-  f = open(filename, 'U')
-  try:
-    while f.newlines is None:
-      if f.readline() == '':
-        break
-    return f.newlines if f.newlines != None and \
-        type(f.newlines) is not tuple else '\n'
-  finally:
-    f.close()
-
-def _WriteFileContents(filename, file_lines):
+def _WriteFile(filename, fileinfo, file_lines):
   """Write the given file-lines to the file."""
   try:
-    line_ending = _DetectLineEndings(filename)
-    # Open file in binary mode to preserve line endings
-    f = open(filename, 'wb')
-    try:
-      _WriteFileContentsToFileObject(f, file_lines, line_ending)
-    finally:
-      f.close()
+    with open(filename, 'wb') as f:
+      content = fileinfo.linesep.join(file_lines) + fileinfo.linesep
+      content = content.encode(fileinfo.encoding)
+      f.write(content)
   except (IOError, OSError) as why:
     print("Error writing '%s': %s" % (filename, why))
-
-
-def _CreateCommandLine(command, args):
-  """Join the command with the args in a shell-quoted way."""
-  ret = '%s %s' % (command, ' '.join(map(pipes.quote, args)))
-  print('Running: ' + ret)
-  return ret
-
-
-def _GetCommandOutputLines(command, args):
-  """Return an iterable over the output lines of the given shell command."""
-  full_command = _CreateCommandLine(command, args)
-  proc = subprocess.Popen(full_command, shell=True, stdout=subprocess.PIPE)
-  return proc.stdout
-
-
-def _RunCommand(command, args):
-  """Run the given shell command."""
-  for line in _GetCommandOutputLines(command, args):
-    print(line, end=None)
-
-
-def _GetCommandOutputWithInput(command, stdin_text):
-  """Return the output of the given command fed the stdin_text."""
-  print(command)
-  proc = subprocess.Popen(command,
-                          stdin=subprocess.PIPE,
-                          stdout=subprocess.PIPE,
-                          shell=True)
-  return proc.communicate(input=stdin_text)[0]
 
 
 def PrintFileDiff(old_file_contents, new_file_contents):
@@ -706,6 +695,7 @@ def _CalculateLineTypesAndKeys(file_lines, iwyu_record):
   """
   seen_types = set()
   in_c_style_comment = False
+  in_allman_or_mixed_namespace = False
   for line_info in file_lines:
     if line_info.line is None:
       line_info.type = None
@@ -729,6 +719,10 @@ def _CalculateLineTypesAndKeys(file_lines, iwyu_record):
       in_c_style_comment = False
     elif in_c_style_comment:
       line_info.type = _COMMENT_LINE_RE
+    elif (in_allman_or_mixed_namespace and
+          _NAMESPACE_CONTINUE_ALLMAN_MIXED_RE.match(line_info.line)):
+      in_allman_or_mixed_namespace = False
+      line_info.type = _NAMESPACE_CONTINUE_ALLMAN_MIXED_RE
     else:
       for type_re in _LINE_TYPES:
         # header-guard-define-re has a two-part decision criterion: it
@@ -742,6 +736,10 @@ def _CalculateLineTypesAndKeys(file_lines, iwyu_record):
           line_info.type = type_re
           if type_re == _INCLUDE_RE:
             line_info.key = m.group(1)   # get the 'key' for the #include.
+          elif type_re in (_NAMESPACE_START_ALLMAN_RE,
+                           _NAMESPACE_START_MIXED_RE):
+            # set in_allman_or_mixed_namespace to true to find the next {
+            in_allman_or_mixed_namespace = True
           break
       else:    # for/else
         line_info.type = None   # means we didn't match any re
@@ -991,14 +989,26 @@ def _DeleteEmptyNamespaces(file_lines):
   start_line = 0
   while start_line < len(file_lines):
     line_info = file_lines[start_line]
-    if line_info.deleted or line_info.type != _NAMESPACE_START_RE:
+    if (line_info.deleted or
+        (line_info.type != _NAMESPACE_START_RE and
+         line_info.type != _NAMESPACE_START_ALLMAN_RE and
+         line_info.type != _NAMESPACE_START_MIXED_RE)):
       start_line += 1
       continue
-    # Because multiple namespaces can be on one line
-    # ("namespace foo { namespace bar { ..."), we need to count.
-    # We use the max because line may have 0 '{'s if it's a macro.
-    # TODO(csilvers): ignore { in comments.
-    namespace_depth = max(line_info.line.count('{'), 1)
+    if line_info.type in (_NAMESPACE_START_RE, _NAMESPACE_START_MIXED_RE):
+      # Because multiple namespaces can be on one line
+      # ("namespace foo { namespace bar { ..."), we need to count.
+      # We use the max because line may have 0 '{'s if it's a macro.
+      # TODO(csilvers): ignore { in comments.
+      namespace_depth = max(line_info.line.count('{'), 1)
+    elif line_info.type == _NAMESPACE_START_ALLMAN_RE:
+      # For Allman namespaces, keep the start line and increment
+      # the namespace depths when the actual brace is encountered.
+      namespace_depth = 0
+    else:
+      # We should have handled all the namespace styles above!
+      assert False, ('unknown namespace type',
+                     _LINE_TYPES.index(line_info.type))
     end_line = start_line + 1
     while end_line < len(file_lines):
       line_info = file_lines[end_line]
@@ -1006,8 +1016,15 @@ def _DeleteEmptyNamespaces(file_lines):
         end_line += 1
       elif line_info.type in (_COMMENT_LINE_RE, _BLANK_LINE_RE):
         end_line += 1                # ignore blank lines
-      elif line_info.type == _NAMESPACE_START_RE:     # nested namespace
+      elif line_info.type == _NAMESPACE_CONTINUE_ALLMAN_MIXED_RE:
+        namespace_depth += 1
+        end_line += 1
+      elif line_info.type in (_NAMESPACE_START_RE, _NAMESPACE_START_MIXED_RE):
+        # nested namespace
         namespace_depth += max(line_info.line.count('{'), 1)
+        end_line += 1
+      elif line_info.type == _NAMESPACE_START_ALLMAN_RE:
+        # nested Allman namespace
         end_line += 1
       elif line_info.type == _NAMESPACE_END_RE:
         namespace_depth -= max(line_info.line.count('}'), 1)
@@ -1212,7 +1229,10 @@ def _ShouldInsertBlankLine(decorated_move_span, next_decorated_move_span,
            file_lines[next_line].type == _COMMENT_LINE_RE):
       next_line += 1
     return (next_line and next_line < len(file_lines) and
-            file_lines[next_line].type in (_NAMESPACE_START_RE, None))
+            file_lines[next_line].type in (_NAMESPACE_START_RE,
+                                           _NAMESPACE_START_ALLMAN_RE,
+                                           _NAMESPACE_START_MIXED_RE,
+                                           None))
 
   # We never insert a blank line between two spans of the same kind.
   # Nor do we ever insert a blank line at EOF.
@@ -1279,9 +1299,11 @@ def _GetToplevelReorderSpans(file_lines):
     line_info = file_lines[line_number]
     if line_info.deleted:
       continue
-    if line_info.type == _NAMESPACE_START_RE:
+    if line_info.type in (_NAMESPACE_START_RE, _NAMESPACE_START_MIXED_RE):
       # The 'max' is because the namespace-re may be a macro.
       namespace_depth += max(line_info.line.count('{'), 1)
+    elif line_info.type == _NAMESPACE_CONTINUE_ALLMAN_MIXED_RE:
+      namespace_depth += 1
     elif line_info.type == _NAMESPACE_END_RE:
       namespace_depth -= max(line_info.line.count('}'), 1)
     if namespace_depth > 0:
@@ -1304,12 +1326,12 @@ def _GetToplevelReorderSpans(file_lines):
   return good_reorder_spans
 
 
-def _GetFirstNamespaceLevelReorderSpan(file_lines):
-  """Returns the first reorder-span inside a namespace, if it's easy to do.
+def _GetNamespaceLevelReorderSpans(file_lines):
+  """Returns a list of reorder-spans inside namespaces, if it's easy to do.
 
   This routine is meant to handle the simple case where code consists
   of includes and forward-declares, and then a 'namespace
-  my_namespace'.  We return the reorder span of the inside-namespace
+  my_namespace'.  We return the reorder spans of the inside-namespace
   forward-declares, which is a good place to insert new
   inside-namespace forward-declares (rather than putting these new
   forward-declares at the top level).
@@ -1319,71 +1341,162 @@ def _GetFirstNamespaceLevelReorderSpan(file_lines):
   it then continues until it finds a forward-declare line, or a
   non-namespace contentful line.  In the former case, it figures out
   the reorder-span this forward-declare line is part of, while in the
-  latter case it creates a new reorder-span.  It returns
-  (enclosing_namespaces, reorder_span).
+  latter case it creates a new reorder-span.  A list of these namespace
+  reorder spans are returned so they can all be checked.  These elements
+  are in the form (enclosing_namespace, reorder_span).
 
   Arguments:
     file_lines: an array of LineInfo objects with .type and
-       .reorder_span filled in.
+    .reorder_span filled in.
 
   Returns:
-    (None, None) if we could not find a first namespace-level
-    reorder-span, or (enclosing_namespaces, reorder_span), where
-    enclosing_namespaces is a string that looks like (for instance)
+    [] if we could not find any namespace-level reorder-spans, or
+    [(enclosing_namespace, reorder_span), ...], where enclosing_namespace
+    is a string that looks like (for instance)
     'namespace ns1 { namespace ns2 {', and reorder-span is a
     [start_line, end_line) pair.
   """
-  simple_namespace_re = re.compile(r'^\s*namespace\s+([^{\s]+)\s*\{\s*(//.*)?$')
-  namespace_prefix = ''
 
-  for line_number in range(len(file_lines)):
-    line_info = file_lines[line_number]
+  def _GetNamespaceNames(namespace_line):
+    """Returns a list of namespace names given a namespace line.  Anonymous
+    namespaces will return an empty string
+    """
+    namespace_re = re.compile(r'\s*namespace\b(.*)')
+    namespaces = []
+    namespace_line = namespace_line.split("/")[0] # remove C++ comments
+    namespace_line = namespace_line.split("{") # extract all namespaces
+    for namespace in namespace_line:
+      m = namespace_re.match(namespace)
+      if m:
+        namespaces.append(m.group(1).strip())
 
-    if line_info.deleted:
-      continue
+    return namespaces
 
-    # If we're an empty line, just ignore us.  Likewise with #include
-    # lines, which aren't 'contentful' for our purposes, and the
-    # header guard, which is (by definition) the only kind of #ifdef
-    # that we can be inside and still considered at the "top level".
-    if line_info.type in (_COMMENT_LINE_RE, _BLANK_LINE_RE, _INCLUDE_RE,
-                          _HEADER_GUARD_RE, _HEADER_GUARD_DEFINE_RE,
-                          _PRAGMA_ONCE_LINE_RE):
-      continue
+  namespace_reorder_spans = {}
+  try:
+    namespace_prefixes = []
+    pending_namespace_prefix = ''
+    ifdef_depth = 0
 
-    # If we're a 'contentful' line such as a (non-header-guard) #ifdef, bail.
-    elif line_info.type in (_IF_RE, _NAMESPACE_END_RE, _ELSE_RE, _ENDIF_RE,
-                            None):    # None is a 'normal' contentful line
-      # TODO(csilvers): we could probably keep going if there are no
-      # braces on the line.  We could also keep track of our #ifdef
-      # depth instead of bailing on #else and #endif, and only accept
-      # the fwd-decl-inside-namespace if it's at ifdef-depth 0.
-      break
+    for line_number, line_info in enumerate(file_lines):
+      if line_info.deleted:
+        continue
 
-    elif line_info.type == _NAMESPACE_START_RE:
-      # Only handle the simple case of 'namespace <foo> {'
-      m = simple_namespace_re.match(line_info.line)
-      if not m:
+      # If we're an empty line, just ignore us.  Likewise with #include
+      # lines, which aren't 'contentful' for our purposes, and the
+      # header guard, which is (by definition) the only kind of #ifdef
+      # that we can be inside and still considered at the "top level".
+      if line_info.type in (_COMMENT_LINE_RE,
+                            _BLANK_LINE_RE,
+                            _INCLUDE_RE,
+                            _HEADER_GUARD_RE,
+                            _HEADER_GUARD_DEFINE_RE,
+                            _PRAGMA_ONCE_LINE_RE):
+        continue
+
+      # If we're a 'contentful' line such as a (non-header-guard) #ifdef, add
+      # to the ifdef depth.  If we encounter #endif, reduce the ifdef depth.
+      # Only keep track of namespaces when ifdef depth is 0
+      elif line_info.type == _IF_RE:
+        ifdef_depth += 1
+
+      elif line_info.type == _ELSE_RE:
+        continue
+
+      elif line_info.type == _ENDIF_RE:
+        ifdef_depth -= 1
+
+      elif ifdef_depth != 0:
+        continue # skip lines until we're outside of an ifdef block
+
+      # Build the simplified namespace dictionary.  When any new namespace is
+      # encountered, add the namespace to the list using the next line to cover
+      # namespaces without forward declarations.  When a forward declare is
+      # found, update the dictionary using the existing namespace span that the
+      # forward declare contains.  Once a contentful line (None) has been found
+      # or any exception occurs, return the results that have been found.  Any
+      # forward declare that wasn't able to have a proper namespace name found
+      # will still propagate to the top of the file.
+      elif line_info.type == _NAMESPACE_START_RE:
+        for namespace in _GetNamespaceNames(line_info.line):
+          if not namespace:
+            namespace_prefixes.append('namespace {')
+          else:
+            namespace_prefixes.append('namespace %s {' % namespace)
+
+        namespace_reorder_spans[' '.join(namespace_prefixes)] = (
+          line_number+1, line_number+1)
+
+      elif line_info.type == _NAMESPACE_START_ALLMAN_RE:
+        pending_namespace_prefix = ''
+        namespaces = _GetNamespaceNames(line_info.line)
+        if len(namespaces) != 1:
+          raise FixIncludesError('Allman namespace found containing multiple '
+                                 'names: %s', line_info.line)
+        for namespace in namespaces:
+          if not namespace:
+            pending_namespace_prefix += 'namespace'
+          else:
+            pending_namespace_prefix += 'namespace %s' % namespace
+
+      elif line_info.type == _NAMESPACE_START_MIXED_RE:
+        # For mixed namespace styles, we need to append normalized prefixes
+        # using regular and Allman style.  Treat the first elements as
+        # normal and only treat the final element as Allman.  By the
+        # nature of mixed namespaces, there will always be more than
+        # one namespace so it is okay to assume that _GetNamespaceNames
+        # will always return multiple records.
+        pending_namespace_prefix = ''
+        namespaces = _GetNamespaceNames(line_info.line)
+        for namespace in namespaces[:-1]:
+          if not namespace:
+            namespace_prefixes.append('namespace {')
+          else:
+            namespace_prefixes.append('namespace %s {' % namespace)
+
+        if not namespaces[-1]:
+          pending_namespace_prefix += 'namespace'
+        else:
+          pending_namespace_prefix += 'namespace %s' % namespaces[-1]
+
+      elif line_info.type == _NAMESPACE_CONTINUE_ALLMAN_MIXED_RE:
+        # Append to the simplified allman namespace.
+        if pending_namespace_prefix == '':
+          raise FixIncludesError('Namespace bracket found without an associated '
+                                 'namespace name at line: %s', line_number)
+        pending_namespace_prefix += ' {'
+        namespace_prefixes.append(pending_namespace_prefix)
+        namespace_reorder_spans[' '.join(namespace_prefixes)] = (
+          line_number+1, line_number+1)
+
+      elif line_info.type == _NAMESPACE_END_RE:
+        # Remove C++ comments and count the ending brackets.
+        namespace_end_count = line_info.line.split("/")[0].count("}")
+        namespace_prefixes = namespace_prefixes[:-namespace_end_count]
+
+      elif line_info.type == _FORWARD_DECLARE_RE:
+        # If we're not in a namespace, keep going.  Otherwise, this is
+        # just the situation we're looking for!  Update the dictionary
+        # with the better reorder span
+        if len(namespace_prefixes) > 0:
+          namespace_reorder_spans[' '.join(namespace_prefixes)] = (
+            line_info.reorder_span)
+
+      elif line_info.type == None:
         break
-      namespace_prefix += ('namespace %s { ' % m.group(1).strip())
 
-    elif line_info.type == _FORWARD_DECLARE_RE:
-      # If we're not in a namespace, keep going.  Otherwise, this is
-      # just the situation we're looking for!
-      if namespace_prefix:
-        return (namespace_prefix, line_info.reorder_span)
+      else:
+        # We should have handled all the cases above!
+        assert False, ('unknown line-info type',
+                       _LINE_TYPES.index(line_info.type))
+  except Exception as why:
+    # Namespace detection could be tricky so take what we have and return.
+    print('DEBUG: Namespace detection returned prematurely because of an '
+          'exception: %s' % (why))
+    pass
 
-    else:
-      # We should have handled all the cases above!
-      assert False, ('unknown line-info type',
-                     _LINE_TYPES.index(line_info.type))
-
-  # We stopped because we hit a contentful line (or, possibly, a
-  # weird-looking namespace).  If we're inside the first-namespace,
-  # return this position as a good place to insert forward-declares.
-  if namespace_prefix:
-    return (namespace_prefix, (line_number, line_number))
-  return (None, None)
+  # return a reverse sorted list so longest matches are checked first
+  return sorted(namespace_reorder_spans.items(), reverse=True)
 
 
 # These are potential 'kind' arguments to _FirstReorderSpanWith.
@@ -1780,19 +1893,21 @@ def _DecoratedMoveSpanLines(iwyu_record, file_lines, move_span_lines, flags):
     # If we're a forward-declare inside a namespace, see if there's a
     # reorder span inside the same namespace we can fit into.
     if kind == _FORWARD_DECLARE_KIND:
-      (namespace_prefix, possible_reorder_span) = \
-          _GetFirstNamespaceLevelReorderSpan(file_lines)
-      if (namespace_prefix and possible_reorder_span and
-          firstline.line.startswith(namespace_prefix)):
-        # Great, we can go into this reorder_span.  We also need to
-        # modify all-lines because this line doesn't need the
-        # namespace prefix anymore.  Make sure we can do that before
-        # succeeding.
-        new_firstline = _RemoveNamespacePrefix(firstline.line, namespace_prefix)
-        if new_firstline:
-          assert all_lines[first_contentful_line] == firstline.line
-          all_lines[first_contentful_line] = new_firstline
-          reorder_span = possible_reorder_span
+      namespace_reorder_spans = _GetNamespaceLevelReorderSpans(file_lines)
+      for namespace_prefix, possible_reorder_span in namespace_reorder_spans:
+        if (namespace_prefix and possible_reorder_span and
+            firstline.line.startswith(namespace_prefix)):
+          # Great, we can go into this reorder_span.  We also need to
+          # modify all-lines because this line doesn't need the
+          # namespace prefix anymore.  Make sure we can do that before
+          # succeeding.
+          new_firstline = _RemoveNamespacePrefix(firstline.line, namespace_prefix)
+          if new_firstline:
+            assert all_lines[first_contentful_line] == firstline.line
+            all_lines[first_contentful_line] = new_firstline
+            sort_key = re.sub(r'\s+', '', new_firstline)
+            reorder_span = possible_reorder_span
+            break
 
     # If that didn't work out, find a top-level reorder span to go into.
     if reorder_span is None:
@@ -1908,7 +2023,9 @@ def _GetSymbolNameFromForwardDeclareLine(line):
   """
   iwyu_namespace_re = re.compile(r'namespace ([^{]*) { ')
   symbolname_re = re.compile(r'([A-Za-z0-9_]+)')
-  namespaces_in_line = iwyu_namespace_re.findall(line)
+  # Turn anonymous namespaces into their proper symbol representation.
+  namespaces_in_line = iwyu_namespace_re.findall(line.replace(
+    "namespace {", "namespace (anonymous namespace) {"))
   symbols_in_line = symbolname_re.findall(line)
   symbol_name = symbols_in_line[-1]
   if (namespaces_in_line):
@@ -1952,7 +2069,7 @@ def FixFileLines(iwyu_record, file_lines, flags):
   # For every move-span in our file -- that's every #include and
   # forward-declare we saw -- 'decorate' the move-range to allow us
   # to sort them.
-  move_spans = set([fl.move_span for fl in file_lines if fl.move_span])
+  move_spans = OrderedSet([fl.move_span for fl in file_lines if fl.move_span])
   decorated_move_spans = []
   for (start_line, end_line) in move_spans:
     decorated_span = _DecoratedMoveSpanLines(iwyu_record, file_lines,
@@ -1986,7 +2103,10 @@ def FixFileLines(iwyu_record, file_lines, flags):
   # Add a sentinel decorated move-span, to make life easy, and sort.
   decorated_move_spans.append(((len(file_lines), len(file_lines)),
                                _EOF_KIND, '', []))
-  decorated_move_spans.sort()
+  if flags.reorder:
+    decorated_move_spans.sort()
+  else:
+    decorated_move_spans.sort(key=lambda x: x[0:-2])
 
   # Now go through all the lines of the input file and construct the
   # output file.  Before we get to the next reorder-span, we just
@@ -2024,113 +2144,19 @@ def FixFileLines(iwyu_record, file_lines, flags):
     output_lines.extend(new_lines)
     line_number = current_reorder_span[1]               # go to end of span
 
-  return output_lines
+  return [line for line in output_lines if line is not None]
 
 
-def GetFixedFile(iwyu_record, flags):
-  """Figure out #include and forward-declare line fixes of one file.
-
-  Given an iwyu record for a single file, listing the #includes and
-  forward-declares to add, remove, and re-sort, loads the file, makes
-  the fixes, and returns the fixed file as a list of lines.  The flags
-  affect the details of the fixing.
-
-  Arguments:
-    iwyu_record: an IWYUOutputRecord object holding the parsed output
-      of the include-what-you-use script (run at verbose level 1 or
-      higher) pertaining to a single source file.
-      iwyu_record.filename indicates what file to edit.
-    flags: commandline flags, as parsed by optparse.  We use
-       flags.dry_run and flags.checkout_command, which determine
-       whether we try to fix unwritable files, and other flags
-       indirectly.
-
-  Returns:
-    A list of strings representing the 'fixed' file, if the file has
-    changed, or None if the file hasn't changed at all.
+def FixOneFile(iwyu_record, file_contents, flags):
+  """Parse a file guided by an iwyu_record and flags and apply IWYU fixes.
+  Returns two lists of lines (old, fixed).
   """
-  file_contents = _ReadWriteableFile(iwyu_record.filename,
-                                     flags.dry_run or flags.checkout_command)
-  if not file_contents:
-    print('(skipping %s: not a writable file)' % iwyu_record.filename)
-    return None
-  print(">>> Fixing #includes in '%s'" % iwyu_record.filename)
   file_lines = ParseOneFile(file_contents, iwyu_record)
   old_lines = [fl.line for fl in file_lines
                if fl is not None and fl.line is not None]
   fixed_lines = FixFileLines(iwyu_record, file_lines, flags)
-  fixed_lines = [line for line in fixed_lines if line is not None]
-  if old_lines == fixed_lines:
-    print("No changes in file ", iwyu_record.filename)
-    return None
+  return old_lines, fixed_lines
 
-  if flags.dry_run:
-    PrintFileDiff(old_lines, fixed_lines)
-
-  return fixed_lines
-
-
-
-
-def CreateCLForCheckoutCommand(checkout_command, invoking_command):
-  """Create a CL using a command inferred from the checkout_command.
-
-  Arguments:
-    checkout_commmand: The command specified with --checkout_command
-    invoking_command: If not None, the command line passed to iwyu.py
-
-  Returns:
-    A CL number on success, else None.
-
-  If the checkout_command is 'p4|g4|v4 edit' then attempt to create a
-  CL with an appropriate description. On success, return the CL
-  number. Otherwise return None.
-  """
-  if checkout_command in ('p4 edit', 'g4 edit', 'v4 edit'):
-    what4 = checkout_command.split(' ')[0]
-  else:
-    # We don't know how to create a CL. Punt.
-    return None
-
-  description_lines = ['\tInclude what you use.\n']
-  if invoking_command:
-    description_lines.append(
-          '\tThe following command was run to modify the files:\n')
-    description_lines.append('\t' + invoking_command + '\n')
-
-  # The change description must be of a certain form. First invoke
-  # '<what4> client -o' to create a template, then replace
-  # '<enter description here>' with the desired description.
-  # The lines after that are File lines, which we will discard
-  # here, because we will add the files via '<what4> edit -c <CL#>'.
-  input_lines = []
-  description_added = False
-  output_lines = []
-  for line in _GetCommandOutputLines(what4, ['change', '-o']):
-    output_lines.append(line)
-    if line == '\t<enter description here>\n':
-      input_lines.extend(description_lines)
-      description_added = True
-      break
-    else:
-      input_lines.append(line)
-
-  if not description_added:
-    print('ERROR: Didn\'t find "\t<enter description here>" in'
-          ' "%s change -o" output' % what4)
-    for line in output_lines:
-      print(line, end=None)
-    return None
-
-  input_text = ''.join(input_lines)
-  output =  _GetCommandOutputWithInput('%s change -i'
-                                       % what4, input_text)
-  # Parse output for "Changelist XXX created."
-  m = re.match(r'Change (\d+) created.', output)
-  if not m:
-    print('ERROR: Unexpected change creation output "%s"' % output)
-    return None
-  return m.group(1)
 
 def FixManyFiles(iwyu_records, flags):
   """Given a list of iwyu_records, fix each file listed in the record.
@@ -2145,61 +2171,40 @@ def FixManyFiles(iwyu_records, flags):
       the parsed output of the include-what-you-use script (run at
       verbose level 1 or higher) pertaining to a single source file.
       iwyu_record.filename indicates what file to edit.
-    flags: commandline flags, as parsed by optparse.  We use
-       flags.dry_run and flags.checkout_command, which determine
-       how we read and write files, and other flags indirectly.
+    flags: commandline flags, as parsed by optparse..
 
   Returns:
     The number of files fixed (as opposed to ones that needed no fixing).
   """
-  file_and_fix_pairs = []
-  files_to_checkout = []
+  files_fixed = 0
   for iwyu_record in iwyu_records:
     try:
-      fixed_lines = GetFixedFile(iwyu_record, flags)
-      if fixed_lines is not None:
-        file_and_fix_pairs.append((iwyu_record.filename, fixed_lines))
-        if flags.checkout_command and \
-           not flags.dry_run and \
-           not os.access(iwyu_record.filename, os.W_OK):
-          files_to_checkout.append(iwyu_record.filename)
+      fileinfo = FileInfo.parse(iwyu_record.filename)
+
+      file_contents = _ReadFile(iwyu_record.filename, fileinfo)
+      if not file_contents:
+        continue
+
+      print(">>> Fixing #includes in '%s'" % iwyu_record.filename)
+      old_lines, fixed_lines = FixOneFile(iwyu_record, file_contents, flags)
+      if old_lines == fixed_lines:
+        print("No changes in file %s" % iwyu_record.filename)
+        continue
+
+      if flags.dry_run:
+        PrintFileDiff(old_lines, fixed_lines)
+      else:
+        _WriteFile(iwyu_record.filename, fileinfo, fixed_lines)
+
+      files_fixed += 1
     except FixIncludesError as why:
       print('ERROR: %s - skipping file %s' % (why, iwyu_record.filename))
 
-  # It's much faster to check out all the files at once.
-  if flags.checkout_command and files_to_checkout:
-    checkout_command = flags.checkout_command
-    # If --create_cl_if_possible was specified, AND if all files that
-    # need fixing are not writable (not opened for edit in this
-    # client), try to create a CL to contain those edits.  This is to
-    # avoid inadvertently creating multiple CLs.
-    if (flags.create_cl_if_possible and
-        len(files_to_checkout) == len(file_and_fix_pairs)):
-      cl = CreateCLForCheckoutCommand(flags.checkout_command,
-                                      flags.invoking_command_line)
-      if cl:
-        # Assumption: the checkout command supports the '-c <CL#>' syntax.
-        checkout_command += (' -c ' + cl)
-    # Else if --append_to_cl was specified, add the files that need
-    # editing to the specified (existing) CL.
-    # NOTE: If one or more of these files is already open, this will
-    # presumably fail.
-    elif flags.append_to_cl:
-      checkout_command += (' -c %d' % flags.append_to_cl)
-    _RunCommand(checkout_command, files_to_checkout)
-
-  if not flags.dry_run:
-    for filename, fixed_lines in file_and_fix_pairs:
-      _WriteFileContents(filename, fixed_lines)
-
-  files_fixed = [filename for filename, _ in file_and_fix_pairs]
-
-  print('IWYU edited %d files on your behalf.\n' % len(files_fixed))
-
-  return len(files_fixed)
+  print('IWYU edited %d files on your behalf.\n' % files_fixed)
+  return files_fixed
 
 
-def ProcessIWYUOutput(f, files_to_process, flags):
+def ProcessIWYUOutput(f, files_to_process, flags, cwd):
   """Fix the #include and forward-declare lines as directed by f.
 
   Given a file object that has the output of the include_what_you_use
@@ -2212,12 +2217,17 @@ def ProcessIWYUOutput(f, files_to_process, flags):
     flags: commandline flags, as parsed by optparse.  The only flag
        we use directly is flags.ignore_re, to indicate files not to
        process; we also pass the flags to other routines.
+    cwd: the current working directory, externalized for testing.
 
   Returns:
     The number of files that had to be modified (because they weren't
     already all correct).  In dry_run mode, returns the number of
     files that would have been modified.
   """
+  if files_to_process is not None:
+    files_to_process = [NormalizeFilePath(cwd, fname)
+                        for fname in files_to_process]
+
   # First collect all the iwyu data from stdin.
 
   # Maintain sort order by using OrderedDict instead of dict
@@ -2231,13 +2241,17 @@ def ProcessIWYUOutput(f, files_to_process, flags):
     except FixIncludesError as why:
       print('ERROR: %s' % why)
       continue
-    filename = iwyu_record.filename
+    filename = NormalizeFilePath(flags.basedir, iwyu_record.filename)
     if files_to_process is not None and filename not in files_to_process:
       print('(skipping %s: not listed on commandline)' % filename)
       continue
     if flags.ignore_re and re.search(flags.ignore_re, filename):
       print('(skipping %s: it matches --ignore_re, which is %s)' % (
           filename, flags.ignore_re))
+      continue
+    if flags.only_re and not re.search(flags.only_re, filename):
+      print('(skipping %s: it does not match --only_re, which is %s)' % (
+          filename, flags.only_re))
       continue
 
     if filename in iwyu_output_records:
@@ -2260,14 +2274,23 @@ def ProcessIWYUOutput(f, files_to_process, flags):
   return FixManyFiles(contentful_records, flags)
 
 
+def NormalizeFilePath(basedir, filename):
+  """ Normalize filename to be comparable.
+
+  If basedir has a value and filename is not already absolute, make filename
+  absolute. Otherwise return filename as-is.
+  """
+  if basedir and not os.path.isabs(filename):
+    return os.path.normpath(os.path.join(basedir, filename))
+  return filename
+
+
 def SortIncludesInFiles(files_to_process, flags):
   """For each file in files_to_process, sort its #includes.
 
   This reads each input file, sorts the #include lines, and replaces
-  the input file with the result.  Like ProcessIWYUOutput, this
-  requires that the file be writable, or that flags.checkout_command
-  be set.  SortIncludesInFiles does not add or remove any #includes.
-  It also ignores forward-declares.
+  the input file with the result. SortIncludesInFiles does not add
+  or remove any #includes.  It also ignores forward-declares.
 
   Arguments:
     files_to_process: a list (or set) of filenames.
@@ -2278,9 +2301,9 @@ def SortIncludesInFiles(files_to_process, flags):
     The number of files that had to be modified (because they weren't
     already all correct, that is, already in sorted order).
   """
-  num_fixes_made = 0
   sort_only_iwyu_records = []
   for filename in files_to_process:
+    filename = NormalizeFilePath(flags.basedir, filename)
     # An empty iwyu record has no adds or deletes, so its only effect
     # is to cause us to sort the #include lines.  (Since fix_includes
     # gets all its knowledge of where forward-declare lines are from
@@ -2310,6 +2333,13 @@ def main(argv):
   parser.add_option('--nosafe_headers', action='store_false',
                     dest='safe_headers')
 
+  parser.add_option('--reorder', action='store_true', default=False,
+                    help=('Re-order lines relative to other similar lines '
+                          '(e.g. headers relative to other headers)'))
+  parser.add_option('--noreorder', action='store_false', dest='reorder',
+                    help=('Do not re-order lines relative to other similar '
+                          'lines.'))
+
   parser.add_option('-s', '--sort_only', action='store_true',
                     help=('Just sort #includes of files listed on cmdline;'
                           ' do not add or remove any #includes'))
@@ -2324,25 +2354,9 @@ def main(argv):
                     help=('fix_includes.py will skip editing any file whose'
                           ' name matches this regular expression.'))
 
-  parser.add_option('--checkout_command', default=None,
-                    help=('A command, such as "p4 edit", to run on all the'
-                          ' non-writeable files before modifying them.  The'
-                          ' filenames will be appended to the command after'
-                          ' a space.  The command will not be run on any file'
-                          ' that does not need to change.'))
-
-  parser.add_option('--create_cl_if_possible', action='store_true',
-                    default=True,
-                    help=('If --checkout_command is "p4|g4|v4 edit" and'
-                          ' all files to be modified needed to be checked out,'
-                          ' then create a CL containing those files.'))
-  parser.add_option('--nocreate_cl_if_possible', action='store_false',
-                    dest='create_cl_if_possible')
-
-  parser.add_option('--append_to_cl', action='store',
-                    default=None, type='int', dest='append_to_cl',
-                    help=('If provided, with a checkout_command, add files'
-                          ' that need fixing to the specified existing CL.'))
+  parser.add_option('--only_re', default=None,
+                    help='fix_includes.py will skip editing any file whose'
+                         ' name does not match this regular expression.')
 
   parser.add_option('--separate_project_includes', default=None,
                     help=('Sort #includes for current project separately'
@@ -2353,11 +2367,6 @@ def main(argv):
                           ' same project.  If not specified, project #includes'
                           ' will be sorted with other non-system #includes.'))
 
-  parser.add_option('--invoking_command_line', default=None,
-                    help=('Internal flag used by iwyu.py, It should be the'
-                          ' command line used to invoke iwyu.py'))
-
-
   parser.add_option('-m', '--keep_iwyu_namespace_format', action='store_true',
                     default=False,
                     help=('Keep forward-declaration namespaces in IWYU format, '
@@ -2367,6 +2376,11 @@ def main(argv):
                           '\\n}\\n}.'))
   parser.add_option('--nokeep_iwyu_namespace_format', action='store_false',
                     dest='keep_iwyu_namespace_format')
+
+  parser.add_option('--basedir', '-p', default=None,
+                    help=('Specify the base directory. fix_includes will '
+                          'interpret non-absolute filenames relative to this '
+                          'path.'))
 
   (flags, files_to_modify) = parser.parse_args(argv[1:])
   if files_to_modify:
@@ -2380,16 +2394,12 @@ def main(argv):
       not flags.separate_project_includes.endswith('/')):
     flags.separate_project_includes += os.path.sep
 
-  if flags.append_to_cl and flags.create_cl_if_possible:
-    sys.exit('FATAL ERROR: At most one of --append_to_cl and '
-             '--create_cl_if_possible allowed')
-
   if flags.sort_only:
     if not files_to_modify:
       sys.exit('FATAL ERROR: -s flag requires a list of filenames')
     return SortIncludesInFiles(files_to_modify, flags)
   else:
-    return ProcessIWYUOutput(sys.stdin, files_to_modify, flags)
+    return ProcessIWYUOutput(sys.stdin, files_to_modify, flags, cwd=os.getcwd())
 
 
 if __name__ == '__main__':
