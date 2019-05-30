@@ -48,8 +48,7 @@ check_external()
 {
 	if [ ! -x "${SPARSE}" ]; then
 		echo "Required tool sparse missing:"
-		echo "    git clone git://git.kernel.org/pub/scm/devel/sparse/sparse.git sparse"
-		echo "    git -C sparse reset --hard v0.5.2"
+		echo "    git clone --depth 1 -b v0.5.2 git://git.kernel.org/pub/scm/devel/sparse/sparse.git sparse"
 		echo "    git -C sparse am ../patches/sparse/0001-sparse-add-Wpointer-arith-flag-to-toggle-sizeof-void.patch"
 		echo "    make -C sparse"
 		exit 1
@@ -79,8 +78,7 @@ check_external()
 
 	if [ ! -x "${SPATCH}" ]; then
 		echo "Required tool spatch missing:"
-		echo "    git clone https://github.com/coccinelle/coccinelle coccinelle"
-		echo "    git -C coccinelle reset --hard 97695d059cd5e3a7a5597e056f748e5fdb97ddac"
+		echo "    git clone --depth=1 -b 1.0.7 https://github.com/coccinelle/coccinelle coccinelle"
 		echo "    (cd coccinelle && ./autogen && ./configure)"
 		echo "    make -C coccinelle"
 		echo "    make -C coccinelle spatch"
