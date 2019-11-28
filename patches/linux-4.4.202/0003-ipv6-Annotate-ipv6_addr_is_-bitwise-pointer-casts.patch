@@ -1,0 +1,47 @@
+From: Sven Eckelmann <sven@narfation.org>
+Date: Thu, 28 Nov 2019 11:49:28 +0100
+Subject: ipv6: Annotate ipv6_addr_is_* bitwise pointer casts
+
+The sparse commit 6002ded74587 ("add a flag to warn on casts to/from
+bitwise pointers") introduced a check for non-direct casts from/to
+restricted datatypes (when -Wbitwise-pointer is enabled).
+
+This triggered a warning in the 64 bit optimized ipv6_addr_is_*() functions
+because sparse doesn't know that the buffer already points to some data in
+the correct bitwise integer format. But these were correct and can
+therefore be marked with __force to signalize sparse an intended cast to a
+specific bitwise type.
+
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+
+diff --git a/include/net/addrconf.h b/include/net/addrconf.h
+index af032e5405f629a6f499da22f2512c956501fa9f..0c8f4e9edc9948c34a569365dbdb41d794066de0 100644
+--- a/include/net/addrconf.h
++++ b/include/net/addrconf.h
+@@ -347,7 +347,7 @@ static inline void addrconf_addr_solict_mult(const struct in6_addr *addr,
+ static inline bool ipv6_addr_is_ll_all_nodes(const struct in6_addr *addr)
+ {
+ #if defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS) && BITS_PER_LONG == 64
+-	__be64 *p = (__be64 *)addr;
++	__be64 *p = (__force __be64 *)addr;
+ 	return ((p[0] ^ cpu_to_be64(0xff02000000000000UL)) | (p[1] ^ cpu_to_be64(1))) == 0UL;
+ #else
+ 	return ((addr->s6_addr32[0] ^ htonl(0xff020000)) |
+@@ -359,7 +359,7 @@ static inline bool ipv6_addr_is_ll_all_nodes(const struct in6_addr *addr)
+ static inline bool ipv6_addr_is_ll_all_routers(const struct in6_addr *addr)
+ {
+ #if defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS) && BITS_PER_LONG == 64
+-	__be64 *p = (__be64 *)addr;
++	__be64 *p = (__force __be64 *)addr;
+ 	return ((p[0] ^ cpu_to_be64(0xff02000000000000UL)) | (p[1] ^ cpu_to_be64(2))) == 0UL;
+ #else
+ 	return ((addr->s6_addr32[0] ^ htonl(0xff020000)) |
+@@ -376,7 +376,7 @@ static inline bool ipv6_addr_is_isatap(const struct in6_addr *addr)
+ static inline bool ipv6_addr_is_solict_mult(const struct in6_addr *addr)
+ {
+ #if defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS) && BITS_PER_LONG == 64
+-	__be64 *p = (__be64 *)addr;
++	__be64 *p = (__force __be64 *)addr;
+ 	return ((p[0] ^ cpu_to_be64(0xff02000000000000UL)) |
+ 		((p[1] ^ cpu_to_be64(0x00000001ff000000UL)) &
+ 		 cpu_to_be64(0xffffffffff000000UL))) == 0UL;
