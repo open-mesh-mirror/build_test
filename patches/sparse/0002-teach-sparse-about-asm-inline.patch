@@ -1,0 +1,169 @@
+From: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
+Date: Thu, 29 Nov 2018 17:54:26 +0100
+Subject: teach sparse about asm inline
+
+GCC's trunk now allows to specifiy 'inline' with asm statements.
+This feature has been asked by kernel devs and will most probably
+by used for the kernel.
+
+So, teach sparse about this syntax too.
+
+Note: for sparse, there is no semantic associated to this inline
+      because sparse doesn't make any size-based inlining decisions.
+
+Signed-off-by: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
+
+diff --git a/parse.c b/parse.c
+index 02a55a7454580107fdb5aa9e64db54f1a9edb892..d492729ea082b1becf5c1ad6336af033fac08165 100644
+--- a/parse.c
++++ b/parse.c
+@@ -115,6 +115,23 @@ enum {
+ 	SNone = 0, STypedef, SAuto, SRegister, SExtern, SStatic, SForced, SMax,
+ };
+ 
++static void asm_modifier(struct token *token, unsigned long *mods, unsigned long mod)
++{
++	if (*mods & mod)
++		warning(token->pos, "duplicated asm modifier");
++	*mods |= mod;
++}
++
++static void asm_modifier_volatile(struct token *token, unsigned long *mods)
++{
++	asm_modifier(token, mods, MOD_VOLATILE);
++}
++
++static void asm_modifier_inline(struct token *token, unsigned long *mods)
++{
++	asm_modifier(token, mods, MOD_INLINE);
++}
++
+ static struct symbol_op typedef_op = {
+ 	.type = KW_MODIFIER,
+ 	.declarator = typedef_specifier,
+@@ -123,6 +140,7 @@ static struct symbol_op typedef_op = {
+ static struct symbol_op inline_op = {
+ 	.type = KW_MODIFIER,
+ 	.declarator = inline_specifier,
++	.asm_modifier = asm_modifier_inline,
+ };
+ 
+ static declarator_t noreturn_specifier;
+@@ -170,6 +188,7 @@ static struct symbol_op const_op = {
+ static struct symbol_op volatile_op = {
+ 	.type = KW_QUALIFIER,
+ 	.declarator = volatile_qualifier,
++	.asm_modifier = asm_modifier_volatile,
+ };
+ 
+ static struct symbol_op restrict_op = {
+@@ -1982,15 +2001,16 @@ static struct token *parse_asm_labels(struct token *token, struct statement *stm
+ 
+ static struct token *parse_asm_statement(struct token *token, struct statement *stmt)
+ {
+-	int is_goto = 0;
++	unsigned long mods = 0;
+ 
+ 	token = token->next;
+ 	stmt->type = STMT_ASM;
+-	if (match_idents(token, &__volatile___ident, &__volatile_ident, &volatile_ident, NULL)) {
+-		token = token->next;
+-	}
+-	if (token_type(token) == TOKEN_IDENT && token->ident == &goto_ident) {
+-		is_goto = 1;
++	while (token_type(token) == TOKEN_IDENT) {
++		struct symbol *s = lookup_keyword(token->ident, NS_TYPEDEF);
++		if (s && s->op  && s->op->asm_modifier)
++			s->op->asm_modifier(token, &mods);
++		else if (token->ident == &goto_ident)
++			asm_modifier(token, &mods, MOD_ASM_GOTO);
+ 		token = token->next;
+ 	}
+ 	token = expect(token, '(', "after asm");
+@@ -2001,7 +2021,7 @@ static struct token *parse_asm_statement(struct token *token, struct statement *
+ 		token = parse_asm_operands(token, stmt, &stmt->asm_inputs);
+ 	if (match_op(token, ':'))
+ 		token = parse_asm_clobbers(token, stmt, &stmt->asm_clobbers);
+-	if (is_goto && match_op(token, ':'))
++	if (match_op(token, ':') && (mods & MOD_ASM_GOTO))
+ 		token = parse_asm_labels(token, stmt, &stmt->asm_labels);
+ 	token = expect(token, ')', "after asm");
+ 	return expect(token, ';', "at end of asm-statement");
+diff --git a/symbol.h b/symbol.h
+index 3274496118e2e89f928d795363ce2cbfe8b50cb8..834673a88c60377e3454bdb1eb74a96b58613148 100644
+--- a/symbol.h
++++ b/symbol.h
+@@ -124,6 +124,7 @@ struct symbol_op {
+ 	struct token *(*toplevel)(struct token *token, struct symbol_list **list);
+ 	struct token *(*attribute)(struct token *token, struct symbol *attr, struct decl_state *ctx);
+ 	struct symbol *(*to_mode)(struct symbol *);
++	void          (*asm_modifier)(struct token *token, unsigned long *mods);
+ 
+ 	int test, set, class;
+ };
+@@ -219,6 +220,7 @@ struct symbol {
+ #define MOD_TYPEDEF	0x10000
+ 
+ #define MOD_TLS		0x20000
++#define MOD_ASM_GOTO            MOD_TLS         // never used together
+ #define MOD_INLINE	0x40000
+ #define MOD_ADDRESSABLE	0x80000
+ 
+diff --git a/validation/asm-inline.c b/validation/asm-inline.c
+new file mode 100644
+index 0000000000000000000000000000000000000000..186286b3536f033d505a87e50d1a6416a3797f42
+--- /dev/null
++++ b/validation/asm-inline.c
+@@ -0,0 +1,52 @@
++static void foo(void)
++{
++	asm("");
++	asm volatile ("v");
++	asm inline ("i");
++	asm volatile inline ("vi");
++	asm inline volatile ("iv");
++
++	asm goto ("g" :::: label);
++	asm volatile goto ("vg" :::: label);
++	asm inline goto ("ig" :::: label);
++	asm volatile inline goto ("vig" :::: label);
++	asm inline volatile goto ("ivg" :::: label);
++
++	asm goto volatile ("gv" :::: label);
++	asm goto inline ("gi" :::: label);
++	asm goto volatile inline ("gvi" :::: label);
++	asm goto inline volatile ("giv" :::: label);
++	asm volatile goto inline ("vgi" :::: label);
++	asm inline goto volatile ("giv" :::: label);
++
++	// warn on duplicates
++	asm volatile volatile ("vv");
++	asm inline inline ("ii");
++	asm goto goto ("gg" :::: label);
++
++	asm inline volatile inline ("ivi");
++	asm inline goto inline ("igi" :::: label);
++	asm goto inline goto ("gig" :::: label);
++	asm goto volatile goto ("gvg" :::: label);
++	asm volatile inline volatile ("viv");
++	asm volatile goto volatile ("vgv" :::: label);
++
++label:
++	;
++}
++
++/*
++ * check-name: asm-inline
++ *
++ * check-error-start
++asm-inline.c:23:22: warning: duplicated asm modifier
++asm-inline.c:24:20: warning: duplicated asm modifier
++asm-inline.c:25:18: warning: duplicated asm modifier
++asm-inline.c:27:29: warning: duplicated asm modifier
++asm-inline.c:28:25: warning: duplicated asm modifier
++asm-inline.c:29:25: warning: duplicated asm modifier
++asm-inline.c:30:27: warning: duplicated asm modifier
++asm-inline.c:31:29: warning: duplicated asm modifier
++asm-inline.c:32:27: warning: duplicated asm modifier
++ * check-error-end
++ */

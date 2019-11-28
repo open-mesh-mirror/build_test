@@ -1,6 +1,6 @@
 From: Joey Pabalinas <joeypabalinas@gmail.com>
 Date: Tue, 10 Apr 2018 12:46:24 -1000
-Subject: [PATCH] sparse: add -Wpointer-arith flag to toggle sizeof(void) warnings
+Subject: sparse: add -Wpointer-arith flag to toggle sizeof(void) warnings
 
 Recent changes to the min()/max() macros in include/linux/kernel.h
 have added a lot of noise when compiling the kernel with Sparse checking
@@ -30,14 +30,6 @@ Signed-off-by: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
 
  5 files changed, 64 insertions(+), 2 deletions(-)
 Acked-by: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
----
- evaluate.c               |  6 ++++--
- lib.c                    |  2 ++
- lib.h                    |  1 +
- sparse.1                 | 13 ++++++++++++
- validation/sizeof-void.c | 44 ++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 64 insertions(+), 2 deletions(-)
- create mode 100644 validation/sizeof-void.c
 
 diff --git a/evaluate.c b/evaluate.c
 index b96696d3a51396800ac7367ab0a3c9e223df98ba..8f07d08cf5b494f8f0ea3663238bea4918ef73c8 100644
