@@ -15,7 +15,7 @@ specific bitwise type.
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
 diff --git a/include/net/addrconf.h b/include/net/addrconf.h
-index 1bab88184d3c3e595493466b8a1e2308562dfe0f..a088349dd94f26f2645f0a7bed65d5be89d5a5da 100644
+index 3f62b347b04a7bfee96425a173922cbe6d390cb3..c69c556cb3b3e6ecbe3b529e55c0b39088790fa4 100644
 --- a/include/net/addrconf.h
 +++ b/include/net/addrconf.h
 @@ -437,7 +437,7 @@ static inline void addrconf_addr_solict_mult(const struct in6_addr *addr,
