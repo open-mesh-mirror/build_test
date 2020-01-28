@@ -10,6 +10,7 @@
 { include: ["\"asm/bitops.h\"", "private", "<linux/bitops.h>", "public"] },
 { include: ["<asm/bitops.h>", "private", "<linux/bitops.h>", "public"] },
 { include: ["\"asm-generic/bitops/const_hweight.h\"", "private", "<linux/bitops.h>", "public"] },
+{ include: ["\"asm-generic/bitops/instrumented-atomic.h\"", "private", "<linux/bitops.h>", "public"] },
 { include: ["\"asm/cache.h\"", "private", "<linux/cache.h>", "public"] },
 { include: ["\"asm/processor.h\"", "private", "<asm/processor.h>", "public"] },
 { include: ["\"asm-generic/div64.h\"", "private", "<asm/div64.h>", "public"] },
