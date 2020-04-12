@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 ##===--- fix_includes.py - rewrite source files based on iwyu output ------===##
 #
@@ -114,7 +114,7 @@ _NAMESPACE_END_RE = re.compile(r'\s*(})|'
                                r'\s*(U_NAMESPACE_END)|'
                                r'\s*(HASH_NAMESPACE_DECLARATION_END)')
 # The group (in parens) holds the unique 'key' identifying this #include.
-_INCLUDE_RE = re.compile(r'\s*#\s*include\s+([<"][^"">]+[>"])')
+_INCLUDE_RE = re.compile(r'\s*#\s*include\s+([<"][^">]+[>"])')
 # We don't need this to actually match forward-declare lines (we get
 # that information from the iwyu input), but we do need an RE here to
 # serve as an index to _LINE_TYPES.  So we use an RE that never matches.
@@ -126,6 +126,9 @@ _HEADER_GUARD_RE = re.compile(r'$.HEADER_GUARD_RE')
 # know the previous line was a header-guard line, we're not that picky
 # about this one.
 _HEADER_GUARD_DEFINE_RE = re.compile(r'\s*#\s*define\s+')
+# Pragma to mark the associated header (for use when it cannot be deduced from
+# the filename)
+_IWYU_PRAGMA_ASSOCIATED_RE = re.compile(r'IWYU\s*pragma:\s*associated')
 
 # We annotate every line in the source file by the re it matches, or None.
 # Note that not all of the above RE's are represented here; for instance,
@@ -562,8 +565,8 @@ class FileInfo(object):
 
     # Special-case UTF-8 BOM
     if bytebuf[0:3] == b'\xef\xbb\xbf':
-      if try_decode(bytebuf, 'utf-8'):
-        return 'utf-8'
+      if try_decode(bytebuf, 'utf-8-sig'):
+        return 'utf-8-sig'
 
     encodings = ['ascii', 'utf-8', 'windows-1250', 'windows-1252']
     for encoding in encodings:
@@ -578,7 +581,12 @@ def _ReadFile(filename, fileinfo):
   try:
     with open(filename, 'rb') as f:
       content = f.read()
-      return content.decode(fileinfo.encoding).splitlines()
+      # Call splitlines with True to keep the original line
+      # endings.  Later in WriteFile, they will be used as-is.
+      # This will reduce spurious changes to the original files.
+      # The lines we add will have the linesep determined by
+      # FileInfo.
+      return content.decode(fileinfo.encoding).splitlines(True)
   except (IOError, OSError) as why:
     print("Skipping '%s': %s" % (filename, why))
   return None
@@ -588,7 +596,8 @@ def _WriteFile(filename, fileinfo, file_lines):
   """Write the given file-lines to the file."""
   try:
     with open(filename, 'wb') as f:
-      content = fileinfo.linesep.join(file_lines) + fileinfo.linesep
+      # file_lines already have line endings, so join with ''.
+      content = ''.join(file_lines)
       content = content.encode(fileinfo.encoding)
       f.write(content)
   except (IOError, OSError) as why:
@@ -1121,6 +1130,8 @@ def _DeleteDuplicateLines(file_lines, line_ranges):
   particular, it should not cover lines that may have C literal
   strings in them.
 
+  We only delete whole move_spans, not lines within them.
+
   Arguments:
     file_lines: an array of LineInfo objects.
     line_ranges: a list of [start_line, end_line) pairs.
@@ -1128,13 +1139,21 @@ def _DeleteDuplicateLines(file_lines, line_ranges):
   seen_lines = set()
   for line_range in line_ranges:
     for line_number in range(*line_range):
-      if file_lines[line_number].type in (_BLANK_LINE_RE, _COMMENT_LINE_RE):
+      line_info = file_lines[line_number]
+      if line_info.type in (_BLANK_LINE_RE, _COMMENT_LINE_RE):
         continue
-      uncommented_line = _COMMENT_RE.sub('', file_lines[line_number].line)
-      if uncommented_line in seen_lines:
-        file_lines[line_number].deleted = True
-      elif not file_lines[line_number].deleted:
-        seen_lines.add(uncommented_line)
+      if line_number != line_info.move_span[0]:
+        continue
+      span_line_numbers = range(line_info.move_span[0], line_info.move_span[1])
+      line_infos_in_span = [file_lines[i] for i in span_line_numbers]
+      uncommented_lines = [
+          _COMMENT_RE.sub('', inf.line.strip()) for inf in line_infos_in_span]
+      uncommented_span = ' '.join(uncommented_lines)
+      if uncommented_span in seen_lines:
+        for info in line_infos_in_span:
+          info.deleted = True
+      elif not line_info.deleted:
+        seen_lines.add(uncommented_span)
 
 
 def _DeleteExtraneousBlankLines(file_lines, line_range):
@@ -1548,6 +1567,8 @@ def _IsMainCUInclude(line_info, filename):
   """
   if line_info.type != _INCLUDE_RE or _IsSystemInclude(line_info):
     return False
+  if _IWYU_PRAGMA_ASSOCIATED_RE.search(line_info.line):
+    return True
   # First, normalize the includee by getting rid of -inl.h and .h
   # suffixes (for the #include) and the "'s around the #include line.
   canonical_include = re.sub(r'(-inl\.h|\.h|\.H)$',
@@ -2033,7 +2054,7 @@ def _GetSymbolNameFromForwardDeclareLine(line):
   return symbol_name
 
 
-def FixFileLines(iwyu_record, file_lines, flags):
+def FixFileLines(iwyu_record, file_lines, flags, fileinfo):
   """Applies one block of lines from the iwyu output script.
 
   Called once we have read all the lines from the iwyu output script
@@ -2052,6 +2073,7 @@ def FixFileLines(iwyu_record, file_lines, flags):
     flags: commandline flags, as parsed by optparse.  We use
        flags.safe_headers to turn off deleting lines, and use the
        other flags indirectly (via calls to other routines).
+    fileinfo: FileInfo for the current file.
 
   Returns:
     An array of 'fixed' source code lines, after modifications as
@@ -2141,20 +2163,24 @@ def FixFileLines(iwyu_record, file_lines, flags):
       #    'namespace foo { class Bar; }\n' -> 'namespace foo {\nclass Bar;\n}'
       # along with collecting multiple classes in the same namespace.
       new_lines = _NormalizeNamespaceForwardDeclareLines(new_lines)
+
+    # Add line separators to the new lines.
+    new_lines = [nl.rstrip() + fileinfo.linesep for nl in new_lines]
+
     output_lines.extend(new_lines)
     line_number = current_reorder_span[1]               # go to end of span
 
   return [line for line in output_lines if line is not None]
 
 
-def FixOneFile(iwyu_record, file_contents, flags):
+def FixOneFile(iwyu_record, file_contents, flags, fileinfo):
   """Parse a file guided by an iwyu_record and flags and apply IWYU fixes.
   Returns two lists of lines (old, fixed).
   """
   file_lines = ParseOneFile(file_contents, iwyu_record)
   old_lines = [fl.line for fl in file_lines
                if fl is not None and fl.line is not None]
-  fixed_lines = FixFileLines(iwyu_record, file_lines, flags)
+  fixed_lines = FixFileLines(iwyu_record, file_lines, flags, fileinfo)
   return old_lines, fixed_lines
 
 
@@ -2186,7 +2212,7 @@ def FixManyFiles(iwyu_records, flags):
         continue
 
       print(">>> Fixing #includes in '%s'" % iwyu_record.filename)
-      old_lines, fixed_lines = FixOneFile(iwyu_record, file_contents, flags)
+      old_lines, fixed_lines = FixOneFile(iwyu_record, file_contents, flags, fileinfo)
       if old_lines == fixed_lines:
         print("No changes in file %s" % iwyu_record.filename)
         continue
