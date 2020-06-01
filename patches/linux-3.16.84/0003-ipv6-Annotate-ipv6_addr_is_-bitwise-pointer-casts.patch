@@ -15,10 +15,10 @@ specific bitwise type.
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
 diff --git a/include/net/addrconf.h b/include/net/addrconf.h
-index 1bab88184d3c3e595493466b8a1e2308562dfe0f..a088349dd94f26f2645f0a7bed65d5be89d5a5da 100644
+index 19d0e56375f7c47d5fb6b366ae1af8e24a1c0a72..dff845a3ad18dffceb9c3233f63b2fe3d6d7b712 100644
 --- a/include/net/addrconf.h
 +++ b/include/net/addrconf.h
-@@ -437,7 +437,7 @@ static inline void addrconf_addr_solict_mult(const struct in6_addr *addr,
+@@ -312,7 +312,7 @@ static inline void addrconf_addr_solict_mult(const struct in6_addr *addr,
  static inline bool ipv6_addr_is_ll_all_nodes(const struct in6_addr *addr)
  {
  #if defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS) && BITS_PER_LONG == 64
@@ -27,7 +27,7 @@ index 1bab88184d3c3e595493466b8a1e2308562dfe0f..a088349dd94f26f2645f0a7bed65d5be
  	return ((p[0] ^ cpu_to_be64(0xff02000000000000UL)) | (p[1] ^ cpu_to_be64(1))) == 0UL;
  #else
  	return ((addr->s6_addr32[0] ^ htonl(0xff020000)) |
-@@ -449,7 +449,7 @@ static inline bool ipv6_addr_is_ll_all_nodes(const struct in6_addr *addr)
+@@ -324,7 +324,7 @@ static inline bool ipv6_addr_is_ll_all_nodes(const struct in6_addr *addr)
  static inline bool ipv6_addr_is_ll_all_routers(const struct in6_addr *addr)
  {
  #if defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS) && BITS_PER_LONG == 64
@@ -36,7 +36,7 @@ index 1bab88184d3c3e595493466b8a1e2308562dfe0f..a088349dd94f26f2645f0a7bed65d5be
  	return ((p[0] ^ cpu_to_be64(0xff02000000000000UL)) | (p[1] ^ cpu_to_be64(2))) == 0UL;
  #else
  	return ((addr->s6_addr32[0] ^ htonl(0xff020000)) |
-@@ -466,7 +466,7 @@ static inline bool ipv6_addr_is_isatap(const struct in6_addr *addr)
+@@ -341,7 +341,7 @@ static inline bool ipv6_addr_is_isatap(const struct in6_addr *addr)
  static inline bool ipv6_addr_is_solict_mult(const struct in6_addr *addr)
  {
  #if defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS) && BITS_PER_LONG == 64
@@ -45,12 +45,3 @@ index 1bab88184d3c3e595493466b8a1e2308562dfe0f..a088349dd94f26f2645f0a7bed65d5be
  	return ((p[0] ^ cpu_to_be64(0xff02000000000000UL)) |
  		((p[1] ^ cpu_to_be64(0x00000001ff000000UL)) &
  		 cpu_to_be64(0xffffffffff000000UL))) == 0UL;
-@@ -481,7 +481,7 @@ static inline bool ipv6_addr_is_solict_mult(const struct in6_addr *addr)
- static inline bool ipv6_addr_is_all_snoopers(const struct in6_addr *addr)
- {
- #if defined(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS) && BITS_PER_LONG == 64
--	__be64 *p = (__be64 *)addr;
-+	__be64 *p = (__force __be64 *)addr;
- 
- 	return ((p[0] ^ cpu_to_be64(0xff02000000000000UL)) |
- 		(p[1] ^ cpu_to_be64(0x6a))) == 0UL;
