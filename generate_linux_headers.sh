@@ -183,6 +183,10 @@ CONFIG_X86_VSYSCALL_EMULATION=n
 CONFIG_IA32_EMULATION=n
 EOF
 	fi
+
+	# avoid build of vmlinux
+	echo "CONFIG_MODVERSIONS=n" >> .config
+
 	make olddefconfig
 	make prepare
 	make modules
