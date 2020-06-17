@@ -13,7 +13,7 @@ Causes sparse errors:
 This reverts commit 49b7f8983aa78581bfd511a26891b26cd734e293.
 
 diff --git a/include/linux/slab.h b/include/linux/slab.h
-index 03a389358562abc770542fe4d6174edf01c2bbac..4bff6ec5add5dfa3483bde2d65db3a47dcc0a613 100644
+index 6d454886bcafbe304cb2e9259d1f1f282c0c2b80..27b8429aa309fda1cea7e8862da1c84bfcfd6aa7 100644
 --- a/include/linux/slab.h
 +++ b/include/linux/slab.h
 @@ -13,7 +13,6 @@
