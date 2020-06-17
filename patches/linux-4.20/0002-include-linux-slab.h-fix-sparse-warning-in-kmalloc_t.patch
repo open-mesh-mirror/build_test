@@ -35,10 +35,10 @@ Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
 diff --git a/include/linux/slab.h b/include/linux/slab.h
-index 712958cc701514972d7a4c855c6099ac985fbe82..0ec13d8e33d0e217952c75c96f9bd0ac0a707c84 100644
+index 918f374e7156f4739b30c178e5c8beaf5137c4d0..6d5009f29ce54244de089d1ee845a7d677660a63 100644
 --- a/include/linux/slab.h
 +++ b/include/linux/slab.h
-@@ -313,22 +313,22 @@ kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1];
+@@ -314,22 +314,22 @@ kmalloc_caches[NR_KMALLOC_TYPES][KMALLOC_SHIFT_HIGH + 1];
  
  static __always_inline enum kmalloc_cache_type kmalloc_type(gfp_t flags)
  {
