@@ -184,6 +184,7 @@ test_checkpatch()
 
 		fname="$(basename "$i")"
 		cp_extra_params=""
+		cp_extra_params="${cp_extra_params} --ignore DEPRECATED_TERM"
 
 		if [ "${fname}" = "trace.h" ]; then
 			continue
