@@ -6,7 +6,7 @@ Subject: filter: Work around shadowed ret declaration warning
     ./include/linux/filter.h:596:13: originally declared here
 
 diff --git a/include/linux/filter.h b/include/linux/filter.h
-index 9b5aa5c483ccb59be7ea7be2fe856b2995c64344..7797910e99ff975be20d7ffe4cfe680c5d61821f 100644
+index ccbba0adc0da300930e7fe295feace90be81163c..b79d397f52c2bf099157b46a430e41a6a0afe272 100644
 --- a/include/linux/filter.h
 +++ b/include/linux/filter.h
 @@ -560,21 +560,21 @@ struct sk_filter {
