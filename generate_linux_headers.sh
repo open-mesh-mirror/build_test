@@ -17,7 +17,7 @@ fi
 
 prepare_source()
 {
-	LINUX_VERSIONS="$1"
+	LINUX_VERSION="$1"
 
 	rm -f .config
 	make allnoconfig
@@ -126,7 +126,7 @@ CONFIG_HIST_TRIGGERS=y
 EOF
 
 
-	if [ "${LINUX_VERSIONS}" = "${LINUX_DEFAULT_VERSION}" ]; then
+	if [ "${LINUX_VERSION}" = "${LINUX_DEFAULT_VERSION}" ]; then
 	cat >> .config << EOF
 # CONFIG_CC_STACKPROTECTOR_STRONG is not set
 CONFIG_LOCKUP_DETECTOR=y
@@ -188,7 +188,7 @@ EOF
 	echo "CONFIG_MODVERSIONS=n" >> .config
 
 	make olddefconfig
-	if [ "${LINUX_VERSIONS}" = "${LINUX_DEFAULT_VERSION}" ]; then
+	if [ "${LINUX_VERSION}" = "${LINUX_DEFAULT_VERSION}" ]; then
 		../smatch/smatch_scripts/build_kernel_data.sh
 	else
 		make prepare
@@ -235,7 +235,7 @@ for i in ${LINUX_VERSIONS}; do
 				patch -p1 -i "${p}"
 			done
 		fi
-		prepare_source "${LINUX_VERSIONS}"
+		prepare_source "${i}"
 
 		clean_source
 	)
