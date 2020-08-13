@@ -56,10 +56,8 @@ check_external()
 	if [ ! -x "${SMATCH}" ]; then
 		echo "Required tool smatch missing:"
 		echo "    git clone http://repo.or.cz/smatch.git smatch"
-		echo "    git -C smatch reset --hard 45eb228201137f975805eb79437eb363272df88d"
-		echo "    git -C smatch am ../patches/smatch/9997-Revert-new-check_uninitialized-warn-about-uninitiali.patch"
-		echo "    git -C smatch am ../patches/smatch/9998-Revert-function_hooks-fake-an-assignment-when-functi.patch"
-		echo "    git -C smatch am ../patches/smatch/9999-smatch-Workaround-to-allow-the-check-of-batadv_iv_og.patch"
+		echo "    git -C smatch reset --hard 45287ffa01728675d52228aee767c9b884ae644b"
+		echo "    git -C smatch am ../patches/smatch/9999-smatch-disable-verbose-check_unused_ret.patch"
 		echo "    make -C smatch"
 		exit 1
 	fi
@@ -517,8 +515,10 @@ test_builds()
 
 			"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}/${linux_name}" -j"${JOBS}" clean
 
-			test_smatch "${branch}" "${linux_name}" "${config}"
-			"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}/${linux_name}" -j"${JOBS}" clean
+			if [ "${LINUX_DEFAULT_VERSION}" = "${linux_name}" ]; then
+				test_smatch "${branch}" "${linux_name}" "${config}"
+				"${MAKE}" $config KERNELPATH="${LINUX_HEADERS}/${linux_name}" -j"${JOBS}" clean
+			fi
 		done
 	done
 }

@@ -188,8 +188,12 @@ EOF
 	echo "CONFIG_MODVERSIONS=n" >> .config
 
 	make olddefconfig
-	make prepare
-	make modules
+	if [ "${LINUX_VERSIONS}" = "${LINUX_DEFAULT_VERSION}" ]; then
+		../smatch/smatch_scripts/build_kernel_data.sh
+	else
+		make prepare
+		make modules
+	fi
 }
 
 clean_source()
