@@ -324,12 +324,6 @@ test_smatch()
 	#
 	path="$(build_path)"
 	cat "${path}"/*.smatch \
-		|grep -v 'arch/x86/include/asm/refcount.h' \
-		|grep -v 'warn: was || intended here instead of &&?' \
-		|grep -v 'trace_event_define_fields_' \
-		|grep -v 'ftrace_define_fields_batadv_dbg() warn: unused return: ret = trace_define_field' \
-		|grep -v 'batadv_nc_path_search() warn: unused return: idx = batadv_nc_hash_choose()' \
-		|grep -v 'batadv_nc_find_decoding_packet() warn: unused return: index = batadv_nc_hash_choose()' \
 		> log
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "smatch ${linux_name} $config" log log
