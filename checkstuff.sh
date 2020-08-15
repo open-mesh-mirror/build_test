@@ -324,6 +324,7 @@ test_smatch()
 	#
 	path="$(build_path)"
 	cat "${path}"/*.smatch \
+		|grep -v "batadv_recv_frag_packet() warn: variable dereferenced before check 'skb'" \
 		> log
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "smatch ${linux_name} $config" log log
