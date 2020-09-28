@@ -20,6 +20,7 @@ blacklist="
 	__tracepoint_batadv_dbg
 	cleanup_module
 	init_module
+	__batadv_br_ip_list_check
 "
 
 for i in $defined; do

@@ -35,6 +35,7 @@ blacklist="
 	batadv_gw_bandwidth_set
 	batadv_netlink_notify_mesh
 	batadv_netlink_notify_vlan
+	__batadv_br_ip_list_check
 "
 
 for i in $defined; do
