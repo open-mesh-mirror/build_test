@@ -108,7 +108,7 @@ test_coccicheck()
 	path="$(source_path)"
 
 	rm -f log
-	make -s -C "${LINUXNEXT}" coccicheck SPATCH="${SPATCH}" MODE=report KBUILD_EXTMOD="$(pwd)/${path}" | \
+	make -s -C "${LINUXNEXT}" DEBUG_FILE=/dev/zero coccicheck SPATCH="${SPATCH}" MODE=report KBUILD_EXTMOD="$(pwd)/${path}" | \
 		grep -v -e 'Please check for false positives in the output before submitting a patch.' \
 			-e 'When using "patch" mode, carefully review the patch before submitting it.' \
 			-e 'ERROR: next_gw is NULL but dereferenced.' \
