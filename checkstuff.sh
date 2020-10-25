@@ -462,6 +462,8 @@ test_headers()
 		git add -f "${bpath}" "${spath}"
 
 		sed -i '/^#include ".*net\/batman-adv\/main\.h"$/d' test
+		# for log.c x86 REQUIRED_MASK
+		sed -i '/^#include <asm\/cpufeatures\.h>.*$/d' test
 		"${FIX_INCLUDE_SORT}" --nosafe_headers --separate_project_includes="$(pwd)/${bpath}" < test
 
 		# remove extra noise
