@@ -188,12 +188,6 @@ test_checkpatch()
 			continue
 		fi
 
-		if [ "${fname}" = "sysfs.c" ]; then
-			cp_extra_params="${cp_extra_params} --ignore COMPLEX_MACRO"
-			cp_extra_params="${cp_extra_params} --ignore MACRO_ARG_PRECEDENCE"
-			cp_extra_params="${cp_extra_params} --ignore MACRO_ARG_REUSE"
-		fi
-
 		if [ "${fname}" = "log.h" ]; then
 			cp_extra_params="${cp_extra_params} --ignore MACRO_ARG_REUSE"
 		fi
@@ -365,8 +359,8 @@ test_compare_net()
 	upstream_rev="net/master"
 	upstream_name="net"
 
-	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- net/batman-adv/ Documentation/networking/batman-adv.rst Documentation/ABI/obsolete/sysfs-class-net-batman-adv Documentation/ABI/obsolete/sysfs-class-net-mesh | tar x
-	git archive --remote="linux-next/.git/" --format=tar --prefix="${TMPNAME}/net/" "${upstream_rev}" -- net/batman-adv/ Documentation/networking/batman-adv.rst Documentation/ABI/obsolete/sysfs-class-net-batman-adv Documentation/ABI/obsolete/sysfs-class-net-mesh | tar x
+	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- net/batman-adv/ Documentation/networking/batman-adv.rst | tar x
+	git archive --remote="linux-next/.git/" --format=tar --prefix="${TMPNAME}/net/" "${upstream_rev}" -- net/batman-adv/ Documentation/networking/batman-adv.rst | tar x
 
 	# compare against stripped down MAINTAINERS when available
 	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- MAINTAINERS | tar x
@@ -412,8 +406,8 @@ test_compare_net_next()
 		upstream_name="net-next"
 	fi
 
-	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- net/batman-adv/ Documentation/networking/batman-adv.rst Documentation/ABI/obsolete/sysfs-class-net-batman-adv Documentation/ABI/obsolete/sysfs-class-net-mesh | tar x
-	git archive --remote="linux-next/.git/" --format=tar --prefix="${TMPNAME}/netnext/" "${upstream_rev}" -- net/batman-adv/ Documentation/networking/batman-adv.rst Documentation/ABI/obsolete/sysfs-class-net-batman-adv Documentation/ABI/obsolete/sysfs-class-net-mesh | tar x
+	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- net/batman-adv/ Documentation/networking/batman-adv.rst | tar x
+	git archive --remote="linux-next/.git/" --format=tar --prefix="${TMPNAME}/netnext/" "${upstream_rev}" -- net/batman-adv/ Documentation/networking/batman-adv.rst | tar x
 
 	# compare against stripped down MAINTAINERS when available
 	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- MAINTAINERS | tar x
@@ -445,7 +439,7 @@ test_headers()
 		cd "${TMPNAME}" || exit
 		spath="$(source_path)"
 
-		MAKE_CONFIG="CONFIG_BATMAN_ADV_DEBUGFS=y CONFIG_BATMAN_ADV_DEBUG=y CONFIG_BATMAN_ADV_TRACING=y CONFIG_BATMAN_ADV_BLA=y CONFIG_BATMAN_ADV_DAT=y CONFIG_BATMAN_ADV_MCAST=y CONFIG_BATMAN_ADV_NC=y CONFIG_BATMAN_ADV_BATMAN_V=y CONFIG_BATMAN_ADV_SYSFS=y KBUILD_SRC=${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}"
+		MAKE_CONFIG="CONFIG_BATMAN_ADV_DEBUG=y CONFIG_BATMAN_ADV_TRACING=y CONFIG_BATMAN_ADV_BLA=y CONFIG_BATMAN_ADV_DAT=y CONFIG_BATMAN_ADV_MCAST=y CONFIG_BATMAN_ADV_NC=y CONFIG_BATMAN_ADV_BATMAN_V=y KBUILD_SRC=${LINUX_HEADERS}/${LINUX_DEFAULT_VERSION}"
 
 		# don't touch main.h and files which are required by linux/wait.h, packet.h
 		sed -i 's/#include "main.h"/#include "main.h" \/\/ IWYU pragma: keep/' "${spath}"/*c "${spath}"/*.h
@@ -487,7 +481,7 @@ test_builds()
 	branch="$1"
 
 	linux_test_versions="$("${GENERATE_LINUX_VERSIONS}" "${LINUX_VERSIONS_PER_RUN}" ${LINUX_VERSIONS})"
-	for c in `"${GENERATE_CONFIG}" "${CONFIGS_PER_RUN}" BLA DAT DEBUGFS DEBUG TRACING NC MCAST BATMAN_V SYSFS`; do
+	for c in `"${GENERATE_CONFIG}" "${CONFIGS_PER_RUN}" BLA DAT DEBUG TRACING NC MCAST BATMAN_V`; do
 		config="`echo $c|sed 's/\+/ /g'`"
 
 		for linux_name in ${linux_test_versions}; do
