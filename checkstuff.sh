@@ -259,6 +259,7 @@ test_sparse()
 			|grep -v "No such file: c" \
 			|grep -v 'trace.h:' \
 			|grep -v 'include/uapi/linux/perf_event.h:.*: warning: cast truncates bits from constant value (8000000000000000 becomes 0)' \
+			|grep -v 'note: in included file.*include/trace/' \
 			|tee log) &> logfull
 	if [ -s "log" ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "sparse ${linux_name} $(simplify_config_string "${config}")" log logfull
