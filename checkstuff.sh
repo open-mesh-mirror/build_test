@@ -28,7 +28,6 @@ LINUXNEXT="$(pwd)/linux-next"
 CHECKPATCH="${LINUXNEXT}/scripts/checkpatch.pl"
 KERNELDOC="${LINUXNEXT}/scripts/kernel-doc"
 UNUSED_SYMBOLS="$(pwd)/testhelpers/find_unused_symbols.sh"
-CHECK_COPYRIGHT="$(pwd)/testhelpers/check_copyright.sh"
 WRONG_NAMESPACE="$(pwd)/testhelpers/find_wrong_namespace.sh"
 MISSING_KERNELDOC_SYMBOLS="$(pwd)/testhelpers/find_missing_kerneldoc_symbols.sh"
 IWYU_KERNEL_MAPPINGS="$(pwd)/testhelpers/kernel_mappings.iwyu"
@@ -326,17 +325,6 @@ test_smatch()
 	fi
 }
 
-test_copyright()
-{
-	branch="$1"
-
-	"${CHECK_COPYRIGHT}" \
-	&> log
-	if [ -s "log" ]; then
-		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "copyright" log log
-	fi
-}
-
 test_main_include()
 {
 	branch="$1"
@@ -556,7 +544,6 @@ testbranch()
 			test_checkpatch "${branch}"
 
 			test_kerneldoc "${branch}"
-			test_copyright "${branch}"
 			test_main_include "${branch}"
 		fi
 		test_brackets "${branch}"
