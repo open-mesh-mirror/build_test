@@ -6,7 +6,7 @@ Fixes: 52ac39e5db51 ("seqlock: seqcount_t: Implement all read APIs as statement 
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
 diff --git a/include/linux/seqlock.h b/include/linux/seqlock.h
-index cbfc78b92b654f3eea564f1b9195395afbc1ef38..c66bd0133499b67c9870f8e4b9a1b13547752526 100644
+index 1ac20d75b06188bd1364cf114492236ab92182f6..8d06eee106e127034daf194467e63f180a3f9de8 100644
 --- a/include/linux/seqlock.h
 +++ b/include/linux/seqlock.h
 @@ -328,13 +328,13 @@ SEQCOUNT_LOCKNAME(ww_mutex,     struct ww_mutex, true,     &s->lock->base, ww_mu
