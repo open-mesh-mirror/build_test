@@ -1,23 +1,23 @@
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 1 Jun 2021 08:33:56 +0200
+Date: Tue, 1 Jun 2021 08:34:39 +0200
 Subject: Revert "kbuild: generate Module.symvers only when vmlinux exists"
 
-This reverts commit 2c1cfecc94d09e61265a2118d6980c1d0b4bfc8a.
+This reverts commit 69bc8d386aebbd91a6bb44b6d33f77c8dfa9ed8c.
 
 diff --git a/.gitignore b/.gitignore
-index 127012c1f7170d20283c1274b46eeec3d666e5ba..3af66272d6f10c5eccc0e00f3a6ff59a0d3990f1 100644
+index 7afd412dadd2c18b2d1e0c7813b2979ceedabf30..e3ffd1d28194fa5026877231fac87033030e2a1c 100644
 --- a/.gitignore
 +++ b/.gitignore
-@@ -57,7 +57,6 @@ modules.order
- /tags
- /TAGS
+@@ -54,7 +54,6 @@ modules.order
+ # Top-level generic files
+ #
  /linux
 -/modules-only.symvers
  /vmlinux
  /vmlinux.32
- /vmlinux.symvers
+ /vmlinux.map
 diff --git a/Documentation/dontdiff b/Documentation/dontdiff
-index 82e3eee7363b0301a6aaccea965d077130c09f4d..e361fc95ca293d80434ee0cdfae309046c17d612 100644
+index 910b30a2a7d98b89ce3b9bc6afb7a88aa7c8025c..ac42ad8d430d1239f8469254639bcd557555ee9b 100644
 --- a/Documentation/dontdiff
 +++ b/Documentation/dontdiff
 @@ -178,7 +178,6 @@ mktables
@@ -29,10 +29,10 @@ index 82e3eee7363b0301a6aaccea965d077130c09f4d..e361fc95ca293d80434ee0cdfae30904
  modules.builtin.modinfo
  modules.nsdeps
 diff --git a/Makefile b/Makefile
-index d2fe36db78aed3a1b53eb8aa49229bf4ebd79974..611213f036c5399282fbb02ecffc1c47b4aadd44 100644
+index 975acb16046d2edc250477cf33d1234fcd5c703f..fe0f1d478294b6982da5347dd5b2b04bd6b9314b 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -1521,7 +1521,7 @@ endif # CONFIG_MODULES
+@@ -1509,7 +1509,7 @@ endif # CONFIG_MODULES
  # make distclean Remove editor backup files, patch leftover files and the like
  
  # Directories & files removed with 'make clean'
@@ -42,10 +42,10 @@ index d2fe36db78aed3a1b53eb8aa49229bf4ebd79974..611213f036c5399282fbb02ecffc1c47
  	       compile_commands.json .thinlto-cache
  
 diff --git a/scripts/Makefile.modpost b/scripts/Makefile.modpost
-index 4ca5579af4e4a4e67f0c4966c2d960663fd9049f..066beffca09af0d753ba8ba976ec047a68f9dd85 100644
+index c383ba33d837f8f38888a98eb382d34286594d9e..009718b9d4cc5ace6149388492f90f633f409826 100644
 --- a/scripts/Makefile.modpost
 +++ b/scripts/Makefile.modpost
-@@ -68,20 +68,7 @@ else
+@@ -65,20 +65,7 @@ else
  ifeq ($(KBUILD_EXTMOD),)
  
  input-symdump := vmlinux.symvers
@@ -68,10 +68,10 @@ index 4ca5579af4e4a4e67f0c4966c2d960663fd9049f..066beffca09af0d753ba8ba976ec047a
  else
  
 diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index eab05ae4aeee3b976971a1d5a2dfd1f2d5d8fe78..50bcbfa21866c7a97c4097426b6e048df517c545 100644
+index 3e05240c69d2792fe6e26029c9f46588f04ff6c2..6c7302e4e20377446542392b52912e63046fc719 100644
 --- a/scripts/mod/modpost.c
 +++ b/scripts/mod/modpost.c
-@@ -2423,6 +2423,19 @@ static void read_dump(const char *fname)
+@@ -2427,6 +2427,19 @@ static void read_dump(const char *fname)
  	fatal("parse error in symbol dump file\n");
  }
  
@@ -91,7 +91,7 @@ index eab05ae4aeee3b976971a1d5a2dfd1f2d5d8fe78..50bcbfa21866c7a97c4097426b6e048d
  static void write_dump(const char *fname)
  {
  	struct buffer buf = { };
-@@ -2433,7 +2446,7 @@ static void write_dump(const char *fname)
+@@ -2437,7 +2450,7 @@ static void write_dump(const char *fname)
  	for (n = 0; n < SYMBOL_HASH_SIZE ; n++) {
  		symbol = symbolhash[n];
  		while (symbol) {
