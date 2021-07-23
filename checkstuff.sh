@@ -450,7 +450,6 @@ test_headers()
 
 		# remove extra noise
 		git checkout -f -- compat-include
-		git checkout -f -- compat-sources
 		git checkout -f -- net/batman-adv/Makefile
 		git checkout -f -- net/batman-adv/types.h
 
