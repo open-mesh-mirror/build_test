@@ -432,6 +432,7 @@ test_headers()
 		# don't touch main.h and files which are required by linux/wait.h, packet.h
 		sed -i 's/#include "main.h"/#include "main.h" \/\/ IWYU pragma: keep/' "${spath}"/*c "${spath}"/*.h
 		sed -i 's/\/\* for linux\/wait.h \*\//\/\* for linux\/wait.h \*\/ \/\/ IWYU pragma: keep/' "${spath}"/*c "${spath}"/*.h
+		sed -i 's/#include <linux\/atomic.h>/#include <linux\/atomic.h> \/\/ IWYU pragma: keep/' "${spath}"/log.h "${spath}"/main.h
 		echo '#include "main.h" // IWYU pragma: keep' > net/batman-adv/types.c
 		echo '#include "types.h"' >> net/batman-adv/types.c
 		echo 'batman-adv-y += types.o' >> net/batman-adv/Makefile
