@@ -86,6 +86,7 @@
     { include: ["\"linux/jiffies.h\"", private, "<linux/jiffies.h>", public ] },
     { include: ["\"linux/kernel.h\"", private, "<linux/kernel.h>", public ] },
     { include: ["\"linux/kobject.h\"", private, "<linux/kobject.h>", public ] },
+    { include: ["\"linux/kstrtox.h\"", private, "<linux/kstrtox.h>", public ] },
     { include: ["\"linux/kref.h\"", private, "<linux/kref.h>", public ] },
     { include: ["\"linux/kthread.h\"", private, "<linux/kthread.h>", public ] },
     { include: ["\"linux/limits.h\"", private, "<linux/limits.h>", public ] },
