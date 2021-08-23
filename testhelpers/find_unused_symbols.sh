@@ -34,6 +34,9 @@ blacklist="
 	__SCT__tp_func_batadv_dbg
 	__traceiter_batadv_dbg
 	batadv_tt_global_entry_put
+	batadv_tt_global_entry_release
+	batadv_send_skb_unicast
+	batadv_tt_global_hash_count
 	batadv_tt_global_hash_find
 	batadv_gw_bandwidth_set
 	batadv_netlink_notify_mesh
