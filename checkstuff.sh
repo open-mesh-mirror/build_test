@@ -54,7 +54,7 @@ check_external()
 
 	if [ ! -x "${SMATCH}" ]; then
 		echo "Required tool smatch missing:"
-		echo "    git clone --depth 1 -b 1.71 http://repo.or.cz/smatch.git smatch"
+		echo "    git clone --depth 1 -b 1.72 http://repo.or.cz/smatch.git smatch"
 		echo "    git -C smatch am ../patches/smatch/9999-smatch-disable-verbose-check_unused_ret.patch"
 		echo "    make -C smatch"
 		exit 1
