@@ -40,6 +40,7 @@
 { include: ["\"vdso/limits.h\"", "private", "<linux/limits.h>", "public"] },
 { include: ["\"types.h\"", "private", "\"main.h\"", "public"] },
 { include: ["\"linux/lockdep_types.h\"", private, "<linux/lockdep.h>", public ] },
+{include: ["\"stdarg.h\"", private, "<linux/stdarg.h>", public ] },
 
     # git grep -r '^ *# *include *<' net/batman-adv | perl -nle 'm/["<]([^>]+)[">]/ && print qq@    { include: ["\\"$1\\"", private, "<$1>", public ] },@' | sort -u
     { include: ["\"asm/current.h\"", private, "<asm/current.h>", public ] },
@@ -144,7 +145,7 @@
     { include: ["\"net/net_namespace.h\"", private, "<net/net_namespace.h>", public ] },
     { include: ["\"net/rtnetlink.h\"", private, "<net/rtnetlink.h>", public ] },
     { include: ["\"net/sock.h\"", private, "<net/sock.h>", public ] },
-    { include: ["\"stdarg.h\"", private, "<stdarg.h>", public ] },
+    { include: ["\"linux/stdarg.h\"", private, "<linux/stdarg.h>", public ] },
     { include: ["\"trace/define_trace.h\"", private, "<trace/define_trace.h>", public ] },
     { include: ["\"uapi/linux/batadv_packet.h\"", private, "<uapi/linux/batadv_packet.h>", public ] },
     { include: ["\"uapi/linux/batman_adv.h\"", private, "<uapi/linux/batman_adv.h>", public ] },
