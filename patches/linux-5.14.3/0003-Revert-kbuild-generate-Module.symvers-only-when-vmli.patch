@@ -29,10 +29,10 @@ index 910b30a2a7d98b89ce3b9bc6afb7a88aa7c8025c..ac42ad8d430d1239f8469254639bcd55
  modules.builtin.modinfo
  modules.nsdeps
 diff --git a/Makefile b/Makefile
-index ed4031db389471024f7a79bd3327bb58962a9a0d..fe16e7807abcc9e2c0771dae86b9a74eed4b426e 100644
+index 8715942fccb4a4c6d0de11ed435d0ffba1bb3d1f..f136f00b67588fe8501e214762a96fde82b8d9bb 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -1519,7 +1519,7 @@ endif # CONFIG_MODULES
+@@ -1508,7 +1508,7 @@ endif # CONFIG_MODULES
  # make distclean Remove editor backup files, patch leftover files and the like
  
  # Directories & files removed with 'make clean'
@@ -68,10 +68,10 @@ index c383ba33d837f8f38888a98eb382d34286594d9e..009718b9d4cc5ace6149388492f90f63
  else
  
 diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 3e05240c69d2792fe6e26029c9f46588f04ff6c2..6c7302e4e20377446542392b52912e63046fc719 100644
+index 46ba000b3586426ed091b003d0a4b9e1af11d61c..42601eea71e8ef71560b2db92f29ee33fe5d044a 100644
 --- a/scripts/mod/modpost.c
 +++ b/scripts/mod/modpost.c
-@@ -2427,6 +2427,19 @@ static void read_dump(const char *fname)
+@@ -2430,6 +2430,19 @@ static void read_dump(const char *fname)
  	fatal("parse error in symbol dump file\n");
  }
  
@@ -91,7 +91,7 @@ index 3e05240c69d2792fe6e26029c9f46588f04ff6c2..6c7302e4e20377446542392b52912e63
  static void write_dump(const char *fname)
  {
  	struct buffer buf = { };
-@@ -2437,7 +2450,7 @@ static void write_dump(const char *fname)
+@@ -2440,7 +2453,7 @@ static void write_dump(const char *fname)
  	for (n = 0; n < SYMBOL_HASH_SIZE ; n++) {
  		symbol = symbolhash[n];
  		while (symbol) {
