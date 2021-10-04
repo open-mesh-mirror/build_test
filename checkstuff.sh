@@ -357,8 +357,9 @@ test_compare_net()
 		rm -f "${TMPNAME}/net/MAINTAINERS"
 	fi
 
-	# only allow YEAR.RELEASE version numbers and not YEAR.RELEASE.MINOR in net.git
-	sed -i 's/^#define BATADV_SOURCE_VERSION "\([0-9][0-9]*\)\.\([0-9][0-9]*\)\(\.[0-9][0-9]*\)*"/#define BATADV_SOURCE_VERSION "\1.\2"/' "${TMPNAME}/batadv/net/batman-adv/main.h"
+	# drop version number for now
+	sed -i 's/^#define BATADV_SOURCE_VERSION "[^"]*"/#define BATADV_SOURCE_VERSION ""/' "${TMPNAME}/net/net/batman-adv/main.h"
+	sed -i 's/^#define BATADV_SOURCE_VERSION "[^"]*"/#define BATADV_SOURCE_VERSION ""/' "${TMPNAME}/batadv/net/batman-adv/main.h"
 
 	# compare against batman_adv.h
 	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- include/uapi/linux/batman_adv.h | tar x
