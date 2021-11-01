@@ -47,7 +47,7 @@ check_external()
 {
 	if [ ! -x "${SPARSE}" ]; then
 		echo "Required tool sparse missing:"
-		echo "    git clone --depth 1 -b v0.6.3 git://git.kernel.org/pub/scm/devel/sparse/sparse.git sparse"
+		echo "    git clone --depth 1 -b v0.6.4 git://git.kernel.org/pub/scm/devel/sparse/sparse.git sparse"
 		echo "    make -C sparse"
 		exit 1
 	fi
