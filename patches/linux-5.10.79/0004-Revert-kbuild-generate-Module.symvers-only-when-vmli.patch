@@ -1,0 +1,102 @@
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 1 Jun 2021 08:32:35 +0200
+Subject: Revert "kbuild: generate Module.symvers only when vmlinux exists"
+
+This reverts commit d0736af81151cb6213825034da0e09a7e4ad20ea.
+
+diff --git a/.gitignore b/.gitignore
+index 67d2f350312832c8e1997af553974a85598a53d1..d01cda8e11779a2fa3e3333fd176e2e77e02fd21 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -55,7 +55,6 @@ modules.order
+ /tags
+ /TAGS
+ /linux
+-/modules-only.symvers
+ /vmlinux
+ /vmlinux.32
+ /vmlinux.symvers
+diff --git a/Documentation/dontdiff b/Documentation/dontdiff
+index 82e3eee7363b0301a6aaccea965d077130c09f4d..e361fc95ca293d80434ee0cdfae309046c17d612 100644
+--- a/Documentation/dontdiff
++++ b/Documentation/dontdiff
+@@ -178,7 +178,6 @@ mktables
+ mktree
+ mkutf8data
+ modpost
+-modules-only.symvers
+ modules.builtin
+ modules.builtin.modinfo
+ modules.nsdeps
+diff --git a/Makefile b/Makefile
+index 756479b101f8089aa85f22b033a50715bc64f1d1..eb90cee787279542ea34c5bc3ddde96d372eb4a0 100644
+--- a/Makefile
++++ b/Makefile
+@@ -1484,7 +1484,7 @@ endif # CONFIG_MODULES
+ # make distclean Remove editor backup files, patch leftover files and the like
+ 
+ # Directories & files removed with 'make clean'
+-CLEAN_FILES += include/ksym vmlinux.symvers modules-only.symvers \
++CLEAN_FILES += include/ksym vmlinux.symvers \
+ 	       modules.builtin modules.builtin.modinfo modules.nsdeps \
+ 	       compile_commands.json
+ 
+diff --git a/scripts/Makefile.modpost b/scripts/Makefile.modpost
+index 12a87be0fb44681c3d7e1e87a85041c91a69c9f4..f54b6ac37ac2ecd946708ef21904dbd01109b75d 100644
+--- a/scripts/Makefile.modpost
++++ b/scripts/Makefile.modpost
+@@ -65,20 +65,7 @@ else
+ ifeq ($(KBUILD_EXTMOD),)
+ 
+ input-symdump := vmlinux.symvers
+-output-symdump := modules-only.symvers
+-
+-quiet_cmd_cat = GEN     $@
+-      cmd_cat = cat $(real-prereqs) > $@
+-
+-ifneq ($(wildcard vmlinux.symvers),)
+-
+-__modpost: Module.symvers
+-Module.symvers: vmlinux.symvers modules-only.symvers FORCE
+-	$(call if_changed,cat)
+-
+-targets += Module.symvers
+-
+-endif
++output-symdump := Module.symvers
+ 
+ else
+ 
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index 28f4c80adb5e621a78fe407e2a2a69f1e7664892..0757b0af4ace8c6791c6bfcc99a92d769e667aef 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -2481,6 +2481,19 @@ static void read_dump(const char *fname)
+ 	fatal("parse error in symbol dump file\n");
+ }
+ 
++/* For normal builds always dump all symbols.
++ * For external modules only dump symbols
++ * that are not read from kernel Module.symvers.
++ **/
++static int dump_sym(struct symbol *sym)
++{
++	if (!external_module)
++		return 1;
++	if (sym->module->from_dump)
++		return 0;
++	return 1;
++}
++
+ static void write_dump(const char *fname)
+ {
+ 	struct buffer buf = { };
+@@ -2491,7 +2504,7 @@ static void write_dump(const char *fname)
+ 	for (n = 0; n < SYMBOL_HASH_SIZE ; n++) {
+ 		symbol = symbolhash[n];
+ 		while (symbol) {
+-			if (!symbol->module->from_dump) {
++			if (dump_sym(symbol)) {
+ 				namespace = symbol->namespace;
+ 				buf_printf(&buf, "0x%08x\t%s\t%s\t%s\t%s\n",
+ 					   symbol->crc, symbol->name,
