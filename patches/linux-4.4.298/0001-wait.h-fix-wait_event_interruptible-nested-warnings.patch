@@ -5,10 +5,10 @@ Subject: wait.h: fix wait_event_interruptible() nested warnings
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 
 diff --git a/include/linux/wait.h b/include/linux/wait.h
-index 513b36f04dfd80bbe9cf40a272e8d2cd2eab452b..c04392d072d10c5a502b78e38228160257644967 100644
+index 419b5b2bf547d5ac8fb8d8343494343609cd7182..8ac45920725ac8a3fb9b39f0e5711a7c3bc358a3 100644
 --- a/include/linux/wait.h
 +++ b/include/linux/wait.h
-@@ -192,6 +192,13 @@ wait_queue_head_t *bit_waitqueue(void *, int);
+@@ -218,6 +218,13 @@ static inline void wake_up_pollfree(wait_queue_head_t *wq_head)
  		__ret = 1;						\
  	__cond || !__ret;						\
  })
@@ -22,7 +22,7 @@ index 513b36f04dfd80bbe9cf40a272e8d2cd2eab452b..c04392d072d10c5a502b78e382281602
  
  #define ___wait_is_interruptible(state)					\
  	(!__builtin_constant_p(state) ||				\
-@@ -417,17 +424,17 @@ do {									\
+@@ -443,17 +450,17 @@ do {									\
   */
  #define wait_event_interruptible(wq, condition)				\
  ({									\
@@ -45,7 +45,7 @@ index 513b36f04dfd80bbe9cf40a272e8d2cd2eab452b..c04392d072d10c5a502b78e382281602
  
  /**
   * wait_event_interruptible_timeout - sleep until a condition gets true or a timeout elapses
-@@ -451,12 +458,12 @@ do {									\
+@@ -477,12 +484,12 @@ do {									\
   */
  #define wait_event_interruptible_timeout(wq, condition, timeout)	\
  ({									\

@@ -5,10 +5,10 @@ Subject: wait.h: fix wait_event_interruptible() nested warnings
 Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
 
 diff --git a/include/linux/wait.h b/include/linux/wait.h
-index 032ae61c22a2b858a983c7e13e6ed019b2a10c8a..6acaf212020e42250cd0b5d0a6a83e5e58510b5f 100644
+index 5903b1d17c9247048acb06b3344fc63793e48d65..77f5a9d64ec87edc5a335c67f6c71cd92cfcd2b0 100644
 --- a/include/linux/wait.h
 +++ b/include/linux/wait.h
-@@ -279,6 +279,13 @@ extern void init_wait_entry(struct wait_queue_entry *wq_entry, int flags);
+@@ -305,6 +305,13 @@ extern void init_wait_entry(struct wait_queue_entry *wq_entry, int flags);
  	finish_wait(&wq_head, &__wq_entry);					\
  __out:	__ret;									\
  })
@@ -22,7 +22,7 @@ index 032ae61c22a2b858a983c7e13e6ed019b2a10c8a..6acaf212020e42250cd0b5d0a6a83e5e
  
  #define __wait_event(wq_head, condition)					\
  	(void)___wait_event(wq_head, condition, TASK_UNINTERRUPTIBLE, 0, 0,	\
-@@ -454,17 +461,17 @@ do {										\
+@@ -480,17 +487,17 @@ do {										\
   */
  #define wait_event_interruptible(wq_head, condition)				\
  ({										\
@@ -45,7 +45,7 @@ index 032ae61c22a2b858a983c7e13e6ed019b2a10c8a..6acaf212020e42250cd0b5d0a6a83e5e
  
  /**
   * wait_event_interruptible_timeout - sleep until a condition gets true or a timeout elapses
-@@ -488,12 +495,12 @@ do {										\
+@@ -514,12 +521,12 @@ do {										\
   */
  #define wait_event_interruptible_timeout(wq_head, condition, timeout)		\
  ({										\
