@@ -54,6 +54,7 @@
     { include: ["\"linux/byteorder/generic.h\"", private, "<linux/byteorder/generic.h>", public ] },
     { include: ["\"linux/cache.h\"", private, "<linux/cache.h>", public ] },
     { include: ["\"linux/compiler.h\"", private, "<linux/compiler.h>", public ] },
+    { include: ["\"linux/container_of.h\"", private, "<linux/container_of.h>", public ] },
     { include: ["\"linux/cpumask.h\"", private, "<linux/cpumask.h>", public ] },
     { include: ["\"linux/crc16.h\"", private, "<linux/crc16.h>", public ] },
     { include: ["\"linux/crc32c.h\"", private, "<linux/crc32c.h>", public ] },
