@@ -1,0 +1,44 @@
+From: Sven Eckelmann <sven@narfation.org>
+Date: Mon, 24 Jan 2022 19:14:55 +0100
+Subject: Disable warning: directive in macro's argument list warnings
+
+We get a lot of warnings with -Wpedantic when building batman-adv due to
+changes in the skbuff.h header:
+
+  net/batman-adv/bat_v_elp.c: note: in included file (through compat-include//linux/skbuff.h, include/linux/if_ether.h, include/linux/etherdevice.h, compat-include//linux/etherdevice.h, ...):
+  ./include/linux/skbuff.h:867:1: warning: directive in macro's argument list
+  ./include/linux/skbuff.h:869:1: warning: directive in macro's argument list
+  ./include/linux/skbuff.h:874:1: warning: directive in macro's argument list
+  ./include/linux/skbuff.h:877:1: warning: directive in macro's argument list
+  ./include/linux/skbuff.h:878:1: warning: directive in macro's argument list
+  ./include/linux/skbuff.h:881:1: warning: directive in macro's argument list
+  ./include/linux/skbuff.h:883:1: warning: directive in macro's argument list
+  ./include/linux/skbuff.h:885:1: warning: directive in macro's argument list
+  ./include/linux/skbuff.h:886:1: warning: directive in macro's argument list
+  ./include/linux/skbuff.h:888:1: warning: directive in macro's argument list
+  ./include/linux/skbuff.h:889:1: warning: directive in macro's argument list
+  ./include/linux/skbuff.h:891:1: warning: directive in macro's argument list
+  ./include/linux/skbuff.h:894:1: warning: directive in macro's argument list
+  ./include/linux/skbuff.h:896:1: warning: directive in macro's argument list
+  ./include/linux/skbuff.h:910:1: warning: directive in macro's argument list
+  ./include/linux/skbuff.h:915:1: warning: directive in macro's argument list
+  ./include/linux/skbuff.h:916:1: warning: directive in macro's argument list
+  ./include/linux/skbuff.h:918:1: warning: directive in macro's argument list
+  ./include/linux/skbuff.h:939:1: warning: directive in macro's argument list
+  ./include/linux/skbuff.h:941:1: warning: directive in macro's argument list
+
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+
+diff --git a/pre-process.c b/pre-process.c
+index 3fb250828fa665d1dbee499c2394faa377714937..46fdbce146fdbf6c460661c58ec80d1842a2bdc6 100644
+--- a/pre-process.c
++++ b/pre-process.c
+@@ -2200,7 +2200,7 @@ static void handle_preprocessor_line(struct stream *stream, struct token **line,
+ 	}
+ 
+ 	if (expanding) {
+-		if (!is_cond || Wpedantic)
++		if (!is_cond)
+ 			warning(start->pos, "directive in macro's argument list");
+ 	}
+ 	if (!handler(stream, line, token))	/* all set */
