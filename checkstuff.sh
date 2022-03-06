@@ -32,6 +32,7 @@ WRONG_NAMESPACE="$(pwd)/testhelpers/find_wrong_namespace.sh"
 MISSING_KERNELDOC_SYMBOLS="$(pwd)/testhelpers/find_missing_kerneldoc_symbols.sh"
 IWYU_KERNEL_MAPPINGS="$(pwd)/testhelpers/kernel_mappings.iwyu"
 FIX_INCLUDE_SORT="$(pwd)/testhelpers/fix_includes_sort.py"
+UGLY_HACK_FILTER="$(pwd)/testhelpers/ugly_hack_filter.py"
 
 MAIL_AGGREGATOR="$(pwd)/testhelpers/mail_aggregator.py"
 DB="$(pwd)/error.db"
@@ -361,6 +362,9 @@ test_compare_net()
         # only allow YEAR.RELEASE version numbers and not YEAR.RELEASE.MINOR in net.git
         sed -i 's/^#define BATADV_SOURCE_VERSION "\([0-9][0-9]*\)\.\([0-9][0-9]*\)\(\.[0-9][0-9]*\)*"/#define BATADV_SOURCE_VERSION "\1.\2"/' "${TMPNAME}/batadv/net/batman-adv/main.h"
 
+	# Filter out usage of compat hacks
+	"${UGLY_HACK_FILTER}" "${TMPNAME}/batadv/net/batman-adv/"*.c "${TMPNAME}/batadv/net/batman-adv/"*.h
+
 	# compare against batman_adv.h
 	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- include/uapi/linux/batman_adv.h | tar x
 	git archive --remote="linux-next/.git/" --format=tar --prefix="${TMPNAME}/net/" "${upstream_rev}" -- include/uapi/linux/batman_adv.h | tar x
@@ -408,6 +412,9 @@ test_compare_net_next()
 	# drop version number for now
 	sed -i 's/^#define BATADV_SOURCE_VERSION "[^"]*"/#define BATADV_SOURCE_VERSION ""/' "${TMPNAME}/netnext/net/batman-adv/main.h"
 	sed -i 's/^#define BATADV_SOURCE_VERSION "[^"]*"/#define BATADV_SOURCE_VERSION ""/' "${TMPNAME}/batadv/net/batman-adv/main.h"
+
+	# Filter out usage of compat hacks
+	"${UGLY_HACK_FILTER}" "${TMPNAME}/batadv/net/batman-adv/"*.c "${TMPNAME}/batadv/net/batman-adv/"*.h
 
 	# compare against batman_adv.h
 	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- include/uapi/linux/batman_adv.h | tar x
