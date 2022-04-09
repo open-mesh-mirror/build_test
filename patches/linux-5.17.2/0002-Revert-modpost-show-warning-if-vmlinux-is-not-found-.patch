@@ -5,10 +5,10 @@ Subject: Revert "modpost: show warning if vmlinux is not found when processing m
 This reverts commit 7e8a3235823bcb779acf92de630edd5ddffaf886.
 
 diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index cb8ab7d91d30722b2653537abe5a41d7cdc69030..97a4f8b5969dde098e20e672558beed87821cf39 100644
+index e04ae56931e2e32a5d51616e540e3f8c16634d69..5c1073a8b77663444232f729aa370c48d75f4030 100644
 --- a/scripts/mod/modpost.c
 +++ b/scripts/mod/modpost.c
-@@ -2604,10 +2604,6 @@ int main(int argc, char **argv)
+@@ -2619,10 +2619,6 @@ int main(int argc, char **argv)
  		}
  	}
  

@@ -1,0 +1,20 @@
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 23 Mar 2022 20:31:00 +0100
+Subject: Fix shadow warning from bfb1a7c91fb7 ("x86/bug: Merge annotate_reachable() into _BUG_FLAGS() asm")
+
+diff --git a/arch/x86/include/asm/bug.h b/arch/x86/include/asm/bug.h
+index bab883c0b6fee0350281b7b62d3b52ba75056108..cbd11e38252a0b2077ec4c95b071b8d9d33dc980 100644
+--- a/arch/x86/include/asm/bug.h
++++ b/arch/x86/include/asm/bug.h
+@@ -77,9 +77,9 @@ do {								\
+  */
+ #define __WARN_FLAGS(flags)					\
+ do {								\
+-	__auto_type f = BUGFLAG_WARNING|(flags);		\
++	__auto_type __f = BUGFLAG_WARNING|(flags);		\
+ 	instrumentation_begin();				\
+-	_BUG_FLAGS(ASM_UD2, f, ASM_REACHABLE);			\
++	_BUG_FLAGS(ASM_UD2, __f, ASM_REACHABLE);			\
+ 	instrumentation_end();					\
+ } while (0)
+ 
