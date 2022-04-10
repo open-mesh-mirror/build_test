@@ -67,9 +67,11 @@ check_external()
 		echo "    git clone --depth=1 git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git linux-next"
 		echo "    git --git-dir=linux-next/.git/ remote add -t master --no-tags net-next https://git.kernel.org/pub/scm/linux/kernel/git/netdev/net-next.git"
 		echo "    git --git-dir=linux-next/.git/ remote add -t master --no-tags net https://git.kernel.org/pub/scm/linux/kernel/git/netdev/net.git"
+		echo "    git --git-dir=linux-next/.git/ remote add --no-tags linux-merge https://git.open-mesh.org/linux-merge.git"
 		echo "    git --git-dir=linux-next/.git/ config remote.origin.tagopt --no-tags"
 		echo "    git --git-dir=linux-next/.git/ fetch --depth=1 net-next"
 		echo "    git --git-dir=linux-next/.git/ fetch --depth=1 net"
+		echo "    git --git-dir=linux-next/.git/ fetch --depth=1 linux-merge"
 		exit 1
 	fi
 
@@ -426,6 +428,38 @@ test_compare_net_next()
 	fi
 }
 
+test_check_batadv_net()
+{
+	branch="$1"
+
+	rm -rf "${TMPNAME}"
+	mkdir "${TMPNAME}"
+
+	upstream_rev="linux-merge/batadv/net"
+
+	git -C "linux-next/.git/" grep 'UGLY_HACK' "${upstream_rev}" > "${TMPNAME}"/log
+
+	if [ -s "${TMPNAME}/log" ]; then
+		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "UGLY_HACK in ${upstream_name}" "${TMPNAME}"/log "${TMPNAME}"/log
+	fi
+}
+
+test_check_batadv_net_next()
+{
+	branch="$1"
+
+	rm -rf "${TMPNAME}"
+	mkdir "${TMPNAME}"
+
+	upstream_rev="linux-merge/batadv/net-next"
+
+	git -C "linux-next/.git/" grep 'UGLY_HACK' "${upstream_rev}" > "${TMPNAME}"/log
+
+	if [ -s "${TMPNAME}/log" ]; then
+		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "UGLY_HACK in ${upstream_name}" "${TMPNAME}"/log "${TMPNAME}"/log
+	fi
+}
+
 test_headers()
 {
 	branch="$1"
@@ -521,10 +555,12 @@ testbranch()
 
 		if [ "$branch" == "${SUBMIT_NET_NEXT_BRANCH}" ]; then
 			test_compare_net_next "${branch}"
+			test_check_batadv_net_next "${branch}"
 		fi
 
 		if [ "$branch" == "${SUBMIT_NET_BRANCH}" ]; then
 			test_compare_net "${branch}"
+			test_check_batadv_net "${branch}"
 		fi
 
 		rm -rf "${TMPNAME}"
