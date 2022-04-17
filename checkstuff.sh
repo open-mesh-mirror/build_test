@@ -549,10 +549,9 @@ testbranch()
 {
 	branch="$1"
 	(
-		if [ "$branch" != "${SUBMIT_NET_BRANCH}" ]; then
-			test_headers "$branch"
-		fi
+		git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/" "$branch" > "${TMPNAME}.tar"
 
+		# external repo tests
 		if [ "$branch" == "${SUBMIT_NET_NEXT_BRANCH}" ]; then
 			test_compare_net_next "${branch}"
 			test_check_batadv_net_next "${branch}"
@@ -563,14 +562,38 @@ testbranch()
 			test_check_batadv_net "${branch}"
 		fi
 
+		if [ "$branch" != "${SUBMIT_NET_BRANCH}" ]; then
+			test_headers "$branch"
+		fi
+	)
+
+	(
+		# static pretest
 		rm -rf "${TMPNAME}"
-		git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/" "$branch" | tar x
+		tar -xf "${TMPNAME}.tar"
+		"${UGLY_HACK_FILTER}" "${TMPNAME}/net/batman-adv/"*.c "${TMPNAME}/net/batman-adv/"*.h
 		cd "${TMPNAME}"
 
 		if [ "$branch" != "${SUBMIT_NET_BRANCH}" ]; then
 			test_coccicheck "${branch}"
 		fi
 		test_comments "${branch}"
+
+		if [ "$branch" != "${SUBMIT_NET_BRANCH}" ]; then
+			# TODO enable checkpatch again when less noisy
+			test_checkpatch "${branch}"
+
+			test_kerneldoc "${branch}"
+			test_main_include "${branch}"
+		fi
+		test_brackets "${branch}"
+	)
+
+	(
+		# build tests
+		rm -rf "${TMPNAME}"
+		tar -xf "${TMPNAME}.tar"
+		cd "${TMPNAME}"
 
 		start_time="$(date +%s)"
 		end_time="$((${start_time} + ${MAX_BUILDTIME_PER_BRANCH}))"
@@ -582,17 +605,8 @@ testbranch()
 				break
 			fi
 		done
-
-		if [ "$branch" != "${SUBMIT_NET_BRANCH}" ]; then
-			# TODO enable checkpatch again when less noisy
-			test_checkpatch "${branch}"
-
-			test_kerneldoc "${branch}"
-			test_main_include "${branch}"
-		fi
-		test_brackets "${branch}"
 	)
-	rm -rf "${TMPNAME}"
+	rm -rf "${TMPNAME}" "${TMPNAME}.tar"
 }
 
 check_external
