@@ -1,23 +1,23 @@
 From: Sven Eckelmann <sven@narfation.org>
-Date: Tue, 1 Jun 2021 08:34:39 +0200
+Date: Tue, 1 Jun 2021 08:32:35 +0200
 Subject: Revert "kbuild: generate Module.symvers only when vmlinux exists"
 
-This reverts commit 69bc8d386aebbd91a6bb44b6d33f77c8dfa9ed8c.
+This reverts commit d0736af81151cb6213825034da0e09a7e4ad20ea.
 
 diff --git a/.gitignore b/.gitignore
-index 7afd412dadd2c18b2d1e0c7813b2979ceedabf30..e3ffd1d28194fa5026877231fac87033030e2a1c 100644
+index 67d2f350312832c8e1997af553974a85598a53d1..d01cda8e11779a2fa3e3333fd176e2e77e02fd21 100644
 --- a/.gitignore
 +++ b/.gitignore
-@@ -54,7 +54,6 @@ modules.order
- # Top-level generic files
- #
+@@ -55,7 +55,6 @@ modules.order
+ /tags
+ /TAGS
  /linux
 -/modules-only.symvers
  /vmlinux
  /vmlinux.32
- /vmlinux.map
+ /vmlinux.symvers
 diff --git a/Documentation/dontdiff b/Documentation/dontdiff
-index 910b30a2a7d98b89ce3b9bc6afb7a88aa7c8025c..ac42ad8d430d1239f8469254639bcd557555ee9b 100644
+index 82e3eee7363b0301a6aaccea965d077130c09f4d..e361fc95ca293d80434ee0cdfae309046c17d612 100644
 --- a/Documentation/dontdiff
 +++ b/Documentation/dontdiff
 @@ -178,7 +178,6 @@ mktables
@@ -29,20 +29,20 @@ index 910b30a2a7d98b89ce3b9bc6afb7a88aa7c8025c..ac42ad8d430d1239f8469254639bcd55
  modules.builtin.modinfo
  modules.nsdeps
 diff --git a/Makefile b/Makefile
-index 8c7de9a72ea26f88316c70279164056897631541..83f832165a8de353b154ed41e76b87c8d1252bc2 100644
+index 8695a13fe7cd6a04cce1b03a6eee851c83f36a5b..302cdaa6de62a2f05e4c6e6822335364060c8e7c 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -1481,7 +1481,7 @@ endif # CONFIG_MODULES
+@@ -1484,7 +1484,7 @@ endif # CONFIG_MODULES
  # make distclean Remove editor backup files, patch leftover files and the like
  
  # Directories & files removed with 'make clean'
 -CLEAN_FILES += include/ksym vmlinux.symvers modules-only.symvers \
 +CLEAN_FILES += include/ksym vmlinux.symvers \
  	       modules.builtin modules.builtin.modinfo modules.nsdeps \
- 	       compile_commands.json .thinlto-cache
+ 	       compile_commands.json
  
 diff --git a/scripts/Makefile.modpost b/scripts/Makefile.modpost
-index 48585c4d04ade8488c27b6e0501d433219b66141..ff517cb924a85cd860d30041d4991092b0c0466d 100644
+index 12a87be0fb44681c3d7e1e87a85041c91a69c9f4..f54b6ac37ac2ecd946708ef21904dbd01109b75d 100644
 --- a/scripts/Makefile.modpost
 +++ b/scripts/Makefile.modpost
 @@ -65,20 +65,7 @@ else
@@ -68,10 +68,10 @@ index 48585c4d04ade8488c27b6e0501d433219b66141..ff517cb924a85cd860d30041d4991092
  else
  
 diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index ad05719b160e8b3cadbb4d7618125d9b0e82cc66..05b8592fb24b7e781e573ce0428c1cb24b653f16 100644
+index 28f4c80adb5e621a78fe407e2a2a69f1e7664892..0757b0af4ace8c6791c6bfcc99a92d769e667aef 100644
 --- a/scripts/mod/modpost.c
 +++ b/scripts/mod/modpost.c
-@@ -2461,6 +2461,19 @@ static void read_dump(const char *fname)
+@@ -2481,6 +2481,19 @@ static void read_dump(const char *fname)
  	fatal("parse error in symbol dump file\n");
  }
  
@@ -91,7 +91,7 @@ index ad05719b160e8b3cadbb4d7618125d9b0e82cc66..05b8592fb24b7e781e573ce0428c1cb2
  static void write_dump(const char *fname)
  {
  	struct buffer buf = { };
-@@ -2471,7 +2484,7 @@ static void write_dump(const char *fname)
+@@ -2491,7 +2504,7 @@ static void write_dump(const char *fname)
  	for (n = 0; n < SYMBOL_HASH_SIZE ; n++) {
  		symbol = symbolhash[n];
  		while (symbol) {
