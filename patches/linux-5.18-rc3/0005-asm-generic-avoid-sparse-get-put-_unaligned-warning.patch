@@ -22,7 +22,7 @@ Fixes: 803f4e1eab7a ("asm-generic: simplify asm/unaligned.h")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
 diff --git a/include/asm-generic/unaligned.h b/include/asm-generic/unaligned.h
-index 8fc637379899fd38b37bdbecaca6358a2f917dc8..e8d413fb72394c404603f70c95895284a8466844 100644
+index df30f11b4a46011fdbcefc3d0a9287ebc62e8daa..4f9c585aa892951f899fdfe4324bb4a3b08d0c01 100644
 --- a/include/asm-generic/unaligned.h
 +++ b/include/asm-generic/unaligned.h
 @@ -10,12 +10,13 @@
