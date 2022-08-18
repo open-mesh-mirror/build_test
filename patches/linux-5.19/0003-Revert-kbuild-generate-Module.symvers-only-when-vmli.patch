@@ -29,10 +29,10 @@ index 352ff53a2306ad897f5ef3e20ade4ca27f664471..c1045433e1ee6ec2a13e690d3e21ead8
  modules.builtin.modinfo
  modules.nsdeps
 diff --git a/Makefile b/Makefile
-index c43d825a3c4c502daa53e309cf68e75ae588ed81..cfb07b54b6d9082a6738f2b803697c2313bbd500 100644
+index df92892325ae0bc35a31de1d8b606dbd84154cb7..05c713b47624c9af08b386931fcef160f141dfe4 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -1484,7 +1484,7 @@ endif # CONFIG_MODULES
+@@ -1488,7 +1488,7 @@ endif # CONFIG_MODULES
  # make distclean Remove editor backup files, patch leftover files and the like
  
  # Directories & files removed with 'make clean'
@@ -68,7 +68,7 @@ index 911606496341ca66a34365dcd29f5cc0d09ff0dd..fc8c742e8bae784d7813ad20d7f465b5
  else
  
 diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 9216dc564f7489926251a7c50beb656fe3c7dcb8..0466016ba94027daf480c23d802f920c1973144f 100644
+index 0879a0e6e86fec36874e5238f59f244b2efe131a..4e7e37f36756cc574e7132c31003e547760ead85 100644
 --- a/scripts/mod/modpost.c
 +++ b/scripts/mod/modpost.c
 @@ -2453,6 +2453,19 @@ static void read_dump(const char *fname)

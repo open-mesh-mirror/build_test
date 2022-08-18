@@ -1,3 +1,5 @@
-DEFAULT_LINUX_VERSIONS="$(echo linux-4.{9..20} linux-5.{0..18}) linux-4.9.316 linux-4.14.281 linux-4.19.245 linux-5.4.196 linux-5.10.119 linux-5.15.44 linux-5.17.12 linux-5.18.1 linux-5.19-rc1"
+DEFAULT_LINUX_VERSIONS="$(echo linux-4.{9..20} linux-5.{0..19}) linux-4.9.325 linux-4.14.290 linux-4.19.255 linux-5.4.210 linux-5.10.136 linux-5.15.61 linux-5.18.18 linux-5.19.2 linux-6.0-rc1"
 LINUX_VERSIONS=${LINUX_VERSIONS:=${DEFAULT_LINUX_VERSIONS}}
-LINUX_DEFAULT_VERSION=${LINUX_DEFAULT_VERSION:="linux-5.19-rc1"}
+LINUX_DEFAULT_VERSION=${LINUX_DEFAULT_VERSION:="linux-6.0-rc1"}
+
+
