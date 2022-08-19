@@ -32,6 +32,7 @@
 { include: ["\"linux/byteorder/little_endian.h\"", "private", "<asm/byteorder.h>", "public"] },
 { include: ["\"linux/kern_levels.h\"", "private", "<linux/printk.h>", "public"] },
 { include: ["\"linux/dynamic_debug.h\"", "private", "<linux/printk.h>", "public"] },
+{ include: ["\"linux/gfp_types.h\"", private, "<linux/gfp.h>", public ] },
 { include: ["\"linux/netdev_features.h\"", "private", "<linux/netdevice.h>", "public"] },
 { include: ["\"linux/rcutree.h\"", "private", "<linux/rcupdate.h>", "public"] },
 { include: ["\"linux/rcutiny.h\"", "private", "<linux/rcupdate.h>", "public"] },
