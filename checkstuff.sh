@@ -48,7 +48,8 @@ check_external()
 {
 	if [ ! -x "${SPARSE}" ]; then
 		echo "Required tool sparse missing:"
-		echo "    git clone --depth 1 -b v0.6.4 git://git.kernel.org/pub/scm/devel/sparse/sparse.git sparse"
+		echo "    git clone git://git.kernel.org/pub/scm/devel/sparse/sparse.git sparse"
+		echo "    git -C sparse reset --hard ce1a6720f69e6233ec9abd4e9aae5945e05fda41"
 		echo "    git -C sparse am ../patches/sparse/0001-Disable-warning-directive-in-macro-s-argument-list-w.patch"
 		echo "    make -C sparse"
 		exit 1
