@@ -29,10 +29,10 @@ index 352ff53a2306ad897f5ef3e20ade4ca27f664471..c1045433e1ee6ec2a13e690d3e21ead8
  modules.builtin.modinfo
  modules.nsdeps
 diff --git a/Makefile b/Makefile
-index e2edc38ce52c134d9853ffc520168c98768a80a3..9deaf49159bc0f1c56e7b1af596bbb6199b65d66 100644
+index c7705f7496012ff1328c306c1cf0674084fd1579..199ec86c930eff64fb7e6187fd32bf4d2ca9243c 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -1494,7 +1494,7 @@ endif # CONFIG_MODULES
+@@ -1498,7 +1498,7 @@ endif # CONFIG_MODULES
  # make distclean Remove editor backup files, patch leftover files and the like
  
  # Directories & files removed with 'make clean'
@@ -68,10 +68,10 @@ index 911606496341ca66a34365dcd29f5cc0d09ff0dd..fc8c742e8bae784d7813ad20d7f465b5
  else
  
 diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 0879a0e6e86fec36874e5238f59f244b2efe131a..4e7e37f36756cc574e7132c31003e547760ead85 100644
+index fe71a5707b0b9129069b9be06421b35ad6ffba05..f3942876c59617ac80275c0e269acb2dd8c0fb6b 100644
 --- a/scripts/mod/modpost.c
 +++ b/scripts/mod/modpost.c
-@@ -2453,6 +2453,19 @@ static void read_dump(const char *fname)
+@@ -2269,6 +2269,19 @@ static void read_dump(const char *fname)
  	fatal("parse error in symbol dump file\n");
  }
  
