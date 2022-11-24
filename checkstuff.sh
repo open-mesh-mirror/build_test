@@ -488,6 +488,7 @@ test_headers()
 
 		git add -f "${bpath}" "${spath}"
 
+		sed -i '/\/\/ for const_test_bit$/d' test
 		sed -i '/^#include ".*net\/batman-adv\/main\.h"$/d' test
 		# for log.c x86 REQUIRED_MASK
 		sed -i '/^#include <asm\/cpufeatures\.h>.*$/d' test
