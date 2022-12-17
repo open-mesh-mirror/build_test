@@ -6,9 +6,9 @@ TO=${TO:="$(whoami)"}
 FROM=${FROM:="$(whoami)"}
 REMOTE=${REMOTE:="git+ssh://git@git.open-mesh.org/batman-adv.git"}
 JOBS=${JOBS:=$(nproc || echo 1)}
-TESTBRANCHES="${TESTBRANCHES:="master maint"}"
-SUBMIT_NET_NEXT_BRANCH=${SUBMIT_NET_NEXT_BRANCH:="master"}
-SUBMIT_NET_BRANCH=${SUBMIT_NET_BRANCH:="maint"}
+TESTBRANCHES="${TESTBRANCHES:="main stable"}"
+SUBMIT_NET_NEXT_BRANCH=${SUBMIT_NET_NEXT_BRANCH:="main"}
+SUBMIT_NET_BRANCH=${SUBMIT_NET_BRANCH:="stable"}
 
 BUILD_RUNS=${BUILD_RUNS:=1}
 CONFIGS_PER_RUN=${CONFIGS_PER_RUN:=4}
@@ -66,8 +66,8 @@ check_external()
 	if [ ! -x "${CHECKPATCH}" -o ! -x "${KERNELDOC}" ]; then
 		echo "Required tool checkpatch and kernel-doc missing:"
 		echo "    git clone --depth=1 git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git linux-next"
-		echo "    git --git-dir=linux-next/.git/ remote add -t master --no-tags net-next https://git.kernel.org/pub/scm/linux/kernel/git/netdev/net-next.git"
-		echo "    git --git-dir=linux-next/.git/ remote add -t master --no-tags net https://git.kernel.org/pub/scm/linux/kernel/git/netdev/net.git"
+		echo "    git --git-dir=linux-next/.git/ remote add -t main --no-tags net-next https://git.kernel.org/pub/scm/linux/kernel/git/netdev/net-next.git"
+		echo "    git --git-dir=linux-next/.git/ remote add -t main --no-tags net https://git.kernel.org/pub/scm/linux/kernel/git/netdev/net.git"
 		echo "    git --git-dir=linux-next/.git/ remote add --no-tags linux-merge https://git.open-mesh.org/linux-merge.git"
 		echo "    git --git-dir=linux-next/.git/ config remote.origin.tagopt --no-tags"
 		echo "    git --git-dir=linux-next/.git/ fetch --depth=1 net-next"
@@ -346,7 +346,7 @@ test_compare_net()
 	rm -rf "${TMPNAME}"
 	mkdir "${TMPNAME}"
 
-	upstream_rev="net/master"
+	upstream_rev="net/main"
 	upstream_name="net"
 
 	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- net/batman-adv/ Documentation/networking/batman-adv.rst | tar x
@@ -386,16 +386,16 @@ test_compare_net_next()
 	rm -rf "${TMPNAME}"
 	mkdir "${TMPNAME}"
 
-	netnext_rev="$(git -C "linux-next" rev-parse net-next/master)"
-	net_rev="$(git -C "linux-next" rev-parse net/master)"
+	netnext_rev="$(git -C "linux-next" rev-parse net-next/main)"
+	net_rev="$(git -C "linux-next" rev-parse net/main)"
 	netmerge_base="$(git -C "linux-next" merge-base "${net_rev}" "${netnext_rev}")"
 
 	# use net instead of net-next in case it net-next is currently frozen and everything is added to net
 	if [ "${netmerge_base}" = "${netnext_rev}" ]; then
-		upstream_rev="net/master"
+		upstream_rev="net/main"
 		upstream_name="net"
 	else
-		upstream_rev="net-next/master"
+		upstream_rev="net-next/main"
 		upstream_name="net-next"
 	fi
 
@@ -615,7 +615,7 @@ check_external
 
 # update linux next for checkpatch/net-next
 git --git-dir=linux-next/.git/ --work-tree=linux-next remote update --prune
-git --git-dir=linux-next/.git/ --work-tree=linux-next reset --hard origin/master
+git --git-dir=linux-next/.git/ --work-tree=linux-next reset --hard origin/main
 
 "${MAIL_AGGREGATOR}" "${DB}" create
 for branch in $TESTBRANCHES; do

@@ -7,8 +7,8 @@ REMOTE_ALFRED="/srv/git/repositories/alfred.git/"
 
 cd "$(dirname "$0")"
 
-rm -f batctl_maint.batman_adv.h batctl_master.batman_adv.h  alfred_maint.batman_adv.h alfred_master.batman_adv.h  batman-adv_maint.batman_adv.h batman-adv_master.batman_adv.h
-rm -f maint.diff master.diff
+rm -f batctl_stable.batman_adv.h batctl_main.batman_adv.h  alfred_stable.batman_adv.h alfred_main.batman_adv.h  batman-adv_stable.batman_adv.h batman-adv_main.batman_adv.h
+rm -f stable.diff main.diff
 
 checkout_batman_adv_h()
 {
@@ -23,18 +23,18 @@ checkout_batman_adv_h()
 	git --git-dir="${remote}" cat-file -p "${branch}":batman_adv.h 2> /dev/null
 }
 
-checkout_batman_adv_h "${REMOTE}" master > batman-adv_master.batman_adv.h
-checkout_batman_adv_h "${REMOTE}" maint > batman-adv_maint.batman_adv.h
+checkout_batman_adv_h "${REMOTE}" main > batman-adv_main.batman_adv.h
+checkout_batman_adv_h "${REMOTE}" stable > batman-adv_stable.batman_adv.h
 
-checkout_batman_adv_h "${REMOTE_BATCTL}" master > batctl_master.batman_adv.h
-checkout_batman_adv_h "${REMOTE_BATCTL}" maint > batctl_maint.batman_adv.h
+checkout_batman_adv_h "${REMOTE_BATCTL}" main > batctl_main.batman_adv.h
+checkout_batman_adv_h "${REMOTE_BATCTL}" stable > batctl_stable.batman_adv.h
 
-checkout_batman_adv_h "${REMOTE_ALFRED}" master > alfred_master.batman_adv.h
+checkout_batman_adv_h "${REMOTE_ALFRED}" main > alfred_main.batman_adv.h
 
-diff -ruN batman-adv_master.batman_adv.h batctl_master.batman_adv.h > master.diff
-diff -ruN batman-adv_maint.batman_adv.h batctl_maint.batman_adv.h > maint.diff
+diff -ruN batman-adv_main.batman_adv.h batctl_main.batman_adv.h > main.diff
+diff -ruN batman-adv_stable.batman_adv.h batctl_stable.batman_adv.h > stable.diff
 
-diff -ruN batman-adv_master.batman_adv.h alfred_master.batman_adv.h > alfred.master.diff
+diff -ruN batman-adv_main.batman_adv.h alfred_main.batman_adv.h > alfred.main.diff
 
 generate_email_header()
 {
@@ -48,7 +48,7 @@ generate_email_header()
 	EOF
 }
 
-for i in master.diff maint.diff alfred.master.diff; do
+for i in main.diff stable.diff alfred.main.diff; do
 	if [ -s "$i" ]; then
 		(generate_email_header "$TO" "$i"
 		cat "$i") | /usr/sbin/sendmail -t

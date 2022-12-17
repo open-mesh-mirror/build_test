@@ -6,8 +6,8 @@ REMOTE_BATCTL="/srv/git/repositories/batctl.git/"
 
 cd "$(dirname "$0")"
 
-rm -f batctl_maint.packet.h  batctl_master.packet.h  batman-adv_maint.packet.h  batman-adv_master.packet.h
-rm -f maint.diff  master.diff
+rm -f batctl_stable.packet.h  batctl_main.packet.h  batman-adv_stable.packet.h  batman-adv_main.packet.h
+rm -f stable.diff  main.diff
 
 checkout_packet_h()
 {
@@ -35,14 +35,14 @@ checkout_packet_h()
 	fi
 }
 
-checkout_packet_h "${REMOTE}" master > batman-adv_master.packet.h
-checkout_packet_h "${REMOTE}" maint > batman-adv_maint.packet.h
+checkout_packet_h "${REMOTE}" main > batman-adv_main.packet.h
+checkout_packet_h "${REMOTE}" stable > batman-adv_stable.packet.h
 
-checkout_packet_h "${REMOTE_BATCTL}" master > batctl_master.packet.h
-checkout_packet_h "${REMOTE_BATCTL}" maint > batctl_maint.packet.h
+checkout_packet_h "${REMOTE_BATCTL}" main > batctl_main.packet.h
+checkout_packet_h "${REMOTE_BATCTL}" stable > batctl_stable.packet.h
 
-diff -ruN batman-adv_master.packet.h batctl_master.packet.h > master.diff
-diff -ruN batman-adv_maint.packet.h batctl_maint.packet.h > maint.diff
+diff -ruN batman-adv_main.packet.h batctl_main.packet.h > main.diff
+diff -ruN batman-adv_stable.packet.h batctl_stable.packet.h > stable.diff
 
 generate_email_header()
 {
@@ -56,7 +56,7 @@ generate_email_header()
 	EOF
 }
 
-for i in master.diff maint.diff; do
+for i in main.diff stable.diff; do
 	if [ -s "$i" ]; then
 		(generate_email_header "$TO" "$i"
 		cat "$i") | /usr/sbin/sendmail -t
