@@ -191,7 +191,7 @@ test_checkpatch()
 			continue
 		fi
 
-		if [ "${fname}" = "log.h" ]; then
+		if [ "${fname}" = "log.h" -o "${fname}" = "multicast_forw.c" ]; then
 			cp_extra_params="${cp_extra_params} --ignore MACRO_ARG_REUSE"
 		fi
 
