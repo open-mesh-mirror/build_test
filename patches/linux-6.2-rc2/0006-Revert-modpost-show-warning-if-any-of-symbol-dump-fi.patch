@@ -7,11 +7,11 @@ This partially reverts commit 48a0f72797bdc6b428f951aff265f5aecc2bda49.
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
 diff --git a/scripts/Makefile.modpost b/scripts/Makefile.modpost
-index 5eb5e8280379ad9140f0b57bf4c51cae35367279..4cf0f1ff03cf2ecc92a9283ab8d36093e4c53f02 100644
+index 0ee296cf520c23866a1f1750bc16df64792fd814..0e9d9882672aa1c70363faddd727b059053d4677 100644
 --- a/scripts/Makefile.modpost
 +++ b/scripts/Makefile.modpost
-@@ -126,10 +126,6 @@ endif
- # Otherwise, allmodconfig would fail with "Argument list too long".
+@@ -126,10 +126,6 @@ endif # ($(KBUILD_EXTMOD),)
+ 
  quiet_cmd_modpost = MODPOST $@
        cmd_modpost = \
 -	$(if $(missing-input), \
