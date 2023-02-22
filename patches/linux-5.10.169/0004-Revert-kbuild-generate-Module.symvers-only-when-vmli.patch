@@ -29,10 +29,10 @@ index 82e3eee7363b0301a6aaccea965d077130c09f4d..e361fc95ca293d80434ee0cdfae30904
  modules.builtin.modinfo
  modules.nsdeps
 diff --git a/Makefile b/Makefile
-index 33422c7d149e18635321ff2b6812e9966ac42102..fd48d739339a06d008a94d9b66df7f19ad8688d5 100644
+index dbbfaa5d4fe29eee105b8ae89a9ee5186891c99c..0192f21152a7d172922c516b8a70e908fa84dfb9 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -1499,7 +1499,7 @@ endif # CONFIG_MODULES
+@@ -1473,7 +1473,7 @@ endif # CONFIG_MODULES
  # make distclean Remove editor backup files, patch leftover files and the like
  
  # Directories & files removed with 'make clean'

@@ -45,7 +45,6 @@ Link: http://lkml.kernel.org/r/1508840570-22169-2-git-send-email-will.deacon@arm
 Signed-off-by: Ingo Molnar <mingo@kernel.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-
 diff --git a/arch/arm/include/asm/ptrace.h b/arch/arm/include/asm/ptrace.h
 index e9c9a117bd25d5b69e8ba5313990f18f8db7311d..c7cdbb43ae7c4bed34bb95dbee6b4248a96d9489 100644
 --- a/arch/arm/include/asm/ptrace.h

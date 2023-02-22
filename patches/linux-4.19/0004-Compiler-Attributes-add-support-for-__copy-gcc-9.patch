@@ -55,7 +55,6 @@ Signed-off-by: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
 Signed-off-by: Stefan Agner <stefan@agner.ch>
 Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-
 diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
 index 4d36b27214fda629b7808ce662216d61d47e0265..f531bfe5f33a11f5b1150b0699d3ef6342fe9fe4 100644
 --- a/include/linux/compiler-gcc.h
