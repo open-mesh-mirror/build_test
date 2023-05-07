@@ -1,0 +1,23 @@
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 23 Nov 2022 11:02:27 +0100
+Subject: Revert "modpost: show warning if any of symbol dump files is missing"
+
+This partially reverts commit 48a0f72797bdc6b428f951aff265f5aecc2bda49.
+
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+
+diff --git a/scripts/Makefile.modpost b/scripts/Makefile.modpost
+index 43343e13c5425579a0ba6cd3da01970e3580bc30..94c5db74e08c02ee72d97f131ba49de18f5dad15 100644
+--- a/scripts/Makefile.modpost
++++ b/scripts/Makefile.modpost
+@@ -127,10 +127,6 @@ endif
+ 
+ quiet_cmd_modpost = MODPOST $@
+       cmd_modpost = \
+-	$(if $(missing-input), \
+-		echo >&2 "WARNING: $(missing-input) is missing."; \
+-		echo >&2 "         Modules may not have dependencies or modversions."; \
+-		echo >&2 "         You may get many unresolved symbol warnings.";) \
+ 	$(MODPOST) $(modpost-args)
+ 
+ targets += $(output-symdump)

@@ -5,7 +5,7 @@ Subject: ignore missing symbols caused by not compiling whole kernel for headers
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
 diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index fe71a5707b0b9129069b9be06421b35ad6ffba05..6f2e4bef326b5e313e248197717eea60f2118c55 100644
+index b008ba6e3588efdd2eacb87b0a32340f430d0052..aa8083f822f2bd8174aadf197951394c6cb76312 100644
 --- a/scripts/mod/modpost.c
 +++ b/scripts/mod/modpost.c
 @@ -1911,6 +1911,11 @@ static void check_exports(struct module *mod)
