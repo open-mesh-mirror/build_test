@@ -22,7 +22,6 @@ TMPNAME=${TMPNAME:=${DEFAULT_TMPNAME}}
 
 SPARSE="$(pwd)/sparse/sparse"
 SMATCH="$(pwd)/smatch/smatch"
-SPATCH="$(pwd)/coccinelle/spatch"
 BRACKET="$(pwd)/testhelpers/bracket_align.py"
 LINUXNEXT="$(pwd)/linux-next"
 CHECKPATCH="${LINUXNEXT}/scripts/checkpatch.pl"
@@ -76,15 +75,6 @@ check_external()
 		exit 1
 	fi
 
-	if [ ! -x "${SPATCH}" ]; then
-		echo "Required tool spatch missing:"
-		echo "    git clone --depth=1 -b 1.1.1 https://github.com/coccinelle/coccinelle coccinelle"
-		echo "    (cd coccinelle && ./autogen && ./configure --prefix=/usr --sysconfdir=/etc --libdir=/usr/lib --enable-ocaml --enable-python --with-python=python3 --enable-opt)"
-		echo "    make -C coccinelle"
-		echo "    make -C coccinelle spatch"
-		exit 1
-	fi
-
 	for linux_name in ${LINUX_VERSIONS} ${LINUX_DEFAULT_VERSION}; do
 		if [ ! -d "${LINUX_HEADERS}/${linux_name}" ]; then
 			echo "Required linux header for ${linux_name} missing:"
@@ -111,7 +101,7 @@ test_coccicheck()
 	path="$(source_path)"
 
 	rm -f log
-	make -s -C "${LINUXNEXT}" DEBUG_FILE=/dev/zero coccicheck SPATCH="${SPATCH}" MODE=report KBUILD_EXTMOD="$(pwd)/${path}" | \
+	make -s -C "${LINUXNEXT}" DEBUG_FILE=/dev/zero coccicheck MODE=report KBUILD_EXTMOD="$(pwd)/${path}" | \
 		grep -v -e 'Please check for false positives in the output before submitting a patch.' \
 			-e 'When using "patch" mode, carefully review the patch before submitting it.' \
 			-e 'ERROR: next_gw is NULL but dereferenced.' \
