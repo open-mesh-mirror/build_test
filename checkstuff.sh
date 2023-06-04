@@ -78,8 +78,8 @@ check_external()
 
 	if [ ! -x "${SPATCH}" ]; then
 		echo "Required tool spatch missing:"
-		echo "    git clone --depth=1 -b 1.0.8 https://github.com/coccinelle/coccinelle coccinelle"
-		echo "    (cd coccinelle && ./autogen && ./configure)"
+		echo "    git clone --depth=1 -b 1.1.1 https://github.com/coccinelle/coccinelle coccinelle"
+		echo "    (cd coccinelle && ./autogen && ./configure --prefix=/usr --sysconfdir=/etc --libdir=/usr/lib --enable-ocaml --enable-python --with-python=python3 --enable-opt)"
 		echo "    make -C coccinelle"
 		echo "    make -C coccinelle spatch"
 		exit 1
