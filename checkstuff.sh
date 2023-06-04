@@ -616,7 +616,7 @@ check_external
 
 # update linux next for checkpatch/net-next
 git --git-dir=linux-next/.git/ --work-tree=linux-next remote update --prune
-git --git-dir=linux-next/.git/ --work-tree=linux-next reset --hard origin/main
+git --git-dir=linux-next/.git/ --work-tree=linux-next reset --hard origin/master
 
 "${MAIL_AGGREGATOR}" "${DB}" create
 for branch in $TESTBRANCHES; do
