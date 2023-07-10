@@ -1,0 +1,21 @@
+From: Sven Eckelmann <sven@narfation.org>
+Date: Wed, 17 May 2023 09:44:54 +0200
+Subject: avoid shadow in local_try_cmpxchg
+
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+
+diff --git a/arch/x86/include/asm/local.h b/arch/x86/include/asm/local.h
+index 56d4ef604b919a477657e8ab0a9bd5c43d9ce4a0..74884f78e1341c86928fb9e1356508998e5d98ba 100644
+--- a/arch/x86/include/asm/local.h
++++ b/arch/x86/include/asm/local.h
+@@ -127,8 +127,8 @@ static inline long local_cmpxchg(local_t *l, long old, long new)
+ 
+ static inline bool local_try_cmpxchg(local_t *l, long *old, long new)
+ {
+-	typeof(l->a.counter) *__old = (typeof(l->a.counter) *) old;
+-	return try_cmpxchg_local(&l->a.counter, __old, new);
++	typeof(l->a.counter) *old_cast = (typeof(l->a.counter) *) old;
++	return try_cmpxchg_local(&l->a.counter, old_cast, new);
+ }
+ 
+ /* Always has a lock prefix */

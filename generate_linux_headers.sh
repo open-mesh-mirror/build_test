@@ -168,12 +168,12 @@ EOF
 
 clean_source()
 {
-	find . -iname "*.S" -print0 | xargs --null rm -f
-	find . -iname "*.c" | grep -v -e '/scripts/' | xargs -d '\n' rm -f
-	find . -iname "*.o" -print0 | xargs --null rm -f
-	find . -iname "*.cmd" -not -iname "auto.conf.cmd" -print0 | xargs --null rm -f
-	find . -iname "modules.order" -print0 | xargs --null rm -f
-	find . -iname "vmlinu*" -not -iname "*.h" -print0 | xargs --null rm -f
+	find . -type f -iname "*.S" -print0 | xargs --null rm -f
+	find . -type f -iname "*.c" | grep -v -e '/scripts/' | xargs -d '\n' rm -f
+	find . -type f -iname "*.o" -print0 | xargs --null rm -f
+	find . -type f -iname "*.cmd" -not -iname "auto.conf.cmd" -print0 | xargs --null rm -f
+	find . -type f -iname "modules.order" -print0 | xargs --null rm -f
+	find . -type f -iname "vmlinu*" -not -iname "*.h" -print0 | xargs --null rm -f
 	find arch -maxdepth 1 -type d -not -iname i386 -not -iname x86_64 -not -iname x86 -not -iname arch -print0 | xargs --null rm -rf
 	find include -maxdepth 1 -type d -iname "asm-*" -not -iname asm-i386 -not -iname asm-x86_64 -not -iname asm-x86 -not -iname asm-generic  -not -iname include -print0 | xargs --null rm -rf
 	rm -rf Documentation
