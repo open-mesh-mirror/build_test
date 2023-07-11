@@ -30,6 +30,7 @@ blacklist="
 	batadv_forw_packet_is_rebroadcast
 	batadv_netlink_notify_hardif
 	__tracepoint_batadv_dbg
+	__probestub_batadv_dbg
 	__SCK__tp_func_batadv_dbg
 	__SCT__tp_func_batadv_dbg
 	__traceiter_batadv_dbg

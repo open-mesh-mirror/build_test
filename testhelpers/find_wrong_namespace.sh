@@ -18,6 +18,7 @@ defined="`nm -g --defined-only ${obj}|awk '{ print $3}'|sort|uniq`"
 ret=0
 blacklist="
 	__tracepoint_batadv_dbg
+	__probestub_batadv_dbg
 	__SCK__tp_func_batadv_dbg
 	__SCT__tp_func_batadv_dbg
 	__traceiter_batadv_dbg
