@@ -23,12 +23,10 @@ blacklist="
 	batadv_send_skb_prepare_unicast_4addr
 	batadv_skb_crc32
 	batadv_send_skb_packet
-	batadv_parse_throughput
 	batadv_gw_node_get
 	batadv_get_real_netdev
 	batadv_is_cfg80211_hardif
 	batadv_forw_packet_is_rebroadcast
-	batadv_netlink_notify_hardif
 	__tracepoint_batadv_dbg
 	__probestub_batadv_dbg
 	__SCK__tp_func_batadv_dbg
@@ -39,9 +37,6 @@ blacklist="
 	batadv_send_skb_unicast
 	batadv_tt_global_hash_count
 	batadv_tt_global_hash_find
-	batadv_gw_bandwidth_set
-	batadv_netlink_notify_mesh
-	batadv_netlink_notify_vlan
 	__batadv_br_ip_list_check
 "
 
