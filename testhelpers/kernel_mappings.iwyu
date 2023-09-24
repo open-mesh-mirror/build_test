@@ -22,6 +22,7 @@
 { include: ["\"asm-generic/int-ll64.h\"", "private", "<linux/types.h>", "public"] },
 { include: ["\"asm-generic/param.h\"", "private", "<linux/param.h>", "public"] },
 { include: ["\"asm-generic/poll.h\"", "private", "<linux/poll.h>", "public"] },
+{ include: ["\"asm-generic/rwonce.h\"", "private", "<linux/compiler.h>", "public"] },
 { include: ["\"asm-generic/unaligned.h\"", "private", "<asm/unaligned.h>", "public"] },
 { include: ["\"asm/percpu.h\"", "private", "<linux/percpu.h>", "public"] },
 { include: ["\"linux/percpu-defs.h\"", "private", "<linux/percpu.h>", "public"] },
