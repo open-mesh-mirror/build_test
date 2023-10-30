@@ -513,13 +513,6 @@ test_builds()
 
 			rm -f log logfull
 
-			# B.A.T.M.A.N. V only supports Linux >=3.16
-			if [[ "${config}" == *"CONFIG_BATMAN_ADV_BATMAN_V=y"* ]]; then
-				if dpkg --compare-versions "${linux_name#linux-}" lt "3.16"; then
-					continue
-				fi
-			fi
-
 			test_sparse "${branch}" "${linux_name}" "${config}"
 			test_unused_symbols "${branch}" "${linux_name}" "${config}"
 			test_wrong_namespace "${branch}" "${linux_name}" "${config}"
