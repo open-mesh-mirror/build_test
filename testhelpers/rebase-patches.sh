@@ -6,16 +6,14 @@ PATCHDIR="$(pwd)/../patches/"
 
 . ../linux-versions
 
-for i in ${LINUX_VERSIONS}; do
-	version="$(echo "${i}"|sed 's/^linux-/v/')"
-
-	if [ ! -d "${PATCHDIR}/${i}/" ]; then
+for version in ${LINUX_VERSIONS}; do
+	if [ ! -d "${PATCHDIR}/linux/${version}/" ]; then
 		continue
 	fi
 
 	cd "${LINUX_REPOSITORY}"
 	git checkout "${version}"
-	git am "${PATCHDIR}/${i}/"*
-	rm "${PATCHDIR}/${i}/"*
-	git format-patch --output-directory "${PATCHDIR}/${i}/" --no-stat --full-index --no-renames --binary --diff-algorithm=histogram --no-signature --format=format:'From: %an <%ae>%nDate: %aD%nSubject: %B' "${version}"
+	git am "${PATCHDIR}/linux/${version}/"*
+	rm "${PATCHDIR}/linux/${version}/"*
+	git format-patch --output-directory "${PATCHDIR}/linux/${version}/" --no-stat --full-index --no-renames --binary --diff-algorithm=histogram --no-signature --format=format:'From: %an <%ae>%nDate: %aD%nSubject: %B' "${version}"
 done

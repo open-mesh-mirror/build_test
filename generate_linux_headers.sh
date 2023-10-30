@@ -159,7 +159,7 @@ EOF
 	make debug_kernel.config
 
 	if [ "${LINUX_VERSION}" = "${LINUX_DEFAULT_VERSION}" ]; then
-		../smatch/smatch_scripts/build_kernel_data.sh
+		../../../smatch/smatch_scripts/build_kernel_data.sh
 	else
 		make prepare
 		make modules
@@ -182,36 +182,31 @@ clean_source()
 	rm -f .config.old
 }
 
-generate_squashfs()
+prepare_linux_headers()
 {
-	set -e
-	rm -f linux-build.img
-	rm -rf linux-build
-	mkdir -p linux-build
-	mv ${LINUX_VERSIONS} linux-build/
-	mksquashfs linux-build linux-build.img
-	rm -rf linux-build
-	echo ok
+	mkdir -p linux-build/linux/
+	for version in ${LINUX_VERSIONS}; do
+		outpath="linux-build/linux/${version}/"
+		git archive --remote="${LINUX_REPOSITORY}" --format tar --prefix="${outpath}" "${version}"|tar x
+		[ ! -d "patches/linux/${version}" ] || git apply --directory="${outpath}" "patches/linux/${version}/"*.patch
+
+		(
+			set -e
+			cd "${outpath}"
+
+			prepare_source "${version}"
+			clean_source
+		)
+	done
 }
 
-for i in ${LINUX_VERSIONS}; do
-	version="$(echo "${i}"|sed 's/^linux-/v/')"
+rm -f linux-build.img
+rm -rf linux-build
 
-	git archive --remote="${LINUX_REPOSITORY}" --format tar --prefix=${i}/ ${version}|tar x
-	(
-		cd "${i}" || exit
-		if [ -d "../patches/${i}" ]; then
-			for p in "../patches/${i}/"*.patch; do
-				patch -p1 -i "${p}"
-			done
-		fi
-		prepare_source "${i}"
+prepare_linux_headers
 
-		clean_source
-	)
-done
-
-generate_squashfs
+mksquashfs linux-build linux-build.img
+rm -rf linux-build
 mkdir -p linux-build
 
 echo "done"

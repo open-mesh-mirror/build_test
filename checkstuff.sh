@@ -35,7 +35,7 @@ UGLY_HACK_FILTER="$(pwd)/testhelpers/ugly_hack_filter.py"
 
 MAIL_AGGREGATOR="$(pwd)/testhelpers/mail_aggregator.py"
 DB="$(pwd)/error.db"
-LINUX_HEADERS="$(pwd)/linux-build"
+LINUX_HEADERS="$(pwd)/linux-build/linux"
 GENERATE_CONFIG="$(pwd)/testhelpers/generate_config_params.py"
 GENERATE_LINUX_VERSIONS="$(pwd)/testhelpers/generate_linux_versions.py"
 
