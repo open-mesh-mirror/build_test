@@ -159,7 +159,7 @@ EOF
 	make debug_kernel.config
 
 	if [ "${LINUX_VERSION}" = "${LINUX_DEFAULT_VERSION}" ]; then
-		../../../smatch/smatch_scripts/build_kernel_data.sh
+		../../smatch/smatch_scripts/build_kernel_data.sh
 	else
 		make prepare
 		make modules
@@ -182,6 +182,25 @@ clean_source()
 	rm -f .config.old
 }
 
+
+prepare_sparse()
+{
+	outpath="linux-build/sparse/"
+	git clone git://git.kernel.org/pub/scm/devel/sparse/sparse.git "${outpath}"
+	git -C "${outpath}" reset --hard ce1a6720f69e6233ec9abd4e9aae5945e05fda41
+	git -C "${outpath}" am ../../patches/sparse/0001-Disable-warning-directive-in-macro-s-argument-list-w.patch
+	CFLAGS="-march=native -O3" make -C "${outpath}"
+}
+
+prepare_smatch()
+{
+	outpath="linux-build/smatch/"
+
+	git clone --depth 1 -b 1.73 https://repo.or.cz/smatch.git/ "${outpath}"
+	git -C "${outpath}" am ../../patches/smatch/9999-smatch-disable-verbose-check_unused_ret.patch
+	CFLAGS="-march=native -O3" make -C "${outpath}"
+}
+
 prepare_linux_headers()
 {
 	mkdir -p linux-build/linux/
@@ -202,7 +221,10 @@ prepare_linux_headers()
 
 rm -f linux-build.img
 rm -rf linux-build
+mkdir -p linux-build/
 
+prepare_sparse
+prepare_smatch
 prepare_linux_headers
 
 mksquashfs linux-build linux-build.img

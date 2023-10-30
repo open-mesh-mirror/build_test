@@ -20,8 +20,8 @@ MAX_BUILDTIME_PER_BRANCH=${MAX_BUILDTIME_PER_BRANCH:=725328000}
 DEFAULT_TMPNAME="$(mktemp -d -p. -u)"
 TMPNAME=${TMPNAME:=${DEFAULT_TMPNAME}}
 
-SPARSE="$(pwd)/sparse/sparse"
-SMATCH="$(pwd)/smatch/smatch"
+SPARSE="$(pwd)/linux-build/sparse/sparse"
+SMATCH="$(pwd)/linux-build/smatch/smatch"
 BRACKET="$(pwd)/testhelpers/bracket_align.py"
 LINUXNEXT="$(pwd)/linux-next"
 CHECKPATCH="${LINUXNEXT}/scripts/checkpatch.pl"
@@ -45,23 +45,6 @@ export LANG=C.UTF-8
 
 check_external()
 {
-	if [ ! -x "${SPARSE}" ]; then
-		echo "Required tool sparse missing:"
-		echo "    git clone git://git.kernel.org/pub/scm/devel/sparse/sparse.git sparse"
-		echo "    git -C sparse reset --hard ce1a6720f69e6233ec9abd4e9aae5945e05fda41"
-		echo "    git -C sparse am ../patches/sparse/0001-Disable-warning-directive-in-macro-s-argument-list-w.patch"
-		echo "    make -C sparse"
-		exit 1
-	fi
-
-	if [ ! -x "${SMATCH}" ]; then
-		echo "Required tool smatch missing:"
-		echo "    git clone --depth 1 -b 1.73 https://repo.or.cz/smatch.git/ smatch"
-		echo "    git -C smatch am ../patches/smatch/9999-smatch-disable-verbose-check_unused_ret.patch"
-		echo "    make -C smatch"
-		exit 1
-	fi
-
 	if [ ! -x "${CHECKPATCH}" -o ! -x "${KERNELDOC}" ]; then
 		echo "Required tool checkpatch and kernel-doc missing:"
 		echo "    git clone --depth=1 git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git linux-next"
@@ -84,6 +67,18 @@ check_external()
 			exit 1
 		fi
 	done
+
+	if [ ! -x "${SPARSE}" ]; then
+		echo "Required tool sparse missing:"
+		echo "    Please remove and rebuild linux-build.img"
+		exit 1
+	fi
+
+	if [ ! -x "${SMATCH}" ]; then
+		echo "Required tool smatch missing:"
+		echo "    Please remove and rebuild linux-build.img"
+		exit 1
+	fi
 }
 
 source_path()
