@@ -124,6 +124,7 @@
     { include: ["\"linux/slab.h\"", private, "<linux/slab.h>", public ] },
     { include: ["\"linux/socket.h\"", private, "<linux/socket.h>", public ] },
     { include: ["\"linux/spinlock.h\"", private, "<linux/spinlock.h>", public ] },
+    { include: ["\"linux/sprintf.h\"", private, "<linux/sprintf.h>", public ] },
     { include: ["\"linux/stdarg.h\"", private, "<linux/stdarg.h>", public ] },
     { include: ["\"linux/stddef.h\"", private, "<linux/stddef.h>", public ] },
     { include: ["\"linux/string.h\"", private, "<linux/string.h>", public ] },
