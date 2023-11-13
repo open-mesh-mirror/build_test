@@ -1,4 +1,5 @@
 [
+{ include: ["\"linux/array_size.h\"", "private", "<linux/array_size.h>", "public"] },
 { include: ["\"linux/compiler-gcc.h\"", "private", "<linux/compiler.h>", "public"] },
 { include: ["\"linux/compiler_types.h\"", "private", "<linux/compiler.h>", "public"] },
 { include: ["\"linux/compiler_attributes.h\"", "private", "<linux/compiler.h>", "public"] },
