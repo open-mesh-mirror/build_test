@@ -356,8 +356,8 @@ test_compare_net()
 	"${UGLY_HACK_FILTER}" "${TMPNAME}/batadv/net/batman-adv/"*.c "${TMPNAME}/batadv/net/batman-adv/"*.h
 
 	# compare against batman_adv.h
-	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- include/uapi/linux/batman_adv.h | tar x
-	git archive --remote="linux-next/.git/" --format=tar --prefix="${TMPNAME}/net/" "${upstream_rev}" -- include/uapi/linux/batman_adv.h | tar x
+	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- include/uapi/linux/batman_adv.h include/uapi/linux/batadv_packet.h | tar x
+	git archive --remote="linux-next/.git/" --format=tar --prefix="${TMPNAME}/net/" "${upstream_rev}" -- include/uapi/linux/batman_adv.h include/uapi/linux/batadv_packet.h | tar x
 
 	diff -ruN "${TMPNAME}"/batadv "${TMPNAME}"/net > /home/sven/projekte/build_test/foo.diff
 	diff -ruN "${TMPNAME}"/batadv "${TMPNAME}"/net|diffstat -w 71 -q -p2 > "${TMPNAME}"/log
@@ -407,8 +407,8 @@ test_compare_net_next()
 	"${UGLY_HACK_FILTER}" "${TMPNAME}/batadv/net/batman-adv/"*.c "${TMPNAME}/batadv/net/batman-adv/"*.h
 
 	# compare against batman_adv.h
-	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- include/uapi/linux/batman_adv.h | tar x
-	git archive --remote="linux-next/.git/" --format=tar --prefix="${TMPNAME}/netnext/" "${upstream_rev}" -- include/uapi/linux/batman_adv.h | tar x
+	git archive --remote="${REMOTE}" --format=tar --prefix="${TMPNAME}/batadv/" "$branch" -- include/uapi/linux/batman_adv.h include/uapi/linux/batadv_packet.h | tar x
+	git archive --remote="linux-next/.git/" --format=tar --prefix="${TMPNAME}/netnext/" "${upstream_rev}" -- include/uapi/linux/batman_adv.h include/uapi/linux/batadv_packet.h | tar x
 
 	diff -ruN "${TMPNAME}"/batadv "${TMPNAME}"/netnext|diffstat -w 71 -q -p2 > "${TMPNAME}"/log
 	if [ -s "${TMPNAME}/log" ]; then
