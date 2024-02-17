@@ -47,13 +47,18 @@ check_external()
 {
 	if [ ! -x "${CHECKPATCH}" -o ! -x "${KERNELDOC}" ]; then
 		echo "Required tool checkpatch and kernel-doc missing:"
-		echo "    git clone --depth=1 git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git linux-next"
+		echo "    git clone --depth=1 --filter=tree:0 --no-tags --single-branch git://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git linux-next"
 		echo "    git --git-dir=linux-next/.git/ remote add -t main --no-tags net-next https://git.kernel.org/pub/scm/linux/kernel/git/netdev/net-next.git"
-		echo "    git --git-dir=linux-next/.git/ remote add -t main --no-tags net https://git.kernel.org/pub/scm/linux/kernel/git/netdev/net.git"
-		echo "    git --git-dir=linux-next/.git/ remote add --no-tags linux-merge https://git.open-mesh.org/linux-merge.git"
-		echo "    git --git-dir=linux-next/.git/ config remote.origin.tagopt --no-tags"
+		echo "    git --git-dir=linux-next/.git/ config remote.net-next.promisor true"
+		echo "    git --git-dir=linux-next/.git/ config remote.net-next.partialclonefilter tree:0"
 		echo "    git --git-dir=linux-next/.git/ fetch --depth=1 net-next"
+		echo "    git --git-dir=linux-next/.git/ remote add -t main --no-tags net https://git.kernel.org/pub/scm/linux/kernel/git/netdev/net.git"
+		echo "    git --git-dir=linux-next/.git/ config remote.net.promisor true"
+		echo "    git --git-dir=linux-next/.git/ config remote.net.partialclonefilter tree:0"
 		echo "    git --git-dir=linux-next/.git/ fetch --depth=1 net"
+		echo "    git --git-dir=linux-next/.git/ remote add --no-tags linux-merge https://git.open-mesh.org/linux-merge.git"
+		echo "    git --git-dir=linux-next/.git/ config remote.linux-merge.promisor true"
+		echo "    git --git-dir=linux-next/.git/ config remote.linux-merge.partialclonefilter tree:0"
 		echo "    git --git-dir=linux-next/.git/ fetch --depth=1 linux-merge"
 		echo "    git --git-dir=linux-next/.git/ maintenance start"
 		exit 1
