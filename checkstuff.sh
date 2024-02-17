@@ -55,6 +55,7 @@ check_external()
 		echo "    git --git-dir=linux-next/.git/ fetch --depth=1 net-next"
 		echo "    git --git-dir=linux-next/.git/ fetch --depth=1 net"
 		echo "    git --git-dir=linux-next/.git/ fetch --depth=1 linux-merge"
+		echo "    git --git-dir=linux-next/.git/ maintenance start"
 		exit 1
 	fi
 
