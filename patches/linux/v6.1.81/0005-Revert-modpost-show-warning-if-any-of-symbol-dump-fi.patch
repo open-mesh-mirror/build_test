@@ -7,10 +7,10 @@ This partially reverts commit 48a0f72797bdc6b428f951aff265f5aecc2bda49.
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
 diff --git a/scripts/Makefile.modpost b/scripts/Makefile.modpost
-index e41dee64d429c42bb3fe3767a24dcdd4157de878..a8a49514a8133f2f9a7e47cb062d6c38adc8293c 100644
+index 39aea753d0bdccc1b416eec2757cf3c09eb51afa..96ba3b49c025a0ef1ff4ed345f606e74dd0c515d 100644
 --- a/scripts/Makefile.modpost
 +++ b/scripts/Makefile.modpost
-@@ -115,10 +115,6 @@ MODPOST = scripts/mod/modpost
+@@ -116,10 +116,6 @@ MODPOST = scripts/mod/modpost
  # Otherwise, allmodconfig would fail with "Argument list too long".
  quiet_cmd_modpost = MODPOST $@
        cmd_modpost = \

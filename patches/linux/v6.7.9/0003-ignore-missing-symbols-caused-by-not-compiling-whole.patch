@@ -5,10 +5,10 @@ Subject: ignore missing symbols caused by not compiling whole kernel for headers
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
 diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index bf91ee17508ce09e5cce53e394d45eb471e4e7bf..c48b586badf501f6c986aca0962fb35770004a20 100644
+index 262cd9e4604bb38df67f6ded86f296c08123ea75..a4388fa93e72a13533e8d8a4ef4acd790f322485 100644
 --- a/scripts/mod/modpost.c
 +++ b/scripts/mod/modpost.c
-@@ -1835,6 +1835,11 @@ static void check_exports(struct module *mod)
+@@ -1733,6 +1733,11 @@ static void check_exports(struct module *mod)
  		const char *basename;
  		exp = find_symbol(s->name);
  		if (!exp) {
