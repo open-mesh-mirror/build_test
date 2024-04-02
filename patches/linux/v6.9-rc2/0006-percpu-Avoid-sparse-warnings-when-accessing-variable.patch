@@ -1,0 +1,39 @@
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 2 Apr 2024 11:53:55 +0200
+Subject: percpu: Avoid sparse warnings when accessing variables
+
+Signed-off-by: Sven Eckelmann <sven@narfation.org>
+
+diff --git a/arch/x86/include/asm/percpu.h b/arch/x86/include/asm/percpu.h
+index 44958ebaf626e20c970acaacaad012f93cba2671..8fc8d236c255dae19726242c769a7b8921bf25a5 100644
+--- a/arch/x86/include/asm/percpu.h
++++ b/arch/x86/include/asm/percpu.h
+@@ -70,7 +70,7 @@
+ 	unsigned long tcp_ptr__;				\
+ 	tcp_ptr__ = __raw_cpu_read(, this_cpu_off);		\
+ 								\
+-	tcp_ptr__ += (unsigned long)(ptr);			\
++	tcp_ptr__ += (__force unsigned long)(ptr);		\
+ 	(typeof(*(ptr)) __kernel __force *)tcp_ptr__;		\
+ })
+ #else /* CONFIG_USE_X86_SEG_SUPPORT */
+@@ -85,7 +85,7 @@
+ 	     : "=r" (tcp_ptr__)					\
+ 	     : "m" (__my_cpu_var(this_cpu_off)));		\
+ 								\
+-	tcp_ptr__ += (unsigned long)(ptr);			\
++	tcp_ptr__ += (__force unsigned long)(ptr);		\
+ 	(typeof(*(ptr)) __kernel __force *)tcp_ptr__;		\
+ })
+ #endif /* CONFIG_USE_X86_SEG_SUPPORT */
+@@ -102,8 +102,8 @@
+ #endif /* CONFIG_SMP */
+ 
+ #define __my_cpu_type(var)	typeof(var) __percpu_seg_override
+-#define __my_cpu_ptr(ptr)	(__my_cpu_type(*ptr) *)(uintptr_t)(ptr)
+-#define __my_cpu_var(var)	(*__my_cpu_ptr(&var))
++#define __my_cpu_ptr(ptr)	(__my_cpu_type(*ptr) *)(__force uintptr_t)(ptr)
++#define __my_cpu_var(var)	(*__my_cpu_ptr(&(var)))
+ #define __percpu_arg(x)		__percpu_prefix "%" #x
+ #define __force_percpu_arg(x)	__force_percpu_prefix "%" #x
+ 
