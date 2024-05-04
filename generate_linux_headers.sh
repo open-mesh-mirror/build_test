@@ -5,11 +5,6 @@ LINUX_REPOSITORY=${LINUX_REPOSITORY:="git+ssh://git@git.open-mesh.org/linux-merg
 MAKE_AMD64=${MAKE_AMD64:=1}
 . linux-versions
 
-if [ -e "linux-build.img" ]; then
-	echo "Please delete linux-build.img before running this script"
-	exit 1
-fi
-
 if mountpoint -q -- "linux-build"; then
 	echo "Please umount linux-build before running this script"
 	exit 1
@@ -229,7 +224,7 @@ prepare_sparse
 prepare_smatch
 prepare_linux_headers
 
-mksquashfs linux-build linux-build.img
+mksquashfs linux-build linux-build.img -noappend
 rm -rf linux-build
 mkdir -p linux-build
 
