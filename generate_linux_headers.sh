@@ -224,7 +224,7 @@ prepare_sparse
 prepare_smatch
 prepare_linux_headers
 
-mksquashfs linux-build linux-build.img -noappend
+mksquashfs linux-build linux-build.img -noappend -b 32768 -comp zstd -Xcompression-level 22
 rm -rf linux-build
 mkdir -p linux-build
 
