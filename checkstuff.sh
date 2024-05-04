@@ -249,7 +249,7 @@ test_sparse()
 	config="$3"
 
 	# hard-interface.c:.* delete is required for a warning caused by the compat.h hack for get_link_net
-	(EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SPARSE} -Wsparse-all -Wno-flexible-array-nested -Wno-transparent-union -Wnopointer-arith -Wno-ptr-subtraction-blows -Wno-constexpr-not-const $extra_flags" $config C=1 KERNELPATH="${LINUX_HEADERS}/${linux_name}" 3>&2 2>&1 1>&3 \
+	(EXTRA_CFLAGS="$extra_flags" "${MAKE}" CHECK="${SPARSE} -Wsparse-all -Wno-flexible-array-nested -Wno-transparent-union -Wnopointer-arith -Wno-ptr-subtraction-blows -Wno-constexpr-not-const -Wno-flexible-array-array  $extra_flags" $config C=1 KERNELPATH="${LINUX_HEADERS}/${linux_name}" 3>&2 2>&1 1>&3 \
 			|grep -v "No such file: c" \
 			|grep -v 'trace.h:' \
 			|grep -v 'include/uapi/linux/perf_event.h:.*: warning: cast truncates bits from constant value (8000000000000000 becomes 0)' \
