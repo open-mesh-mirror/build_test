@@ -1,13 +1,14 @@
 DEFAULT_LINUX_VERSIONS="
-  $(echo v4.{19..20} v5.{0..19} v6.{0..8})
-  v4.19.313
-  v5.4.275
-  v5.10.216
-  v5.15.158
-  v6.1.90
-  v6.6.30
-  v6.8.9
-  v6.9-rc6
+  $(echo v4.{19..20} v5.{0..19} v6.{0..9})
+  v4.19.315
+  v5.4.277
+  v5.10.218
+  v5.15.160
+  v6.1.92
+  v6.6.32
+  v6.8.11
+  v6.9.2
+  v6.10-rc1
 "
 LINUX_VERSIONS=${LINUX_VERSIONS:=${DEFAULT_LINUX_VERSIONS}}
-LINUX_DEFAULT_VERSION=${LINUX_DEFAULT_VERSION:="v6.9-rc6"}
+LINUX_DEFAULT_VERSION=${LINUX_DEFAULT_VERSION:="v6.10-rc1"}

@@ -1,0 +1,20 @@
+From: Sven Eckelmann <sven@narfation.org>
+Date: Tue, 11 Aug 2020 08:08:06 +0200
+Subject: Revert "modpost: show warning if vmlinux is not found when processing modules"
+
+This reverts commit 7e8a3235823bcb779acf92de630edd5ddffaf886.
+
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index 937294ff164fc8fc1ac3c1ed926ec5d1131a43ef..77da6691ee0f638c1abc1ff8835e58a12f1ad2b1 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -2284,9 +2284,5 @@ int main(int argc, char **argv)
+ 		error("Section mismatches detected.\n"
+ 		      "Set CONFIG_SECTION_MISMATCH_WARN_ONLY=y to allow them.\n");
+ 
+-	if (nr_unresolved > MAX_UNRESOLVED_REPORTS)
+-		warn("suppressed %u unresolved symbol warnings because there were too many)\n",
+-		     nr_unresolved - MAX_UNRESOLVED_REPORTS);
+-
+ 	return error_occurred ? 1 : 0;
+ }
