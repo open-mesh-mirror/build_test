@@ -7,7 +7,7 @@ This partially reverts commit 48a0f72797bdc6b428f951aff265f5aecc2bda49.
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
 diff --git a/scripts/Makefile.modpost b/scripts/Makefile.modpost
-index 739402f4550979850d71dcdc31649f4daac9d44d..5597da3f031a54e1606e420c05d5bde7406d58f1 100644
+index 44936ebad161e914cbcc40ac74a2d651596d7b07..223c53fbf43e671904517ae93dca7f70b2f18526 100644
 --- a/scripts/Makefile.modpost
 +++ b/scripts/Makefile.modpost
 @@ -132,12 +132,6 @@ endif # ($(KBUILD_EXTMOD),)

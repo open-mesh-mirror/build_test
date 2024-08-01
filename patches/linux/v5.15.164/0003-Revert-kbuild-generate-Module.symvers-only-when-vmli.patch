@@ -29,17 +29,17 @@ index 910b30a2a7d98b89ce3b9bc6afb7a88aa7c8025c..ac42ad8d430d1239f8469254639bcd55
  modules.builtin.modinfo
  modules.nsdeps
 diff --git a/Makefile b/Makefile
-index bfc863d719783158b91601bfc4b13a1d1c4e77a0..9e452550d360bc62e2101ae3f3eec96c4f67ed49 100644
+index 78f5cc32b7298facf2d3bd5ac3e0a663ad72c107..df1db0bf2e39baef4b6521215d6869efd5b24371 100644
 --- a/Makefile
 +++ b/Makefile
-@@ -1558,7 +1558,7 @@ endif # CONFIG_MODULES
+@@ -1557,7 +1557,7 @@ endif # CONFIG_MODULES
  # make distclean Remove editor backup files, patch leftover files and the like
  
  # Directories & files removed with 'make clean'
 -CLEAN_FILES += include/ksym vmlinux.symvers modules-only.symvers \
 +CLEAN_FILES += include/ksym vmlinux.symvers \
  	       modules.builtin modules.builtin.modinfo modules.nsdeps \
- 	       compile_commands.json .thinlto-cache
+ 	       compile_commands.json
  
 diff --git a/scripts/Makefile.modpost b/scripts/Makefile.modpost
 index 0273bf7375e26b5123834a9cbd7cabfe9621d160..496740c3a8bade073ee569b2a797dca71aca594a 100644
