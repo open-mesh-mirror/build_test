@@ -1,0 +1,22 @@
+From: Sven Eckelmann <sven@narfation.org>
+Date: Sat, 3 Aug 2024 09:52:30 +0200
+Subject: Revert "minmax: allow comparisons of 'int' against 'unsigned char/short'"
+
+This reverts commit 7ed91c5560dfd8c96f318a5e1fb96b403bcb73df.
+
+diff --git a/include/linux/minmax.h b/include/linux/minmax.h
+index f76b7145fc11579f17b358921a36dfe31e8fbf3d..501fab582d687066a94b6d0b1c67d362ab329d3d 100644
+--- a/include/linux/minmax.h
++++ b/include/linux/minmax.h
+@@ -25,9 +25,8 @@
+ 	__builtin_choose_expr(__is_constexpr(is_signed_type(typeof(x))),	\
+ 		is_signed_type(typeof(x)), 0)
+ 
+-#define __types_ok(x, y) 			\
+-	(__is_signed(x) == __is_signed(y) ||	\
+-		__is_signed((x) + 0) == __is_signed((y) + 0))
++#define __types_ok(x, y) \
++	(__is_signed(x) == __is_signed(y))
+ 
+ #define __cmp_op_min <
+ #define __cmp_op_max >
