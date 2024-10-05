@@ -153,7 +153,8 @@ EOF
 	make kvm_guest.config
 	make debug_kernel.config
 
-	if [ "${LINUX_VERSION}" = "${LINUX_DEFAULT_VERSION}" ]; then
+	if [ "${LINUX_VERSION}" = "${LINUX_DEFAULT_VERSION}" -a 1 = 2 ]; then
+		# disabled because the build hangs with 6.12-rc1
 		../../smatch/smatch_scripts/build_kernel_data.sh
 	else
 		make prepare
