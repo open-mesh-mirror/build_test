@@ -110,6 +110,7 @@
     { include: ["\"linux/netlink.h\"", private, "<linux/netlink.h>", public ] },
     { include: ["\"linux/nl80211.h\"", private, "<linux/nl80211.h>", public ] },
     { include: ["\"linux/notifier.h\"", private, "<linux/notifier.h>", public ] },
+    { include: ["\"linux/overflow.h\"", private, "<linux/overflow.h>", public ] },
     { include: ["\"linux/param.h\"", private, "<linux/param.h>", public ] },
     { include: ["\"linux/percpu.h\"", private, "<linux/percpu.h>", public ] },
     { include: ["\"linux/pkt_sched.h\"", private, "<linux/pkt_sched.h>", public ] },
