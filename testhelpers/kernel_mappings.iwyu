@@ -24,7 +24,7 @@
 { include: ["\"asm-generic/param.h\"", "private", "<linux/param.h>", "public"] },
 { include: ["\"asm-generic/poll.h\"", "private", "<linux/poll.h>", "public"] },
 { include: ["\"asm-generic/rwonce.h\"", "private", "<linux/compiler.h>", "public"] },
-{ include: ["\"asm-generic/unaligned.h\"", "private", "<asm/unaligned.h>", "public"] },
+{ include: ["\"asm-generic/unaligned.h\"", "private", "<linux/unaligned.h>", "public"] },
 { include: ["\"asm/percpu.h\"", "private", "<linux/percpu.h>", "public"] },
 { include: ["\"linux/percpu-defs.h\"", "private", "<linux/percpu.h>", "public"] },
 { include: ["\"asm/string_64.h\"", "private", "<linux/string.h>", "public"] },
@@ -58,7 +58,8 @@
 { include: ["\"linux/genetlink.h\"", private, "<net/genetlink.h>", public ] },
 
     # git grep -r '^ *# *include *<' net/batman-adv | perl -nle 'm/["<]([^>]+)[">]/ && print qq@    { include: ["\\"$1\\"", private, "<$1>", public ] },@' | sort -u
-    { include: ["\"asm/unaligned.h\"", private, "<asm/unaligned.h>", public ] },
+    { include: ["\"asm/unaligned.h\"", private, "<linux/unaligned.h>", public ] },
+    { include: ["\"linux/unaligned.h\"", private, "<linux/unaligned.h>", public ] },
     { include: ["\"linux/array_size.h\"", private, "<linux/array_size.h>", public ] },
     { include: ["\"linux/atomic.h\"", private, "<linux/atomic.h>", public ] },
     { include: ["\"linux/average.h\"", private, "<linux/average.h>", public ] },
