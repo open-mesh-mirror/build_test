@@ -8,10 +8,10 @@ sense of having it around.
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
 diff --git a/check_unused_ret.c b/check_unused_ret.c
-index 0729713b0f0e0b4cd9f8d7d2dc534865beae414c..01a5d7fb7ae0bac161c2a5d31085374de95a77d5 100644
+index 6df9f361373e60d9aecf4f9dd458ed6fbb21bff4..96856524c34b017cd02806eaafd8956e97ac9b6d 100644
 --- a/check_unused_ret.c
 +++ b/check_unused_ret.c
-@@ -201,6 +201,9 @@ void check_unused_ret(int id)
+@@ -193,6 +193,9 @@ void check_unused_ret(int id)
  {
  	my_id = id;
  
