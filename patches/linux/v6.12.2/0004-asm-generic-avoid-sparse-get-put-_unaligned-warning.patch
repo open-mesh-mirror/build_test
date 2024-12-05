@@ -21,12 +21,12 @@ is known to be safe to avoid these warnings.
 Fixes: 803f4e1eab7a ("asm-generic: simplify asm/unaligned.h")
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
-diff --git a/include/asm-generic/unaligned.h b/include/asm-generic/unaligned.h
-index a84c64e5f11ece50583ec55f90bf4047b91b62f0..be83374b45294f14ebf31d7accf2f6b1fc7ba908 100644
---- a/include/asm-generic/unaligned.h
-+++ b/include/asm-generic/unaligned.h
-@@ -10,12 +10,13 @@
- #include <asm/byteorder.h>
+diff --git a/include/vdso/unaligned.h b/include/vdso/unaligned.h
+index eee3d2a4dbe4d3dff1e59433dccbb6d39c2d71ff..4f306258f1b99d3295b4e3e20241b762af437726 100644
+--- a/include/vdso/unaligned.h
++++ b/include/vdso/unaligned.h
+@@ -3,12 +3,13 @@
+ #define __VDSO_UNALIGNED_H
  
  #define __get_unaligned_t(type, ptr) ({						\
 -	const struct { type x; } __packed *__pptr = (typeof(__pptr))(ptr);	\
