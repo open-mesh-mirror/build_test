@@ -490,6 +490,7 @@ test_headers()
 		git checkout -f -- compat-include
 		git checkout -f -- net/batman-adv/Makefile
 		git checkout -f -- net/batman-adv/types.h
+		git checkout -f -- net/batman-adv/trace.h
 		sed -i '/^#include <linux\/minmax.h>$/,+1d' net/batman-adv/trace.h
 
 		"${FIX_INCLUDE_SORT}" --reorder --sort_only "${bpath}"/*.c "${bpath}"/*.h
