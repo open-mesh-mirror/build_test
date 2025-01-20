@@ -29,7 +29,7 @@ index 910b30a2a7d98b89ce3b9bc6afb7a88aa7c8025c..ac42ad8d430d1239f8469254639bcd55
  modules.builtin.modinfo
  modules.nsdeps
 diff --git a/Makefile b/Makefile
-index 36f61a73e1e32e7c2b2cc7ec8b91f2c8eba3068f..a3640242607e53c5b03e4f85be52d5d32d8748bc 100644
+index 8813faaa9bda5355f19a69e005c3fd53f290b7c5..948c465a679050d52d459ac2318f9cbaf767bebe 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -1557,7 +1557,7 @@ endif # CONFIG_MODULES
@@ -68,7 +68,7 @@ index 0273bf7375e26b5123834a9cbd7cabfe9621d160..496740c3a8bade073ee569b2a797dca7
  else
  
 diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 1f65eb79a0a4c72ff441f3436392937ce63fc92f..d31a70c3fa822214d50b5bcf1d2f70c9dd0494a8 100644
+index 3c1dc12758da9f31bde8837fc56f2fca93210a47..99d5c6ece997848c8a21ebe8fd9edd1635f9ef2e 100644
 --- a/scripts/mod/modpost.c
 +++ b/scripts/mod/modpost.c
 @@ -2404,6 +2404,19 @@ static void read_dump(const char *fname)
