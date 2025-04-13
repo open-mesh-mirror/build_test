@@ -74,6 +74,7 @@
     { include: ["\"linux/cpumask.h\"", private, "<linux/cpumask.h>", public ] },
     { include: ["\"linux/crc16.h\"", private, "<linux/crc16.h>", public ] },
     { include: ["\"linux/crc32c.h\"", private, "<linux/crc32c.h>", public ] },
+    { include: ["\"linux/crc32.h\"", private, "<linux/crc32.h>", public ] },
     { include: ["\"linux/device.h\"", private, "<linux/device.h>", public ] },
     { include: ["\"linux/err.h\"", private, "<linux/err.h>", public ] },
     { include: ["\"linux/errno.h\"", private, "<linux/errno.h>", public ] },
