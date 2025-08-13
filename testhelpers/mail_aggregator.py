@@ -128,8 +128,8 @@ def send():
 
         underline = '-' * namelen
 
-        full_log = re.sub('^', '    ', x[2], count=0, flags=re.MULTILINE)
-        full_log = re.sub('\s*$', '', full_log, count=0)
+        full_log = re.sub(r'^', '    ', x[2], count=0, flags=re.MULTILINE)
+        full_log = re.sub(r'\s*$', '', full_log, count=0)
 
         log_list.append("%s\n%s\n\n%s" % (name, underline, full_log))
 
