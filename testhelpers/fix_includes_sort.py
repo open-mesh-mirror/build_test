@@ -60,31 +60,24 @@ up.  Then we're done!
 __author__ = 'csilvers@google.com (Craig Silverstein)'
 
 import difflib
-import optparse
+import argparse
 import os
 import re
 import sys
 from collections import OrderedDict
 
-_USAGE = """\
-%prog [options] [filename] ... < <output from include-what-you-use script>
-    OR %prog -s [other options] <filename> ...
+_EPILOG = """\
+Reads the output from include-what-you-use on stdin -- run with --v=1 (default)
+verbosity level or above -- and, unless --sort_only or --dry_run is specified,
+modifies the files mentioned in the output, removing their old #include lines
+and replacing them with the lines given by include-what-you-use.  It also sorts
+the #include and forward-declare lines.
 
-%prog reads the output from the include-what-you-use
-script on stdin -- run with --v=1 (default) verbose or above -- and,
-unless --sort_only or --dry_run is specified,
-modifies the files mentioned in the output, removing their old
-#include lines and replacing them with the lines given by the
-include_what_you_use script.  It also sorts the #include and
-forward-declare lines.
+All files mentioned in include-what-you-use output are modified, unless
+filenames are specified on the commandline, in which case only those files are
+modified.
 
-All files mentioned in the include-what-you-use script are modified,
-unless filenames are specified on the commandline, in which case only
-those files are modified.
-
-The exit code is the number of files that were modified (or that would
-be modified if --dry_run was specified) unless that number exceeds 100,
-in which case 100 is returned.
+The exit code is non-zero if a critical error occurs, otherwise zero.
 """
 
 _COMMENT_RE = re.compile(r'\s*//.*')
@@ -95,6 +88,8 @@ _C_COMMENT_START_RE = re.compile(r'\s*/\*')
 _C_COMMENT_END_RE = re.compile(r'.*\*/\s*(.*)$')
 _COMMENT_LINE_RE = re.compile(r'\s*//')
 _PRAGMA_ONCE_LINE_RE = re.compile(r'\s*#\s*pragma\s+once')
+_PRAGMA_PUSH_LINE_RE = re.compile(r'\s*#\s*pragma.*push.*')
+_PRAGMA_POP_LINE_RE = re.compile(r'\s*#\s*pragma.*pop.*')
 _BLANK_LINE_RE = re.compile(r'\s*$')
 _IF_RE = re.compile(r'\s*#\s*if')               # compiles #if/ifdef/ifndef
 _ELSE_RE = re.compile(r'\s*#\s*(else|elif)\b')  # compiles #else/elif
@@ -106,7 +101,7 @@ _NAMESPACE_START_RE = re.compile(r'\s*(namespace\b[^{]*{\s*)+(//.*)?$|'
                                  r'\s*(HASH_NAMESPACE_DECLARATION_START)')
 # Also detect Allman and mixed style namespaces.  Use a continue regex for
 # validation and to correctly set the line info.
-_NAMESPACE_START_ALLMAN_RE = re.compile(r'\s*(namespace\b[^{]*)+(//.*)?$')
+_NAMESPACE_START_ALLMAN_RE = re.compile(r'\s*(namespace\b[^{=]*)+(//.*)?$')
 _NAMESPACE_START_MIXED_RE = re.compile(
   r'\s*(namespace\b[^{]*{\s*)+(namespace\b[^{]*)+(//.*)?$')
 _NAMESPACE_CONTINUE_ALLMAN_MIXED_RE = re.compile(r'\s*{\s*(//.*)?$')
@@ -135,7 +130,7 @@ _IWYU_PRAGMA_ASSOCIATED_RE = re.compile(r'IWYU\s*pragma:\s*associated')
 # we fold _C_COMMENT_START_RE and _C_COMMENT_END_RE into _COMMENT_LINE_RE.
 # The _NAMESPACE_CONTINUE_ALLMAN_MIXED_RE is also set on lines when Allman
 # and mixed namespaces are detected but the RE is too easy to match to add
-# under normal circumstances (must always be proceded by Allman/mixed).
+# under normal circumstances (must always be preceded by Allman/mixed).
 _LINE_TYPES = [_COMMENT_LINE_RE, _BLANK_LINE_RE,
                _NAMESPACE_START_RE, _NAMESPACE_START_ALLMAN_RE,
                _NAMESPACE_START_MIXED_RE, _NAMESPACE_END_RE,
@@ -143,6 +138,7 @@ _LINE_TYPES = [_COMMENT_LINE_RE, _BLANK_LINE_RE,
                _INCLUDE_RE, _FORWARD_DECLARE_RE,
                _HEADER_GUARD_RE, _HEADER_GUARD_DEFINE_RE,
                _PRAGMA_ONCE_LINE_RE,
+               _PRAGMA_PUSH_LINE_RE, _PRAGMA_POP_LINE_RE,
               ]
 
 # A regexp matching #include lines that should be a barrier for
@@ -235,6 +231,10 @@ class IWYUOutputRecord(object):
     # report, though, forward-declares inside '#if 0' or similar.)
     self.seen_forward_declare_lines = set()
 
+    # Those spans which pertain to nested forward declarations (i.e. of nested
+    # classes).  This set should be a subset of self.seen_forward_declare_lines.
+    self.nested_forward_declare_lines = set()
+
     # A set of each line in the iwyu 'add' section.
     self.includes_and_forward_declares_to_add = OrderedSet()
 
@@ -261,6 +261,7 @@ class IWYUOutputRecord(object):
     self.lines_to_delete.intersection_update(other.lines_to_delete)
     self.some_include_lines.update(other.some_include_lines)
     self.seen_forward_declare_lines.update(other.seen_forward_declare_lines)
+    self.nested_forward_declare_lines.update(other.nested_forward_declare_lines)
     self.includes_and_forward_declares_to_add.update(
         other.includes_and_forward_declares_to_add)
     self.full_include_lines.update(other.full_include_lines)
@@ -392,7 +393,7 @@ class IWYUOutputParser(object):
 
     Arguments:
       iwyu_output: a File object returning lines from an iwyu run
-      flags: commandline flags, as parsed by optparse.  We use
+      flags: commandline flags, as parsed by argparse.  We use
          flags.comments, which controls whether we output comments
          generated by iwyu.
     Returns:
@@ -443,8 +444,10 @@ class IWYUOutputParser(object):
         continue
       m = self._LINE_NUMBERS_COMMENT_RE.search(line)
       if m:
-        retval.seen_forward_declare_lines.add((int(m.group(1)),
-                                               int(m.group(2))+1))
+        line_range = (int(m.group(1)), int(m.group(2))+1)
+        retval.seen_forward_declare_lines.add(line_range)
+        if '::' in line:
+            retval.nested_forward_declare_lines.add(line_range)
 
     # IWYUOutputRecord.includes_and_forward_declares_to_add
     for line in self.lines_by_section.get(self._ADD_SECTION_RE, []):
@@ -502,6 +505,10 @@ class LineInfo(object):
     # including the ""s or <>s.  For a forward-declare it's the name
     # of the class/struct.  For other types of lines, this is None.
     self.key = None
+
+    # If this is a forward-declaration of a nested class, then this will be
+    # True.
+    self.is_nested_forward_declaration = False
 
   def __str__(self):
     if self.deleted:
@@ -770,6 +777,13 @@ def _CalculateLineTypesAndKeys(file_lines, iwyu_record):
         raise FixIncludesError('iwyu line number %s:%d is past file-end'
                                % (iwyu_record.filename, line_number))
       file_lines[line_number].type = _FORWARD_DECLARE_RE
+
+  for (start_line, end_line) in iwyu_record.nested_forward_declare_lines:
+    for line_number in range(start_line, end_line):
+      if line_number >= len(file_lines):
+        raise FixIncludesError('iwyu line number %s:%d is past file-end'
+                               % (iwyu_record.filename, line_number))
+      file_lines[line_number].is_nested_forward_declaration = True
 
   # While we're at it, let's do a bit more sanity checking on iwyu_record.
   for line_number in iwyu_record.lines_to_delete:
@@ -1233,7 +1247,7 @@ def _ShouldInsertBlankLine(decorated_move_span, next_decorated_move_span,
     next_decorated_move_span: the next decorated_move_span, which may
        be a sentinel decorated_move_span at end-of-file.
     file_lines: an array of LineInfo objects with .deleted filled in.
-    flags: commandline flags, as parsed by optparse.  We use
+    flags: commandline flags, as parsed by argparse.  We use
        flags.blank_lines, which controls whether we put blank
        lines between different 'kinds' of #includes.
 
@@ -1251,6 +1265,7 @@ def _ShouldInsertBlankLine(decorated_move_span, next_decorated_move_span,
             file_lines[next_line].type in (_NAMESPACE_START_RE,
                                            _NAMESPACE_START_ALLMAN_RE,
                                            _NAMESPACE_START_MIXED_RE,
+                                           _PRAGMA_PUSH_LINE_RE,
                                            None))
 
   # We never insert a blank line between two spans of the same kind.
@@ -1281,7 +1296,8 @@ def _ShouldInsertBlankLine(decorated_move_span, next_decorated_move_span,
 
 
 def _GetToplevelReorderSpans(file_lines):
-  """Returns a sorted list of all reorder_spans not inside an #ifdef/namespace.
+  """Returns a sorted list of all reorder_spans not inside an
+  #ifdef/namespace/class.
 
   This routine looks at all the reorder_spans in file_lines, ignores
   reorder spans inside #ifdefs and namespaces -- except for the 'header
@@ -1337,7 +1353,8 @@ def _GetToplevelReorderSpans(file_lines):
   good_reorder_spans = []
   for reorder_span in reorder_spans:
     for line_number in range(*reorder_span):
-      if in_ifdef[line_number] or in_namespace[line_number]:
+      if (in_ifdef[line_number] or in_namespace[line_number] or
+          file_lines[line_number].is_nested_forward_declaration):
         break
     else:   # for/else
       good_reorder_spans.append(reorder_span)    # never in ifdef or namespace
@@ -1571,8 +1588,8 @@ def _IsMainCUInclude(line_info, filename):
     return True
   # First, normalize the includee by getting rid of -inl.h and .h
   # suffixes (for the #include) and the "'s around the #include line.
-  canonical_include = re.sub(r'(-inl\.h|\.h|\.H)$',
-                             '', line_info.key.replace('"', ''))
+  canonical_include = re.sub(r'(-inl\.h|\.h|\.hpp)$', '',
+                             line_info.key.replace('"', ''), flags=re.I)
   # Then normalize includer by stripping extension and Google's test suffixes.
   canonical_file, _ = os.path.splitext(filename)
   canonical_file = re.sub(r'(_unittest|_regtest|_test)$', '', canonical_file)
@@ -1696,7 +1713,7 @@ def _FirstReorderSpanWith(file_lines, good_reorder_spans, kind, filename,
     kind: one of *_KIND values.
     filename: the name of the file that file_lines comes from.
        This is passed to _GetLineKind (are we a main-CU #include?)
-    flags: commandline flags, as parsed by optparse.  We use
+    flags: commandline flags, as parsed by argparse.  We use
        flags.separate_project_includes to sort the #includes for the
        current project separately from other #includes.
 
@@ -1859,7 +1876,7 @@ def _DecoratedMoveSpanLines(iwyu_record, file_lines, move_span_lines, flags):
       forward-declares already in the file, this will be a sub-list
       of file_lines.  For #includes and forward-declares we're adding
       in, it will be a newly created list.
-    flags: commandline flags, as parsed by optparse.  We use
+    flags: commandline flags, as parsed by argparse.  We use
       flags.separate_project_includes to sort the #includes for the
       current project separately from other #includes.
 
@@ -2070,7 +2087,7 @@ def FixFileLines(iwyu_record, file_lines, flags, fileinfo):
       higher) pertaining to a single source file.
     file_lines: a list of LineInfo objects holding the parsed output of
       the file in iwyu_record.filename
-    flags: commandline flags, as parsed by optparse.  We use
+    flags: commandline flags, as parsed by argparse.  We use
        flags.safe_headers to turn off deleting lines, and use the
        other flags indirectly (via calls to other routines).
     fileinfo: FileInfo for the current file.
@@ -2197,7 +2214,7 @@ def FixManyFiles(iwyu_records, flags):
       the parsed output of the include-what-you-use script (run at
       verbose level 1 or higher) pertaining to a single source file.
       iwyu_record.filename indicates what file to edit.
-    flags: commandline flags, as parsed by optparse..
+    flags: commandline flags, as parsed by argparse..
 
   Returns:
     The number of files fixed (as opposed to ones that needed no fixing).
@@ -2240,7 +2257,7 @@ def ProcessIWYUOutput(f, files_to_process, flags, cwd):
     f: an iterable object that is the output of include_what_you_use.
     files_to_process: A set of filenames, or None.  If not None, we
        ignore files mentioned in f that are not in files_to_process.
-    flags: commandline flags, as parsed by optparse.  The only flag
+    flags: commandline flags, as parsed by argparse.  The only flag
        we use directly is flags.ignore_re, to indicate files not to
        process; we also pass the flags to other routines.
     cwd: the current working directory, externalized for testing.
@@ -2289,11 +2306,12 @@ def ProcessIWYUOutput(f, files_to_process, flags, cwd):
   # seen for them.  (We have to wait until we're all done, since a .h
   # file may have a contentful change when #included from one .cc
   # file, but not another, and we need to have merged them above.)
-  for filename in iwyu_output_records:
-    if not iwyu_output_records[filename].HasContentfulChanges():
-      print('(skipping %s: iwyu reports no contentful changes)' % filename)
-      # Mark that we're skipping this file by setting the record to None
-      iwyu_output_records[filename] = None
+  if not flags.update_comments:
+    for filename in iwyu_output_records:
+      if not iwyu_output_records[filename].HasContentfulChanges():
+        print('(skipping %s: iwyu reports no contentful changes)' % filename)
+        # Mark that we're skipping this file by setting the record to None
+        iwyu_output_records[filename] = None
 
   # Now do all the fixing, and return the number of files modified
   contentful_records = [ior for ior in iwyu_output_records.values() if ior]
@@ -2320,7 +2338,7 @@ def SortIncludesInFiles(files_to_process, flags):
 
   Arguments:
     files_to_process: a list (or set) of filenames.
-    flags: commandline flags, as parsed by optparse.  We do not use
+    flags: commandline flags, as parsed by argparse.  We do not use
        any flags directly, but pass them to other routines.
 
   Returns:
@@ -2341,76 +2359,88 @@ def SortIncludesInFiles(files_to_process, flags):
 
 def main(argv):
   # Parse the command line.
-  parser = optparse.OptionParser(usage=_USAGE)
-  parser.add_option('-b', '--blank_lines', action='store_true', default=True,
-                    help=('Put a blank line between primary header file and'
-                          ' C/C++ system #includes, and another blank line'
-                          ' between system #includes and google #includes'
-                          ' [default]'))
-  parser.add_option('--noblank_lines', action='store_false', dest='blank_lines')
+  parser = argparse.ArgumentParser(
+    formatter_class=argparse.RawDescriptionHelpFormatter,
+    description='Update files based on include-what-you-use output',
+    epilog=_EPILOG)
+  parser.add_argument('-b', '--blank_lines', action='store_true', default=True,
+                      help=('Put a blank line between primary header file and'
+                            ' C/C++ system #includes, and another blank line'
+                            ' between system #includes and google #includes'
+                            ' [default]'))
+  parser.add_argument('--noblank_lines', action='store_false',
+                      dest='blank_lines')
 
-  parser.add_option('--comments', action='store_true', default=False,
-                    help='Put comments after the #include lines')
-  parser.add_option('--nocomments', action='store_false', dest='comments')
+  parser.add_argument('--comments', action='store_true', default=False,
+                      help='Put comments after the #include lines')
+  parser.add_argument('--nocomments', action='store_false', dest='comments')
 
-  parser.add_option('--safe_headers', action='store_true', default=True,
-                    help=('Do not remove unused #includes/fwd-declares from'
-                          ' header files; just add new ones [default]'))
-  parser.add_option('--nosafe_headers', action='store_false',
-                    dest='safe_headers')
+  parser.add_argument('--update_comments', action='store_true', default=False,
+                      help=('Replace \'why\' comments with the ones provided by'
+                            ' IWYU'))
+  parser.add_argument('--noupdate_comments', action='store_false',
+                      dest='update_comments')
 
-  parser.add_option('--reorder', action='store_true', default=False,
-                    help=('Re-order lines relative to other similar lines '
-                          '(e.g. headers relative to other headers)'))
-  parser.add_option('--noreorder', action='store_false', dest='reorder',
-                    help=('Do not re-order lines relative to other similar '
-                          'lines.'))
+  parser.add_argument('--safe_headers', action='store_true', default=True,
+                      help=('Do not remove unused #includes/fwd-declares from'
+                            ' header files; just add new ones [default]'))
+  parser.add_argument('--nosafe_headers', action='store_false',
+                      dest='safe_headers')
 
-  parser.add_option('-s', '--sort_only', action='store_true',
-                    help=('Just sort #includes of files listed on cmdline;'
-                          ' do not add or remove any #includes'))
+  parser.add_argument('--reorder', action='store_true', default=False,
+                      help=('Re-order lines relative to other similar lines '
+                            '(e.g. headers relative to other headers)'))
+  parser.add_argument('--noreorder', action='store_false', dest='reorder',
+                      help=('Do not re-order lines relative to other similar '
+                            'lines.'))
 
-  parser.add_option('-n', '--dry_run', action='store_true', default=False,
-                    help=('Do not actually edit any files; just print diffs.'
-                          ' Return code is 0 if no changes are needed,'
-                          ' else min(the number of files that would be'
-                          ' modified, 100)'))
+  parser.add_argument('-s', '--sort_only', action='store_true',
+                      help=('Just sort #includes of files listed on cmdline;'
+                            ' do not add or remove any #includes'))
 
-  parser.add_option('--ignore_re', default=None,
-                    help=('fix_includes.py will skip editing any file whose'
-                          ' name matches this regular expression.'))
+  parser.add_argument('-n', '--dry_run', action='store_true', default=False,
+                      help=('Do not actually edit any files; just print diffs.'
+                            ' Return code is 0 if no changes are needed,'
+                            ' else min(the number of files that would be'
+                            ' modified, 100)'))
 
-  parser.add_option('--only_re', default=None,
-                    help='fix_includes.py will skip editing any file whose'
-                         ' name does not match this regular expression.')
+  parser.add_argument('--ignore_re', default=None,
+                      help=('%(prog)s will skip editing any file whose name'
+                            ' matches this regular expression.'))
 
-  parser.add_option('--separate_project_includes', default=None,
-                    help=('Sort #includes for current project separately'
-                          ' from all other #includes.  This flag specifies'
-                          ' the root directory of the current project.'
-                          ' If the value is "<tld>", #includes that share the'
-                          ' same top-level directory are assumed to be in the'
-                          ' same project.  If not specified, project #includes'
-                          ' will be sorted with other non-system #includes.'))
+  parser.add_argument('--only_re', default=None,
+                      help=('%(prog)s will skip editing any file whose name'
+                            ' does not match this regular expression.'))
 
-  parser.add_option('-m', '--keep_iwyu_namespace_format', action='store_true',
-                    default=False,
-                    help=('Keep forward-declaration namespaces in IWYU format, '
-                          'eg. namespace n1 { namespace n2 { class c1; } }.'
-                          ' Do not convert to "normalized" Google format: '
-                          'namespace n1 {\\nnamespace n2 {\\n class c1;'
-                          '\\n}\\n}.'))
-  parser.add_option('--nokeep_iwyu_namespace_format', action='store_false',
-                    dest='keep_iwyu_namespace_format')
+  parser.add_argument('--separate_project_includes', default=None,
+                      help=('Sort #includes for current project separately'
+                            ' from all other #includes.  This flag specifies'
+                            ' the root directory of the current project.'
+                            ' If the value is "<tld>", #includes that share the'
+                            ' same top-level directory are assumed to be in the'
+                            ' same project. If not specified, project #includes'
+                            ' will be sorted with other non-system #includes.'))
 
-  parser.add_option('--basedir', '-p', default=None,
-                    help=('Specify the base directory. fix_includes will '
-                          'interpret non-absolute filenames relative to this '
-                          'path.'))
+  parser.add_argument('-m', '--keep_iwyu_namespace_format', action='store_true',
+                      default=False,
+                      help=('Keep forward-declaration namespaces in IWYU format'
+                            ', eg. namespace n1 { namespace n2 { class c1; } }.'
+                            ' Do not convert to "normalized" Google format: '
+                            'namespace n1 {\\nnamespace n2 {\\n class c1;'
+                            '\\n}\\n}.'))
+  parser.add_argument('--nokeep_iwyu_namespace_format', action='store_false',
+                      dest='keep_iwyu_namespace_format')
 
-  (flags, files_to_modify) = parser.parse_args(argv[1:])
-  if files_to_modify:
-    files_to_modify = set(files_to_modify)
+  parser.add_argument('--basedir', '-p', default=None,
+                      help=('Specify the base directory. fix_includes will '
+                            'interpret non-absolute filenames relative to this '
+                            'path.'))
+
+  parser.add_argument('files', nargs='*', metavar='FILES')
+
+  flags = parser.parse_args(argv[1:])
+  if flags.files:
+    files_to_modify = set(flags.files)
   else:
     files_to_modify = None
 
@@ -2420,14 +2450,18 @@ def main(argv):
       not flags.separate_project_includes.endswith('/')):
     flags.separate_project_includes += os.path.sep
 
+  if flags.update_comments:
+    flags.comments = True
+
   if flags.sort_only:
     if not files_to_modify:
       sys.exit('FATAL ERROR: -s flag requires a list of filenames')
-    return SortIncludesInFiles(files_to_modify, flags)
+    SortIncludesInFiles(files_to_modify, flags)
   else:
-    return ProcessIWYUOutput(sys.stdin, files_to_modify, flags, cwd=os.getcwd())
+    ProcessIWYUOutput(sys.stdin, files_to_modify, flags, cwd=os.getcwd())
+
+  return 0
 
 
 if __name__ == '__main__':
-  num_files_fixed = main(sys.argv)
-  sys.exit(min(num_files_fixed, 100))
+  sys.exit(main(sys.argv))
