@@ -21,7 +21,6 @@ blacklist="
 	cleanup_module
 	init_module
 	batadv_send_skb_prepare_unicast_4addr
-	batadv_skb_crc32
 	batadv_send_skb_packet
 	batadv_gw_node_get
 	batadv_get_real_netdev
