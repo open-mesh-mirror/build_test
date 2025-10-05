@@ -29,7 +29,7 @@ index 82e3eee7363b0301a6aaccea965d077130c09f4d..e361fc95ca293d80434ee0cdfae30904
  modules.builtin.modinfo
  modules.nsdeps
 diff --git a/Makefile b/Makefile
-index 3f7fa3e35285f2a0d2958c475174751fbfa885d0..fee8d80c660e43925f786d963f8e277b6da6da74 100644
+index 3a8b862026a589f4aea0f49ffc542a329e61fd7b..11fe707be342f961ae9266e584aafa603dcc5dd2 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -1505,7 +1505,7 @@ endif # CONFIG_MODULES
