@@ -4,6 +4,7 @@
 { include: ["\"linux/compiler_types.h\"", "private", "<linux/compiler.h>", "public"] },
 { include: ["\"linux/compiler_attributes.h\"", "private", "<linux/compiler.h>", "public"] },
 { include: ["\"asm/atomic.h\"", "private", "<linux/atomic.h>", "public"] },
+{ include: ["\"asm/bug.h\"", "private", "<linux/bug.h>", "public"] },
 { include: ["\"asm/current.h\"", "private", "<asm/current.h>", "public"] },
 { include: ["<asm/atomic.h>", "private", "<linux/atomic.h>", "public"] },
 { include: ["\"asm/atomic64.h\"", "private", "<linux/atomic.h>", "public"] },
