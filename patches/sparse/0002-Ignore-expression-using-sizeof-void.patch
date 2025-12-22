@@ -55,10 +55,10 @@ macro. And this macro is defined using "sizeof(void)".
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
 diff --git a/evaluate.c b/evaluate.c
-index fe716f631987685176321b979652a83d0e0a0001..e639a4ad12528fbc4bcefa3bb89c41e11de21f04 100644
+index 85a6447ba3cec203b0f8449d86f8f5ce4727bc6a..2bac5a5edec84ff4a5592a7852cf49e68fd5b8a6 100644
 --- a/evaluate.c
 +++ b/evaluate.c
-@@ -2213,8 +2213,11 @@ static struct symbol *evaluate_sizeof(struct expression *expr)
+@@ -2214,8 +2214,11 @@ static struct symbol *evaluate_sizeof(struct expression *expr)
  	size = type->bit_size;
  
  	if (size < 0 && is_void_type(type)) {

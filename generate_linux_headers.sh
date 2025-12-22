@@ -191,7 +191,7 @@ prepare_sparse()
 {
 	outpath="linux-build/sparse/"
 	git clone git://git.kernel.org/pub/scm/devel/sparse/sparse.git "${outpath}"
-	git -C "${outpath}" reset --hard 0196afe16a50c76302921b139d412e82e5be2349
+	git -C "${outpath}" reset --hard fbdde3127b83e6d09e0ba808d7925dd84407f3c6
 	git -C "${outpath}" am ../../patches/sparse/0001-Disable-warning-directive-in-macro-s-argument-list-w.patch
 	git -C "${outpath}" am ../../patches/sparse/0002-Ignore-expression-using-sizeof-void.patch
 	CFLAGS="-march=native -O3" make -C "${outpath}"
