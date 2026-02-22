@@ -29,7 +29,7 @@ blacklist="
 
 for i in $defined; do
 	found=0
-	echo $i |grep -v '^batadv_' >/dev/null && found=1
+	echo $i |grep -v -e '^batadv_' -e '^__batadv_' >/dev/null && found=1
 
 	for j in $blacklist; do
 		[ "$i" = "$j" ] && found=0 && break
