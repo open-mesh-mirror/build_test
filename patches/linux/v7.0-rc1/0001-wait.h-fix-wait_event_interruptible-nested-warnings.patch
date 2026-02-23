@@ -1,0 +1,64 @@
+From: Simon Wunderlich <sw@simonwunderlich.de>
+Date: Wed, 19 Mar 2014 11:45:17 +0100
+Subject: wait.h: fix wait_event_interruptible() nested warnings
+
+Signed-off-by: Simon Wunderlich <sw@simonwunderlich.de>
+
+diff --git a/include/linux/wait.h b/include/linux/wait.h
+index dce055e6add39083642ccbf324709b7493b9a8b3..804047ca8d78181e62c5d23a783dbc9ad29fb18b 100644
+--- a/include/linux/wait.h
++++ b/include/linux/wait.h
+@@ -325,6 +325,13 @@ extern void init_wait_entry(struct wait_queue_entry *wq_entry, int flags);
+ 	finish_wait(&wq_head, &__wq_entry);					\
+ __out:	__ret;									\
+ })
++#define ___wait_cond_timeout2(condition)					\
++({									\
++	bool __cond = (condition);					\
++	if (__cond && !__ret2)						\
++		__ret2 = 1;						\
++	__cond || !__ret2;						\
++})
+ 
+ #define __wait_event(wq_head, condition)					\
+ 	(void)___wait_event(wq_head, condition, TASK_UNINTERRUPTIBLE, 0, 0,	\
+@@ -500,17 +507,17 @@ do {										\
+  */
+ #define wait_event_interruptible(wq_head, condition)				\
+ ({										\
+-	int __ret = 0;								\
++	int __ret2 = 0;								\
+ 	might_sleep();								\
+ 	if (!(condition))							\
+-		__ret = __wait_event_interruptible(wq_head, condition);		\
+-	__ret;									\
++		__ret2 = __wait_event_interruptible(wq_head, condition);		\
++	__ret2;									\
+ })
+ 
+ #define __wait_event_interruptible_timeout(wq_head, condition, timeout)		\
+-	___wait_event(wq_head, ___wait_cond_timeout(condition),			\
++	___wait_event(wq_head, ___wait_cond_timeout2(condition),			\
+ 		      TASK_INTERRUPTIBLE, 0, timeout,				\
+-		      __ret = schedule_timeout(__ret))
++		      schedule_timeout(__ret))
+ 
+ /**
+  * wait_event_interruptible_timeout - sleep until a condition gets true or a timeout elapses
+@@ -534,12 +541,12 @@ do {										\
+  */
+ #define wait_event_interruptible_timeout(wq_head, condition, timeout)		\
+ ({										\
+-	long __ret = timeout;							\
++	long __ret2 = timeout;							\
+ 	might_sleep();								\
+-	if (!___wait_cond_timeout(condition))					\
+-		__ret = __wait_event_interruptible_timeout(wq_head,		\
++	if (!___wait_cond_timeout2(condition))					\
++		__ret2 = __wait_event_interruptible_timeout(wq_head,		\
+ 						condition, timeout);		\
+-	__ret;									\
++	__ret2;									\
+ })
+ 
+ #define __wait_event_hrtimeout(wq_head, condition, timeout, state)		\
