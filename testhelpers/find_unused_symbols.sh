@@ -37,6 +37,7 @@ blacklist="
 	batadv_tt_global_hash_count
 	batadv_tt_global_hash_find
 	__batadv_br_ip_list_check
+	__batadv_get_real_netdev
 "
 
 for i in $defined; do
