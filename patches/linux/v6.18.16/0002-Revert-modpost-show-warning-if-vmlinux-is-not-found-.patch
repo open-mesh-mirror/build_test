@@ -5,10 +5,10 @@ Subject: Revert "modpost: show warning if vmlinux is not found when processing m
 This reverts commit 7e8a3235823bcb779acf92de630edd5ddffaf886.
 
 diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 47c8aa2a69392509b380ec6f22372232f26540da..596120ff83119ebb81ec66e626930b0c5fe7a8b6 100644
+index 133dfa16308a3e1a423e9baabd59ae761a490707..06e9edca80b5d0454cb52e8fe1e44e6fbe33622c 100644
 --- a/scripts/mod/modpost.c
 +++ b/scripts/mod/modpost.c
-@@ -2374,9 +2374,5 @@ int main(int argc, char **argv)
+@@ -2378,9 +2378,5 @@ int main(int argc, char **argv)
  		error("Section mismatches detected.\n"
  		      "Set CONFIG_SECTION_MISMATCH_WARN_ONLY=y to allow them.\n");
  

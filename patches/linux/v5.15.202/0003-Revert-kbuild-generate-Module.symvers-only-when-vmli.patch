@@ -29,7 +29,7 @@ index 910b30a2a7d98b89ce3b9bc6afb7a88aa7c8025c..ac42ad8d430d1239f8469254639bcd55
  modules.builtin.modinfo
  modules.nsdeps
 diff --git a/Makefile b/Makefile
-index 5e3d4c453ed7ef69f5a17f1287350b9e6315d863..5ec60e1577361c961fd220fef23dfeb81e5eccc4 100644
+index 8fc3ffa96622e434f2b84c7c8471f7375c01bdf3..c7c70de7c4a1ee4b19838d2baea8a81012812e23 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -1575,7 +1575,7 @@ endif # CONFIG_MODULES
@@ -68,10 +68,10 @@ index 0273bf7375e26b5123834a9cbd7cabfe9621d160..496740c3a8bade073ee569b2a797dca7
  else
  
 diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 3c1dc12758da9f31bde8837fc56f2fca93210a47..99d5c6ece997848c8a21ebe8fd9edd1635f9ef2e 100644
+index 9569fdcd71e8571d2dcf557c02b56760b161c41c..cee78e2a51587837c986ddb4c79e39b8db77743c 100644
 --- a/scripts/mod/modpost.c
 +++ b/scripts/mod/modpost.c
-@@ -2404,6 +2404,19 @@ static void read_dump(const char *fname)
+@@ -2408,6 +2408,19 @@ static void read_dump(const char *fname)
  	fatal("parse error in symbol dump file\n");
  }
  
@@ -91,7 +91,7 @@ index 3c1dc12758da9f31bde8837fc56f2fca93210a47..99d5c6ece997848c8a21ebe8fd9edd16
  static void write_dump(const char *fname)
  {
  	struct buffer buf = { };
-@@ -2414,7 +2427,7 @@ static void write_dump(const char *fname)
+@@ -2418,7 +2431,7 @@ static void write_dump(const char *fname)
  	for (n = 0; n < SYMBOL_HASH_SIZE ; n++) {
  		symbol = symbolhash[n];
  		while (symbol) {
