@@ -202,7 +202,7 @@ prepare_smatch()
 	outpath="linux-build/smatch/"
 
 	git clone https://repo.or.cz/smatch.git/ "${outpath}"
-	git -C "${outpath}" reset --hard d50c5a4ccd33dc2910236c84039adb6db3fd80b9
+	git -C "${outpath}" reset --hard b810ac53abab7b93ac62a74cf805ac111b849284
 	git -C "${outpath}" am ../../patches/smatch/0001-smatch-disable-verbose-check_unused_ret.patch
 	CFLAGS="-march=native -O3" make -C "${outpath}"
 }
