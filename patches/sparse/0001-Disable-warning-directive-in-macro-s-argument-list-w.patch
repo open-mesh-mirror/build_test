@@ -30,10 +30,10 @@ changes in the skbuff.h header:
 Signed-off-by: Sven Eckelmann <sven@narfation.org>
 
 diff --git a/pre-process.c b/pre-process.c
-index 3fb250828fa665d1dbee499c2394faa377714937..46fdbce146fdbf6c460661c58ec80d1842a2bdc6 100644
+index 7a1478f6a0f13196ae70733228962ab7ed7ce1e5..dfd6115548a9f96af3d66077becd217baf69e86b 100644
 --- a/pre-process.c
 +++ b/pre-process.c
-@@ -2200,7 +2200,7 @@ static void handle_preprocessor_line(struct stream *stream, struct token **line,
+@@ -2194,7 +2194,7 @@ static void handle_preprocessor_line(struct stream *stream, struct token **line,
  	}
  
  	if (expanding) {
