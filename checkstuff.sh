@@ -108,6 +108,7 @@ test_coccicheck()
 			-e 'ERROR: next_gw is NULL but dereferenced.' \
 			-e 'tp_meter.c.*ERROR: reference preceded by free on line' \
 			-e 'bridge_loop_avoidance.c.*: WARNING: atomic_dec_and_test variation before object free at line' \
+			-e 'scripts/coccinelle/api/kmalloc_objs.cocci as it does not match mode' \
 			-e '^$' \
 			-e "recipe for target 'coccicheck' failed" \
 			-e 'coccicheck failed' \
