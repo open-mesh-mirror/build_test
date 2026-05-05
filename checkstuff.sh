@@ -56,10 +56,10 @@ check_external()
 		echo "    git --git-dir=linux-next/.git/ config remote.net.promisor true"
 		echo "    git --git-dir=linux-next/.git/ config remote.net.partialclonefilter tree:0"
 		echo "    git --git-dir=linux-next/.git/ fetch --depth=1 net"
-		echo "    git --git-dir=linux-next/.git/ remote add --no-tags linux-merge https://git.open-mesh.org/linux-merge.git"
-		echo "    git --git-dir=linux-next/.git/ config remote.linux-merge.promisor true"
-		echo "    git --git-dir=linux-next/.git/ config remote.linux-merge.partialclonefilter tree:0"
-		echo "    git --git-dir=linux-next/.git/ fetch --depth=1 linux-merge"
+		echo "    git --git-dir=linux-next/.git/ remote add --no-tags batadv https://git.open-mesh.org/batadv.git"
+		echo "    git --git-dir=linux-next/.git/ config remote.batadv.promisor true"
+		echo "    git --git-dir=linux-next/.git/ config remote.batadv.partialclonefilter tree:0"
+		echo "    git --git-dir=linux-next/.git/ fetch --depth=1 batadv"
 		echo "    git --git-dir=linux-next/.git/ maintenance start"
 		exit 1
 	fi
@@ -430,7 +430,7 @@ test_check_batadv_net()
 	rm -rf "${TMPNAME}"
 	mkdir "${TMPNAME}"
 
-	upstream_rev="linux-merge/batadv/net"
+	upstream_rev="batadv/batadv/net"
 
 	git -C "linux-next/.git/" grep 'UGLY_HACK' "${upstream_rev}" > "${TMPNAME}"/log
 
@@ -446,7 +446,7 @@ test_check_batadv_net_next()
 	rm -rf "${TMPNAME}"
 	mkdir "${TMPNAME}"
 
-	upstream_rev="linux-merge/batadv/net-next"
+	upstream_rev="batadv/batadv/net-next"
 
 	git -C "linux-next/.git/" grep 'UGLY_HACK' "${upstream_rev}" > "${TMPNAME}"/log
 
