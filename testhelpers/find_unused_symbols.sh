@@ -38,6 +38,7 @@ blacklist="
 	batadv_tt_global_hash_find
 	__batadv_br_ip_list_check
 	__batadv_get_real_netdev
+	batadv_hardif_get_wifi_flags
 "
 
 for i in $defined; do
