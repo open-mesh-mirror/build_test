@@ -1,7 +1,7 @@
 #! /bin/bash
 set -e
 
-LINUX_REPOSITORY=${LINUX_REPOSITORY:="git+ssh://git@git.open-mesh.org/linux-merge.git"}
+LINUX_REPOSITORY=${LINUX_REPOSITORY:="git+ssh://git@git.open-mesh.org/batadv.git"}
 MAKE_AMD64=${MAKE_AMD64:=1}
 . linux-versions
 
