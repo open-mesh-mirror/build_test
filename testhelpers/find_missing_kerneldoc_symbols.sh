@@ -26,6 +26,7 @@ blacklist="
   batadv_link_ops
   batadv_netlink_family
   batadv_routing_algo
+  batadv_version
 "
 
 for i in $defined; do
