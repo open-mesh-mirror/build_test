@@ -205,25 +205,13 @@ test_kerneldoc()
 	path="$(source_path)"
 
 	rm -f log logfull
-	for i in "${path}"/* include/uapi/linux/*; do
-		if [ ! -f "$i" ]; then
-			continue
-		fi
 
-		fname=$(basename "$i")
-		if [ "$fname" != "compat.c" -a "$fname" != "compat.h" -a "$fname" != "gen-compat-autoconf.sh" ]; then
-			rm -f log logfull
+	("${KERNELDOC}" -Wall -v -none "${path}"/*.{c,h} include/uapi/linux/*.h 2>&1) | \
+		grep -v '^Info: .* Scanning doc for ' &> logfull
 
-			("${KERNELDOC}" -v -none "$i" 2>&1 > /dev/null)| \
-				grep -v Scanning|grep -v \
-				-e "[0-9]* warnings" \
-				-e 'no structured comments found' &> logfull
-
-			if [ -s "logfull" ]; then
-				"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "kerneldoc $i" logfull logfull
-			fi
-		fi
-	done
+	if [ -s "logfull" ]; then
+		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "kerneldoc" logfull logfull
+	fi
 }
 
 test_brackets()
