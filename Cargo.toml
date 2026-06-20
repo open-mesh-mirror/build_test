@@ -1,9 +1,22 @@
 [package]
+publish = false
 name = "rxtree"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
+description = "Reverse x-mas tree var declaration sorter"
+authors = ["B.A.T.M.A.N. developers <b.a.t.m.a.n@lists.open-mesh.org>"]
 
 [dependencies]
 tree-sitter = "0.25"
 tree-sitter-c = "0.24"
 similar = { version = "2", features = ["text", "unicode"] }
+
+[package.metadata.deb]
+depends = "$auto"
+priority = "optional"
+section = "devel"
+
+[profile.release]
+lto = true
+strip = true
+codegen-units = 1
