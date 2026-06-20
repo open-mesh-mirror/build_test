@@ -232,6 +232,19 @@ test_brackets()
 	done
 }
 
+test_xmas_declaration()
+{
+	branch="$1"
+	path="$(source_path)"
+
+	rm -f log logfull
+	rxtree --single "${path}"/*.{c,h} | grep -v 'would change' &> logfull
+
+	if [ -s logfull ]; then
+		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "reverse_xmas_tree $i" logfull logfull
+	fi
+}
+
 test_sparse()
 {
 	branch="$1"
@@ -567,6 +580,7 @@ testbranch()
 			test_main_include "${branch}"
 		fi
 		test_brackets "${branch}"
+		test_xmas_declaration "${branch}"
 	)
 
 	(
