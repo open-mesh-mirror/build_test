@@ -19,12 +19,21 @@
 //!
 //! With no FILE arguments it processes every *.c and *.h under net/batman-adv.
 
-use std::collections::BTreeMap;
-use std::path::{Path, PathBuf};
-use std::process::ExitCode;
+use std::{
+    collections::BTreeMap,
+    path::{
+        Path,
+        PathBuf,
+    },
+    process::ExitCode,
+};
 
 use similar::TextDiff;
-use tree_sitter::{Node, Parser, Tree};
+use tree_sitter::{
+    Node,
+    Parser,
+    Tree,
+};
 
 fn main() -> ExitCode {
     let mut write = false;
@@ -108,7 +117,10 @@ fn collect_default_files() -> Vec<PathBuf> {
     if let Ok(entries) = std::fs::read_dir(dir) {
         for e in entries.flatten() {
             let p = e.path();
-            if matches!(p.extension().and_then(|s| s.to_str()), Some("c") | Some("h")) {
+            if matches!(
+                p.extension().and_then(|s| s.to_str()),
+                Some("c") | Some("h")
+            ) {
                 out.push(p);
             }
         }
@@ -191,8 +203,9 @@ fn split_multi_declarations(parser: &mut Parser, src: &str) -> Result<Option<Str
                 continue;
             }
             let mut dc = child.walk();
-            let declarators: Vec<Node> =
-                child.children_by_field_name("declarator", &mut dc).collect();
+            let declarators: Vec<Node> = child
+                .children_by_field_name("declarator", &mut dc)
+                .collect();
             if declarators.len() < 2 {
                 continue; // already a single declaration
             }
@@ -331,7 +344,11 @@ fn rewrite_block(src: &str, block: Node) -> Option<String> {
             // comment, never the continuation lines of a multi-line initializer.
             let sort_len = first_physical_line_len(&src[decl_start..end]);
             let start = comment_extended_start(src, bytes, *d, decl_start, anchor);
-            chunks.push(Chunk { start, end, sort_len });
+            chunks.push(Chunk {
+                start,
+                end,
+                sort_len,
+            });
         }
         chunks.sort_by_key(|c| c.start);
 
@@ -361,10 +378,11 @@ fn rewrite_block(src: &str, block: Node) -> Option<String> {
     // Rebuild the file: copy everything except the chunk ranges, emitting each
     // segment's sorted declaration block when its anchor position is reached.
     inserts.sort_by_key(|(a, _)| *a);
-    let by_start: BTreeMap<usize, usize> =
-        all_chunks.iter().map(|c| (c.start, c.end)).collect();
+    let by_start: BTreeMap<usize, usize> = all_chunks.iter().map(|c| (c.start, c.end)).collect();
 
-    let mut out = String::with_capacity(src.len() + all_chunks.iter().map(|c| c.end - c.start).sum::<usize>());
+    let mut out = String::with_capacity(
+        src.len() + all_chunks.iter().map(|c| c.end - c.start).sum::<usize>(),
+    );
     let len = src.len();
     let mut i = 0usize;
     let mut ai = 0usize;
@@ -392,11 +410,7 @@ fn rewrite_block(src: &str, block: Node) -> Option<String> {
         ai += 1;
     }
 
-    if out == src {
-        None
-    } else {
-        Some(out)
-    }
+    if out == src { None } else { Some(out) }
 }
 
 /// A direct child of a block that declarations must not be reordered across:
@@ -489,7 +503,11 @@ fn comment_extended_start(
             break;
         }
         // Must be directly attached: no blank line separating it from the chunk.
-        if src[prev.end_byte()..front.start_byte()].matches('\n').count() > 1 {
+        if src[prev.end_byte()..front.start_byte()]
+            .matches('\n')
+            .count()
+            > 1
+        {
             break;
         }
         front = prev;
@@ -513,11 +531,7 @@ fn line_end_after(bytes: &[u8], mut i: usize) -> usize {
     while i < bytes.len() && bytes[i] != b'\n' {
         i += 1;
     }
-    if i < bytes.len() {
-        i + 1
-    } else {
-        i
-    }
+    if i < bytes.len() { i + 1 } else { i }
 }
 
 /// Unified diff for the dry-run view, rendered with the `similar` crate.
