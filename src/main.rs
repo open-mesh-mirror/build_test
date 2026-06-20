@@ -149,10 +149,8 @@ fn process_source(src: &str, single: bool) -> Result<String, String> {
     // With --single, first rewrite every local declaration that declares more
     // than one variable into one declaration per line, so each resulting line
     // participates in the length sort individually.
-    if single {
-        if let Some(t) = split_multi_declarations(&mut parser, &text)? {
-            text = t;
-        }
+    if single && let Some(t) = split_multi_declarations(&mut parser, &text)? {
+        text = t;
     }
 
     loop {
@@ -237,7 +235,7 @@ fn split_multi_declarations(parser: &mut Parser, src: &str) -> Result<Option<Str
     if edits.is_empty() {
         return Ok(None);
     }
-    edits.sort_by(|a, b| b.0.cmp(&a.0)); // high to low keeps offsets valid
+    edits.sort_by_key(|b| std::cmp::Reverse(b.0)); // high to low keeps offsets valid
     let mut text = src.to_string();
     for (lo, hi, repl) in edits {
         text.replace_range(lo..hi, &repl);
