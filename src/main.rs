@@ -30,11 +30,15 @@ fn main() -> ExitCode {
     let mut write = false;
     let mut paths: Vec<PathBuf> = Vec::new();
 
+    let mut single = false;
     for arg in std::env::args().skip(1) {
         match arg.as_str() {
             "--write" | "-w" => write = true,
+            "--single" => single = true,
             "--help" | "-h" => {
-                eprintln!("usage: rxtree [--write] [FILE ...]");
+                eprintln!("usage: rxtree [--write] [--single] [FILE ...]");
+                eprintln!("  --single  split lines that declare several variables into one");
+                eprintln!("            declaration per line before sorting");
                 return ExitCode::SUCCESS;
             }
             _ => paths.push(PathBuf::from(arg)),
@@ -57,7 +61,7 @@ fn main() -> ExitCode {
 
     for path in &paths {
         match std::fs::read_to_string(path) {
-            Ok(src) => match process_source(&src) {
+            Ok(src) => match process_source(&src, single) {
                 Ok(new_src) => {
                     if new_src != src {
                         changed_files += 1;
@@ -126,9 +130,18 @@ fn new_parser() -> Parser {
 /// each edit keeps node byte offsets valid and lets nested scopes compose
 /// without overlapping-edit bookkeeping. The transform is idempotent (stable
 /// sort), so this terminates.
-fn process_source(src: &str) -> Result<String, String> {
+fn process_source(src: &str, single: bool) -> Result<String, String> {
     let mut parser = new_parser();
     let mut text = src.to_string();
+
+    // With --single, first rewrite every local declaration that declares more
+    // than one variable into one declaration per line, so each resulting line
+    // participates in the length sort individually.
+    if single {
+        if let Some(t) = split_multi_declarations(&mut parser, &text)? {
+            text = t;
+        }
+    }
 
     loop {
         let tree: Tree = parser
@@ -152,6 +165,71 @@ fn process_source(src: &str) -> Result<String, String> {
     }
 
     Ok(text)
+}
+
+/// Split every local declaration that declares more than one variable into one
+/// declaration per line, in place (no reordering). Returns the rewritten text,
+/// or `None` if there was nothing to split. The shared leading type/qualifiers
+/// are repeated on each new line and per-declarator parts (`*`, `[]`, `= init`)
+/// stay with their variable, e.g.
+///   `struct foo *a, b;`  ->  `struct foo *a;` / `struct foo b;`
+fn split_multi_declarations(parser: &mut Parser, src: &str) -> Result<Option<String>, String> {
+    let tree = parser
+        .parse(src, None)
+        .ok_or_else(|| "tree-sitter returned no tree".to_string())?;
+    let bytes = src.as_bytes();
+
+    let mut blocks = Vec::new();
+    collect_blocks(tree.root_node(), &mut blocks);
+
+    // (line_start, end_of-`;`, replacement) edits; applied later high-to-low.
+    let mut edits: Vec<(usize, usize, String)> = Vec::new();
+    for block in blocks {
+        let mut cur = block.walk();
+        for child in block.children(&mut cur) {
+            if child.kind() != "declaration" || child.has_error() || child.is_missing() {
+                continue;
+            }
+            let mut dc = child.walk();
+            let declarators: Vec<Node> =
+                child.children_by_field_name("declarator", &mut dc).collect();
+            if declarators.len() < 2 {
+                continue; // already a single declaration
+            }
+            let base = src[child.start_byte()..declarators[0].start_byte()].trim();
+            // An anonymous struct/union/enum body must not be duplicated — doing
+            // so would create distinct types for each variable. Leave it alone.
+            if base.is_empty() || base.contains('{') {
+                continue;
+            }
+            let line_lo = line_start(bytes, child.start_byte());
+            let indent = &src[line_lo..child.start_byte()];
+            let mut repl = String::new();
+            for (i, d) in declarators.iter().enumerate() {
+                if i > 0 {
+                    repl.push('\n');
+                }
+                repl.push_str(indent);
+                repl.push_str(base);
+                repl.push(' ');
+                repl.push_str(&src[d.start_byte()..d.end_byte()]);
+                repl.push(';');
+            }
+            // Replace only up to and including the `;`, so a trailing comment or
+            // anything else on the line is preserved after the last declarator.
+            edits.push((line_lo, child.end_byte(), repl));
+        }
+    }
+
+    if edits.is_empty() {
+        return Ok(None);
+    }
+    edits.sort_by(|a, b| b.0.cmp(&a.0)); // high to low keeps offsets valid
+    let mut text = src.to_string();
+    for (lo, hi, repl) in edits {
+        text.replace_range(lo..hi, &repl);
+    }
+    Ok(Some(text))
 }
 
 /// Depth-first collection of every `compound_statement` node. Returned in a
