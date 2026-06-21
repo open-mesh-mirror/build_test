@@ -241,7 +241,7 @@ test_xmas_declaration()
 	rxtree --single "${path}"/*.{c,h} | grep -v 'would change' | diffstat -p1 | grep -v 'files changed' &> logfull
 
 	if [ -s logfull ]; then
-		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "reverse_xmas_tree $i" logfull logfull
+		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "reverse_xmas_tree" logfull logfull
 	fi
 }
 
@@ -578,9 +578,9 @@ testbranch()
 
 			test_kerneldoc "${branch}"
 			test_main_include "${branch}"
+			test_xmas_declaration "${branch}"
 		fi
 		test_brackets "${branch}"
-		test_xmas_declaration "${branch}"
 	)
 
 	(
