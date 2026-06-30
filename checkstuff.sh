@@ -238,7 +238,7 @@ test_xmas_declaration()
 	path="$(source_path)"
 
 	rm -f log logfull
-	rxtree --single "${path}"/*.{c,h} | grep -v 'would change' | diffstat -p1 | grep -v 'files changed' &> logfull
+	rxtree --single "${path}"/*.{c,h} | grep -v 'would change' &> logfull
 
 	if [ -s logfull ]; then
 		"${MAIL_AGGREGATOR}" "${DB}" add "${branch}" "reverse_xmas_tree" logfull logfull
