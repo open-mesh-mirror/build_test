@@ -71,6 +71,7 @@
     { include: ["\"linux/build_bug.h\"", private, "<linux/build_bug.h>", public ] },
     { include: ["\"linux/byteorder/generic.h\"", private, "<linux/byteorder/generic.h>", public ] },
     { include: ["\"linux/cache.h\"", private, "<linux/cache.h>", public ] },
+    { include: ["\"linux/cleanup.h\"", private, "<linux/cleanup.h>", public ] },
     { include: ["\"linux/compiler.h\"", private, "<linux/compiler.h>", public ] },
     { include: ["\"linux/container_of.h\"", private, "<linux/container_of.h>", public ] },
     { include: ["\"linux/cpumask.h\"", private, "<linux/cpumask.h>", public ] },
