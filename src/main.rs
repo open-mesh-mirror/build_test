@@ -307,7 +307,7 @@ fn rewrite_block(src: &str, block: Node) -> Option<String> {
     // is skipped — it is most likely a mis-parse.
     let mut decls = Vec::new();
     for child in &kids {
-        if child.kind() == "declaration" && !child.has_error() && !child.is_missing() {
+        if is_local_declaration(src, *child) {
             decls.push(*child);
         }
     }
@@ -409,6 +409,50 @@ fn rewrite_block(src: &str, block: Node) -> Option<String> {
     }
 
     if out == src { None } else { Some(out) }
+}
+
+/// Kernel macros that expand to a local variable definition (with
+/// initialization), e.g. `LIST_HEAD(name);` -> `struct list_head name = ...;`.
+/// tree-sitter-c cannot see through them and parses such a line as a call
+/// `expression_statement`, so they are recognized by name.
+const DECLARATION_MACROS: &[&str] = &[
+    "LIST_HEAD",
+    "HLIST_HEAD",
+    "LLIST_HEAD",
+    "DECLARE_BITMAP",
+    "DECLARE_COMPLETION_ONSTACK",
+    "DECLARE_WAITQUEUE",
+    "DECLARE_WAIT_QUEUE_HEAD_ONSTACK",
+    "DEFINE_WAIT",
+    "DEFINE_WAIT_FUNC",
+    "DEFINE_SPINLOCK",
+    "DEFINE_RAW_SPINLOCK",
+    "DEFINE_MUTEX",
+];
+
+/// A direct child of a block that is a local variable declaration: a genuine
+/// error-free `declaration` node, or a statement that is just a call to one of
+/// the `DECLARATION_MACROS` (`LIST_HEAD(changes_list);`).
+fn is_local_declaration(src: &str, n: Node) -> bool {
+    if n.has_error() || n.is_missing() {
+        return false;
+    }
+    match n.kind() {
+        "declaration" => true,
+        "expression_statement" => {
+            let Some(call) = n.named_child(0) else {
+                return false;
+            };
+            if n.named_child_count() != 1 || call.kind() != "call_expression" {
+                return false;
+            }
+            call.child_by_field_name("function").is_some_and(|f| {
+                f.kind() == "identifier"
+                    && DECLARATION_MACROS.contains(&&src[f.start_byte()..f.end_byte()])
+            })
+        }
+        _ => false,
+    }
 }
 
 /// A direct child of a block that declarations must not be reordered across:

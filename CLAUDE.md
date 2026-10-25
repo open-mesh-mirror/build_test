@@ -73,6 +73,9 @@ trusting or corrupting those regions:
 - **Sort key** is the declaration's *own first physical line*
   (`first_physical_line_len`) — never an attached comment and never the
   continuation lines of a multi-line struct/array initializer.
+- **Declaring macros** (`LIST_HEAD(x);`, `DECLARE_BITMAP(x, n);`, …) parse as
+  call `expression_statement`s; `is_local_declaration` treats calls to names in
+  `DECLARATION_MACROS` as declarations so they sort with the rest.
 - Only **direct-child `declaration` nodes** of a `compound_statement` are touched
   (not struct members, `for`-init clauses, `#if` bodies, or globals). Nodes whose
   subtree `has_error()` are skipped. Overlapping chunks (two declarations on one
