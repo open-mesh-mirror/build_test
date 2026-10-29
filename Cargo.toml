@@ -1,15 +1,15 @@
 [package]
 publish = false
 name = "rxtree"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "Reverse x-mas tree var declaration sorter"
 authors = ["B.A.T.M.A.N. developers <b.a.t.m.a.n@lists.open-mesh.org>"]
 
 [dependencies]
-tree-sitter = "0.25"
+tree-sitter = "0.27.1"
 tree-sitter-c = "0.24"
-similar = { version = "2", features = ["text", "unicode"] }
+similar = { version = "3.2.1", features = ["text", "unicode"] }
 
 [package.metadata.deb]
 depends = "$auto"
